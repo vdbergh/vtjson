@@ -1,4 +1,4 @@
-import re
+import re, types
 
 from email_validator import validate_email, EmailNotValidError
 
@@ -109,9 +109,36 @@ def validate_dict(schema, object, name, strict=False):
     return ""
 
 
+def validate_generics(schema, object, name, strict=False):
+    assert isinstance(schema, types.GenericAlias)
+    root_type = schema.__origin__
+    ret = validate_type(root_type, object, name, strict=strict)
+    if ret != "":
+        return ret
+    if root_type not in (tuple, list):
+        ret = f"I don't understand the schema {schema}"
+        return ret
+    args = schema.__args__
+    if len(args) == 0:
+        ret = f"I don't understand the schema {schema}"
+        return ret
+    if len(args) == 1:
+        arg = args[0]
+    else:
+        arg = args
+    for i in range(len(object)):
+        name_ = f"{name}[{i}]"
+        ret = validate(arg, object[i], name_, strict=strict)
+        if ret != "":
+            return ret
+    return ""
+
+
 def validate(schema, object, name, strict=False):
     if hasattr(schema, "__validate__"):  # duck typing
         return schema.__validate__(object, name, strict=strict)
+    elif isinstance(schema, types.GenericAlias):
+        return validate_generics(schema, object, name, strict=strict)
     elif isinstance(schema, type):
         return validate_type(schema, object, name, strict=strict)
     elif isinstance(schema, list) or isinstance(schema, tuple):

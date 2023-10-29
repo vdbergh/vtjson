@@ -55,6 +55,62 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
+    def test_generics(self):
+        schema = dict[str]
+        name = "my_object"
+        object = {}
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = list[tuple()]
+        object = ["a", "b"]
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = list[str]
+        object = ("a", "b")
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = ["a", "b"]
+        valid = validate(schema, object, name, strict=True)
+        self.assertTrue(valid == "")
+
+        object = ["a", 10]
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = ["a", ["b", "c"]]
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = list[(str, int)]
+        object = [("a", 1), ("b", 2)]
+        valid = validate(schema, object, name, strict=True)
+        self.assertTrue(valid == "")
+
+        schema = list[(str, int)]
+        object = [("a", 1), ("b", "c")]
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = list[email]
+        object = ["user1@example.com", "user2@example.com"]
+        valid = validate(schema, object, name, strict=True)
+        self.assertTrue(valid == "")
+
+        schema = list[email]
+        object = ["user1@example.com", "user00@user00.user00"]
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
     def test_validate(self):
         class lower_case:
             @staticmethod
