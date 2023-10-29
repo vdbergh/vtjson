@@ -24,6 +24,7 @@ class union:
 
 
 class email:
+    @staticmethod
     def __validate__(object, name, strict=False):
         try:
             validate_email(object, check_deliverability=False)
