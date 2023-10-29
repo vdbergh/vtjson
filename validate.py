@@ -22,6 +22,7 @@ class union:
                 messages.append(message)
         return " and ".join(messages)
 
+
 class email:
     def __validate__(object, name, strict=False):
         try:
@@ -30,17 +31,18 @@ class email:
         except EmailNotValidError as e:
             return f"{name} is not a valid email address: {str(e)}"
 
+
 class regex:
-    def __init__(self,regex):
+    def __init__(self, regex):
         self.regex = regex
         self.pattern = re.compile(regex)
-        
 
     def __validate__(self, object, name, strict=False):
         if self.pattern.fullmatch(object):
             return ""
         else:
             return f"{name} does not match the pattern {self.regex}"
+
 
 def _keys(dict):
     ret = set()
@@ -52,51 +54,66 @@ def _keys(dict):
     return ret
 
 
+def validate_type(schema, object, name, strict=False):
+    assert isinstance(schema, type)
+    if not isinstance(object, schema):
+        return f"{name} is not of type {schema.__name__}"
+    else:
+        return ""
+
+
+def validate_sequence(schema, object, name, strict=False):
+    assert isinstance(schema, list) or isinstance(schema, tuple)
+    if type(schema) != type(object):
+        return f"{name} is not of type {type(schema).__name}"
+    l = len(object)
+    if strict and l != len(schema):
+        return f"{name} does not have length {len(schema)}"
+    for i in range(len(schema)):
+        name_ = f"{name}[{i}]"
+        if i >= l:
+            return f"{name_} does not exist"
+        else:
+            ret = validate(schema[i], object[i], name_, strict=strict)
+            if ret != "":
+                return ret
+    return ""
+
+
+def validate_dict(schema, object, name, strict=False):
+    assert isinstance(schema, dict)
+    if type(schema) != type(object):
+        return f"{name} is not of type {type(schema).__name}"
+    if strict:
+        _k = _keys(schema)
+        for x in object:
+            if x not in _k:
+                return f"{name}['{x}'] is not in the schema"
+    for k in schema:
+        k_ = k
+        if isinstance(k, optional_key):
+            k_ = k.key
+            if k_ not in object:
+                continue
+        name_ = f"{name}['{k_}']"
+        if k_ not in object:
+            return f"{name_} is missing"
+        else:
+            ret = validate(schema[k], object[k_], name_, strict=strict)
+            if ret != "":
+                return ret
+    return ""
+
+
 def validate(schema, object, name, strict=False):
     if hasattr(schema, "__validate__"):  # duck typing
         return schema.__validate__(object, name, strict=strict)
     elif isinstance(schema, type):
-        if not isinstance(object, schema):
-            return f"{name} is not of type {schema.__name__}"
-        else:
-            return ""
+        return validate_type(schema, object, name, strict=strict)
     elif isinstance(schema, list) or isinstance(schema, tuple):
-        if type(schema) != type(object):
-            return f"{name} is not of type {type(schema).__name}"
-        l = len(object)
-        if strict and l != len(schema):
-            return f"{name} does not have length {len(schema)}"
-        for i in range(len(schema)):
-            name_ = f"{name}[{i}]"
-            if i >= l:
-                return f"{name_} does not exist"
-            else:
-                ret = validate(schema[i], object[i], name_, strict=strict)
-                if ret != "":
-                    return ret
-        return ""
+        return validate_sequence(schema, object, name, strict=strict)
     elif isinstance(schema, dict):
-        if type(schema) != type(object):
-            return f"{name} is not of type {type(schema).__name}"
-        if strict:
-            _k = _keys(schema)
-            for x in object:
-                if x not in _k:
-                    return f"{name}['{x}'] is not in the schema"
-        for k in schema:
-            k_ = k
-            if isinstance(k, optional_key):
-                k_ = k.key
-                if k_ not in object:
-                    continue
-            name_ = f"{name}['{k_}']"
-            if k_ not in object:
-                return f"{name_} is missing"
-            else:
-                ret = validate(schema[k], object[k_], name_, strict=strict)
-                if ret != "":
-                    return ret
-        return ""
+        return validate_dict(schema, object, name, strict=strict)
     elif object != schema:
         return f"{name} is not equal to {repr(schema)}"
     return ""
@@ -202,32 +219,31 @@ class TestValidation(unittest.TestCase):
     def test_regex(self):
         ip_address = regex(r"([\d]+\.){3}([\d]+)")
         schema = {"ip": ip_address}
-        name="my_object"
-        object = {"ip":"123.123.123.123"}
+        name = "my_object"
+        object = {"ip": "123.123.123.123"}
         valid = validate(schema, object, name, strict=True)
         self.assertTrue(valid == "")
-        object = {"ip":"123.123.123"}
+        object = {"ip": "123.123.123"}
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
-        object = {"ip":"123.123.123.abc"}
+        object = {"ip": "123.123.123.abc"}
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
-        object = {"ip":"123.123..123"}
+        object = {"ip": "123.123..123"}
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
-        object = {"ip":"123.123.123.123.123"}
+        object = {"ip": "123.123.123.123.123"}
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
-        object = {"ip":""}
+        object = {"ip": ""}
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
-        
-        
-        
+
+
 if __name__ == "__main__":
     unittest.main()
