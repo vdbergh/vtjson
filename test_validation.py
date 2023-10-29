@@ -101,7 +101,7 @@ class TestValidation(unittest.TestCase):
         self.assertFalse(valid == "")
 
     def test_regex(self):
-        ip_address = regex(r"([\d]+\.){3}([\d]+)")
+        ip_address = regex(r"([\d]+\.){3}([\d]+)", name="ip_address")
         schema = {"ip": ip_address}
         name = "my_object"
         object = {"ip": "123.123.123.123"}

@@ -33,15 +33,19 @@ class email:
 
 
 class regex:
-    def __init__(self, regex):
+    def __init__(self, regex, name=None):
         self.regex = regex
         self.pattern = re.compile(regex)
+        self.name = name
 
     def __validate__(self, object, name, strict=False):
         if self.pattern.fullmatch(object):
             return ""
         else:
-            return f"{name} does not match the pattern {self.regex}"
+            if self.name is None:
+                return f"{name} does not match the pattern {self.regex}"
+            else:
+                return f"{name} is not of type {self.name}"
 
 
 def _keys(dict):
