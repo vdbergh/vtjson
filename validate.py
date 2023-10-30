@@ -38,7 +38,7 @@ class regex:
             if self.name is None:
                 return f"{name} does not match the pattern {self.regex}"
             else:
-                return f"{name} is not of type {self.name}"
+                return f"{name} (value:{object}) is not of type {self.name}"
 
 
 def _keys(dict):
@@ -54,7 +54,7 @@ def _keys(dict):
 def validate_type(schema, object, name, strict=False):
     assert isinstance(schema, type)
     if not isinstance(object, schema):
-        return f"{name} is not of type {schema.__name__}"
+        return f"{name} (value:{object}) is not of type {schema.__name__}"
     else:
         return ""
 
@@ -139,12 +139,13 @@ def validate(schema, object, name, strict=False):
     elif isinstance(schema, dict):
         return validate_dict(schema, object, name, strict=strict)
     elif object != schema:
-        return f"{name} is not equal to {repr(schema)}"
+        return f"{name} (value:{object}) is not equal to {repr(schema)}"
     return ""
 
 
 # Some predefined schemas
 
+number = union(int, float)
 
 class email:
     @staticmethod
@@ -153,7 +154,7 @@ class email:
             validate_email(object, check_deliverability=False)
             return ""
         except EmailNotValidError as e:
-            return f"{name} is not a valid email address: {str(e)}"
+            return f"{name} (value:{object}) is not a valid email address: {str(e)}"
 
 
 ip_address = regex(r"(?:[\d]+\.){3}(?:[\d]+)", name="ip_address")
@@ -165,4 +166,4 @@ class url:
         result = urllib.parse.urlparse(object)
         if all([result.scheme, result.netloc]):
             return ""
-        return f"{name} is not of type url"
+        return f"{name} (value:{object}) is not of type url"
