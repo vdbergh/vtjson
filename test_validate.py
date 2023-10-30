@@ -1,6 +1,6 @@
 import unittest
 
-from validate import _keys, email, optional_key, regex, union, validate
+from validate import _keys, email, ip_address, optional_key, regex, url, union, validate
 
 
 class TestValidation(unittest.TestCase):
@@ -16,13 +16,16 @@ class TestValidation(unittest.TestCase):
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
+
         object = {"a": 1, "c": 3}
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
+
         object = {"a": 1, "b": 2}
         valid = validate(schema, object, name, strict=True)
         self.assertTrue(valid == "")
+
         object = {"b": 2}
         valid = validate(schema, object, name, strict=True)
         self.assertTrue(valid == "")
@@ -33,13 +36,16 @@ class TestValidation(unittest.TestCase):
         object = {"b": 2, "c": 3}
         valid = validate(schema, object, name, strict=False)
         self.assertTrue(valid == "")
+
         object = {"a": 1, "c": 3}
         valid = validate(schema, object, name, strict=False)
         print(valid)
         self.assertFalse(valid == "")
+
         object = {"a": 1, "b": 2}
         valid = validate(schema, object, name, strict=False)
         self.assertTrue(valid == "")
+
         object = {"b": 2}
         valid = validate(schema, object, name, strict=False)
         self.assertTrue(valid == "")
@@ -50,6 +56,7 @@ class TestValidation(unittest.TestCase):
         object = {"b": 2, "c": 3}
         valid = validate(schema, object, name, strict=False)
         self.assertTrue(valid == "")
+
         object = {"b": 4, "c": 3}
         valid = validate(schema, object, name, strict=False)
         print(valid)
@@ -128,33 +135,25 @@ class TestValidation(unittest.TestCase):
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
+
         object = "aA"
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
+
         object = "aA"
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
+
         object = "ab"
         valid = validate(schema, object, name, strict=True)
         self.assertTrue(valid == "")
+
         schema = {"a": lower_case}
         object = {"a": "ab"}
         valid = validate(schema, object, name, strict=True)
         self.assertTrue(valid == "")
-
-    def test_email(self):
-        schema = email
-        object = "user00@user00.com"
-        name = "my_object"
-        valid = validate(schema, object, name, strict=True)
-        print(valid)
-        self.assertTrue(valid == "")
-        object = "user00@user00.user00"
-        valid = validate(schema, object, name, strict=True)
-        print(valid)
-        self.assertFalse(valid == "")
 
     def test_regex(self):
         ip_address = regex(r"(?:[\d]+\.){3}(?:[\d]+)", name="ip_address")
@@ -163,23 +162,73 @@ class TestValidation(unittest.TestCase):
         object = {"ip": "123.123.123.123"}
         valid = validate(schema, object, name, strict=True)
         self.assertTrue(valid == "")
+
         object = {"ip": "123.123.123"}
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
+
         object = {"ip": "123.123.123.abc"}
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
+
         object = {"ip": "123.123..123"}
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
+
         object = {"ip": "123.123.123.123.123"}
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
+
         object = {"ip": ""}
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
+    def test_email(self):
+        schema = email
+        object = "user00@user00.com"
+        name = "my_object"
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertTrue(valid == "")
+
+        object = "user00@user00.user00"
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
+    def test_ip_address(self):
+        schema = {"ip": ip_address}
+        name = "my_object"
+        object = {"ip": "123.123.123.123"}
+        valid = validate(schema, object, name, strict=True)
+        self.assertTrue(valid == "")
+
+        object = {"ip": "123.123.123"}
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
+    def test_url(self):
+        schema = {"url": url}
+        name = "my_object"
+        object = {"url": "https://google.com"}
+        valid = validate(schema, object, name, strict=True)
+        self.assertTrue(valid == "")
+
+        object = {"url": "https://google.com?search=chatgpt"}
+        valid = validate(schema, object, name, strict=True)
+        self.assertTrue(valid == "")
+
+        object = {"url": "https://user:pass@google.com?search=chatgpt"}
+        valid = validate(schema, object, name, strict=True)
+        self.assertTrue(valid == "")
+
+        object = {"url": "google.com"}
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")

@@ -1,4 +1,6 @@
-import re, types
+import re
+import types
+import urllib.parse
 
 from email_validator import validate_email, EmailNotValidError
 
@@ -21,16 +23,6 @@ class union:
             else:
                 messages.append(message)
         return " and ".join(messages)
-
-
-class email:
-    @staticmethod
-    def __validate__(object, name, strict=False):
-        try:
-            validate_email(object, check_deliverability=False)
-            return ""
-        except EmailNotValidError as e:
-            return f"{name} is not a valid email address: {str(e)}"
 
 
 class regex:
@@ -149,3 +141,28 @@ def validate(schema, object, name, strict=False):
     elif object != schema:
         return f"{name} is not equal to {repr(schema)}"
     return ""
+
+
+# Some predefined schemas
+
+
+class email:
+    @staticmethod
+    def __validate__(object, name, strict=False):
+        try:
+            validate_email(object, check_deliverability=False)
+            return ""
+        except EmailNotValidError as e:
+            return f"{name} is not a valid email address: {str(e)}"
+
+
+ip_address = regex(r"(?:[\d]+\.){3}(?:[\d]+)", name="ip_address")
+
+
+class url:
+    @staticmethod
+    def __validate__(object, name, strict=False):
+        result = urllib.parse.urlparse(object)
+        if all([result.scheme, result.netloc]):
+            return ""
+        return f"{name} is not of type url"
