@@ -12,8 +12,9 @@ class optional_key:
 
 
 class union:
-    def __init__(self, *schemas):
+    def __init__(self, *schemas, name=None):
         self.schemas = schemas
+        self.name = name
 
     def __validate__(self, object, name, strict=False):
         messages = []
@@ -23,7 +24,10 @@ class union:
                 return ""
             else:
                 messages.append(message)
-        return " and ".join(messages)
+        if self.name is not None:
+            return f"{name} (value:{object}) is not of type {self.name}"
+        else:
+            return " and ".join(messages)
 
 
 class regex:
@@ -146,7 +150,7 @@ def validate(schema, object, name, strict=False):
 
 # Some predefined schemas
 
-number = union(int, float)
+number = union(int, float, name="number")
 
 
 class email:

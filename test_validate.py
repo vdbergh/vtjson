@@ -253,7 +253,7 @@ class TestValidation(unittest.TestCase):
         valid = validate(schema, object, name, strict=True)
         self.assertTrue(valid == "")
         
-        object = {"number": "1"}
+        object = {"number": "a"}
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
