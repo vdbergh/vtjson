@@ -183,6 +183,10 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
+        object = {"ip": "123.123.123.1000000"}
+        valid = validate(schema, object, name, strict=True)
+        self.assertTrue(valid == "")
+
         object = {"ip": ""}
         valid = validate(schema, object, name, strict=True)
         print(valid)
@@ -209,6 +213,11 @@ class TestValidation(unittest.TestCase):
         self.assertTrue(valid == "")
 
         object = {"ip": "123.123.123"}
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = {"ip": "123.123.123.256"}
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")

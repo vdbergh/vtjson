@@ -1,3 +1,4 @@
+import ipaddress
 import re
 import types
 import urllib.parse
@@ -147,6 +148,7 @@ def validate(schema, object, name, strict=False):
 
 number = union(int, float)
 
+
 class email:
     @staticmethod
     def __validate__(object, name, strict=False):
@@ -157,7 +159,14 @@ class email:
             return f"{name} (value:{object}) is not a valid email address: {str(e)}"
 
 
-ip_address = regex(r"(?:[\d]+\.){3}(?:[\d]+)", name="ip_address")
+class ip_address:
+    @staticmethod
+    def __validate__(object, name, strict=False):
+        try:
+            ipaddress.ip_address(object)
+            return ""
+        except ValueError:
+            return f"{name} (value:{object}) is not of type ip_address"
 
 
 class url:
