@@ -126,7 +126,7 @@ class TestValidation(unittest.TestCase):
                     return f"{name} (value:{object}) is not of type str"
                 for c in object:
                     if not ("a" <= c <= "z"):
-                        return f"{c}, contained in {name}, is not a lower case letter"
+                        return f"{c}, contained in the string {name}, is not a lower case letter"
                 return ""
 
         schema = lower_case_string
