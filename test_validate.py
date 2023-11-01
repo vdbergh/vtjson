@@ -118,6 +118,21 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
+    def test_sequence(self):
+        schema = {'a': 1}
+        name = "my_object"
+        object = []
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+        
+        schema = []
+        name = "my_object"
+        object = (1,2)
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
     def test_validate(self):
         class lower_case_string:
             @staticmethod

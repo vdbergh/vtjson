@@ -6,15 +6,26 @@ import urllib.parse
 from email_validator import validate_email, EmailNotValidError
 
 
+class validate_meta(type):
+    def __instancecheck__(cls, object):
+        valid = validate(cls.__schema__, object, "", strict=cls.__strict__)
+        return valid == ""
+
+
+def make_type(schema, name=None, strict=False):
+    if name is None:
+        name = schema.__name__
+    return validate_meta(name, (), {"__schema__": schema, "__strict__": strict})
+
+
 class optional_key:
     def __init__(self, key):
         self.key = key
 
 
 class union:
-    def __init__(self, *schemas, name=None):
+    def __init__(self, *schemas):
         self.schemas = schemas
-        self.name = name
 
     def __validate__(self, object, name, strict=False):
         messages = []
@@ -24,10 +35,7 @@ class union:
                 return ""
             else:
                 messages.append(message)
-        if self.name is not None:
-            return f"{name} (value:{object}) is not of type {self.name}"
-        else:
-            return " and ".join(messages)
+        return " and ".join(messages)
 
 
 class regex:
@@ -67,7 +75,7 @@ def validate_type(schema, object, name, strict=False):
 def validate_sequence(schema, object, name, strict=False):
     assert isinstance(schema, list) or isinstance(schema, tuple)
     if type(schema) != type(object):
-        return f"{name} is not of type {type(schema).__name}"
+        return f"{name} is not of type {type(schema).__name__}"
     l = len(object)
     if strict and l != len(schema):
         return f"{name} does not have length {len(schema)}"
@@ -85,7 +93,7 @@ def validate_sequence(schema, object, name, strict=False):
 def validate_dict(schema, object, name, strict=False):
     assert isinstance(schema, dict)
     if type(schema) != type(object):
-        return f"{name} is not of type {type(schema).__name}"
+        return f"{name} is not of type {type(schema).__name__}"
     if strict:
         _k = _keys(schema)
         for x in object:
@@ -150,7 +158,7 @@ def validate(schema, object, name, strict=False):
 
 # Some predefined schemas
 
-number = union(int, float, name="number")
+number = make_type(union(int, float), "number")
 
 
 class email:
