@@ -77,16 +77,22 @@ class TestValidation(unittest.TestCase):
         global url
         schema = {"a": 1}
         t = make_type(schema, "example", strict=True)
+        self.assertTrue(t.__name__ == "example")
         self.assertFalse(isinstance({"a": 2}, t))
         self.assertTrue(isinstance({"a": 1}, t))
         self.assertFalse(isinstance({"a": 1, "b": 1}, t))
 
         t = make_type(schema, "example", strict=False)
+        self.assertTrue(t.__name__ == "example")
         self.assertTrue(isinstance({"a": 1, "b": 1}, t))
 
         url_ = make_type(url)
+        self.assertTrue(url_.__name__ == "url")
         self.assertFalse(isinstance("google.com", url_))
         self.assertTrue(isinstance("https://google.com", url_))
+
+        t = make_type({})
+        self.assertTrue(t.__name__ == "schema")
 
     def test_generics(self):
         schema = dict[str]
