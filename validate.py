@@ -16,7 +16,10 @@ class validate_meta(type):
 
 def make_type(schema, name=None, strict=False, debug=False):
     if name is None:
-        name = schema.__name__
+        if hasattr(schema, "__name__"):
+            name = schema.__name__
+        else:
+            name = "schema"
     return validate_meta(
         name, (), {"__schema__": schema, "__strict__": strict, "__debug__": debug}
     )
