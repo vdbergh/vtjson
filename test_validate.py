@@ -150,6 +150,50 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
+    def test_generics2(self):
+        schema = [str, ...]
+        name = "my_object"
+        object = ("a", "b")
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = ["a", "b"]
+        valid = validate(schema, object, name, strict=True)
+        self.assertTrue(valid == "")
+
+        object = ["a", 10]
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = ["a", ["b", "c"]]
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = [(str, int), ...]
+        object = [("a", 1), ("b", 2)]
+        valid = validate(schema, object, name, strict=True)
+        self.assertTrue(valid == "")
+
+        schema = [(str, int), ...]
+        object = [("a", 1), ("b", "c")]
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = [email, ...]
+        object = ["user1@example.com", "user2@example.com"]
+        valid = validate(schema, object, name, strict=True)
+        self.assertTrue(valid == "")
+
+        schema = [email, ...]
+        object = ["user1@example.com", "user00@user00.user00"]
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
     def test_sequence(self):
         schema = {"a": 1}
         name = "my_object"

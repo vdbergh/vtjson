@@ -81,20 +81,58 @@ def validate_type(schema, object, name, strict=False):
 
 def validate_sequence(schema, object, name, strict=False):
     assert isinstance(schema, list) or isinstance(schema, tuple)
+
+    def enum_ellipsis(l):
+        c = len(l)
+        last = object
+        has_ellipsis = False
+        optional = len(l)
+        if len(l) > 0 and l[-1] == ...:
+            has_ellipsis = True
+            optional = len(l) - 2
+
+        for i, ll in enumerate(l):
+            if ll == ...:
+                yield True, last
+            else:
+                last = ll
+                yield i >= optional, ll
+        while True:
+            if has_ellipsis:
+                yield True, last
+            else:
+                yield True, None
+
+    def enum(l):
+        for ll in l:
+            yield ll
+        while True:
+            yield None
+
     if type(schema) != type(object):
         return f"{name} is not of type {type(schema).__name__}"
-    l = len(object)
-    if strict and l != len(schema):
-        return f"{name} does not have length {len(schema)}"
-    for i in range(len(schema)):
+
+    for i, uv in enumerate(zip(enum_ellipsis(schema), enum(object))):
         name_ = f"{name}[{i}]"
-        if i >= l:
-            return f"{name_} does not exist"
+        u, v = uv
+        o, u = u
+        if u is None and v is None:
+            return ""
+        elif u is None:
+            if strict:
+                return f"{name_} is not in the schema"
+            else:
+                return ""
+        elif v is None:
+            if not o:
+                return f"{name_} is missing"
+            else:
+                return ""
         else:
-            ret = validate(schema[i], object[i], name_, strict=strict)
+            ret = validate(u, v, name_, strict=strict)
             if ret != "":
                 return ret
-    return ""
+    assert False
 
 
 def validate_dict(schema, object, name, strict=False):
