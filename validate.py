@@ -79,11 +79,10 @@ def validate_type(schema, object, name, strict=False):
         return ""
 
 
-def validate_sequence(schema, object, name, strict=False):
+def validate_sequence(schema, object_, name, strict=False):
     assert isinstance(schema, list) or isinstance(schema, tuple)
 
     def enum_ellipsis(l):
-        c = len(l)
         last = object
         has_ellipsis = False
         optional = len(l)
@@ -109,10 +108,10 @@ def validate_sequence(schema, object, name, strict=False):
         while True:
             yield None
 
-    if type(schema) != type(object):
+    if type(schema) != type(object_):
         return f"{name} is not of type {type(schema).__name__}"
 
-    for i, uv in enumerate(zip(enum_ellipsis(schema), enum(object))):
+    for i, uv in enumerate(zip(enum_ellipsis(schema), enum(object_))):
         name_ = f"{name}[{i}]"
         u, v = uv
         o, u = u

@@ -172,6 +172,45 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
+        schema = [...]
+        object = ["a", "b", 1, 2]
+        valid = validate(schema, object, name, strict=True)
+        self.assertTrue(valid == "")
+
+        schema = ["a", ...]
+        object = ["a", "b"]
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = []
+        valid = validate(schema, object, name, strict=True)
+        self.assertTrue(valid == "")
+
+        object = ["a", "a"]
+        valid = validate(schema, object, name, strict=True)
+        self.assertTrue(valid == "")
+
+        object = ["a", "a", "a", "a", "a"]
+        valid = validate(schema, object, name, strict=True)
+        self.assertTrue(valid == "")
+
+        schema = ["a", "b", ...]
+        object = ["a", "b"]
+        valid = validate(schema, object, name, strict=True)
+        self.assertTrue(valid == "")
+
+        schema = ["a", "b", "c", ...]
+        object = ["a", "b"]
+        valid = validate(schema, object, name, strict=True)
+        self.assertTrue(valid == "")
+
+        schema = ["a", "b", "c", "d", ...]
+        object = ["a", "b"]
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
         schema = [(str, int), ...]
         object = [("a", 1), ("b", 2)]
         valid = validate(schema, object, name, strict=True)
