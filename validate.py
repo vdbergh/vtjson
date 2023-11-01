@@ -8,14 +8,18 @@ from email_validator import validate_email, EmailNotValidError
 
 class validate_meta(type):
     def __instancecheck__(cls, object):
-        valid = validate(cls.__schema__, object, "", strict=cls.__strict__)
+        valid = validate(cls.__schema__, object, "object", strict=cls.__strict__)
+        if cls.__debug__ and valid != "":
+            print(f"DEBUG: {valid}")
         return valid == ""
 
 
-def make_type(schema, name=None, strict=False):
+def make_type(schema, name=None, strict=False, debug=False):
     if name is None:
         name = schema.__name__
-    return validate_meta(name, (), {"__schema__": schema, "__strict__": strict})
+    return validate_meta(
+        name, (), {"__schema__": schema, "__strict__": strict, "__debug__": debug}
+    )
 
 
 class optional_key:

@@ -1,6 +1,17 @@
 import unittest
 
-from validate import _keys, email, ip_address, number, optional_key, regex, url, union, validate
+from validate import (
+    _keys,
+    email,
+    ip_address,
+    make_type,
+    number,
+    optional_key,
+    regex,
+    url,
+    union,
+    validate,
+)
 
 
 class TestValidation(unittest.TestCase):
@@ -62,6 +73,21 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
+    def test_make_type(self):
+        global url
+        schema = {"a": 1}
+        t = make_type(schema, "example", strict=True)
+        self.assertFalse(isinstance({"a": 2}, t))
+        self.assertTrue(isinstance({"a": 1}, t))
+        self.assertFalse(isinstance({"a": 1, "b": 1}, t))
+
+        t = make_type(schema, "example", strict=False)
+        self.assertTrue(isinstance({"a": 1, "b": 1}, t))
+
+        url_ = make_type(url)
+        self.assertFalse(isinstance("google.com", url_))
+        self.assertTrue(isinstance("https://google.com", url_))
+
     def test_generics(self):
         schema = dict[str]
         name = "my_object"
@@ -119,16 +145,16 @@ class TestValidation(unittest.TestCase):
         self.assertFalse(valid == "")
 
     def test_sequence(self):
-        schema = {'a': 1}
+        schema = {"a": 1}
         name = "my_object"
         object = []
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
-        
+
         schema = []
         name = "my_object"
-        object = (1,2)
+        object = (1, 2)
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
@@ -263,16 +289,15 @@ class TestValidation(unittest.TestCase):
         object = {"number": 1}
         valid = validate(schema, object, name, strict=True)
         self.assertTrue(valid == "")
-        
+
         object = {"number": 1.0}
         valid = validate(schema, object, name, strict=True)
         self.assertTrue(valid == "")
-        
+
         object = {"number": "a"}
         valid = validate(schema, object, name, strict=True)
         print(valid)
         self.assertFalse(valid == "")
-        
 
 
 if __name__ == "__main__":
