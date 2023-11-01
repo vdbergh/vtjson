@@ -61,6 +61,25 @@ class TestValidation(unittest.TestCase):
         valid = validate(schema, object, name, strict=False)
         self.assertTrue(valid == "")
 
+        schema = ["a", "b"]
+        object = ["a"]
+        valid = validate(schema, object, name, strict=False)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = ["a", "b"]
+        valid = validate(schema, object, name, strict=False)
+        self.assertTrue(valid == "")
+        
+        object = ["a", "b", "c"]
+        valid = validate(schema, object, name, strict=False)
+        self.assertTrue(valid == "")
+        
+        object = ["a", "b", "c"]
+        valid = validate(schema, object, name, strict=True)
+        print(valid)
+        self.assertFalse(valid == "")
+
     def test_union(self):
         schema = {optional_key("a"): 1, "b": union(2, 3)}
         name = "my_object"
