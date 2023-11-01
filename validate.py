@@ -111,10 +111,14 @@ def validate_sequence(schema, object_, name, strict=False):
     if type(schema) != type(object_):
         return f"{name} is not of type {type(schema).__name__}"
 
-    for i, uv in enumerate(zip(enum_ellipsis(schema), enum(object_))):
+    sch = enum_ellipsis(schema)
+    obj = enum(object_)
+    i = 0
+    while True:
         name_ = f"{name}[{i}]"
-        u, v = uv
-        o, u = u
+        i += 1
+        o, u = next(sch)
+        v = next(obj)
         if u is None and v is None:
             return ""
         elif u is None:
