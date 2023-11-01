@@ -83,6 +83,8 @@ def validate_sequence(schema, object_, name, strict=False):
     assert isinstance(schema, list) or isinstance(schema, tuple)
 
     def enum_ellipsis(l):
+        """If the last entry is an ellipsis then the next to last
+        entry is repeated zero or more times."""
         last = object
         has_ellipsis = False
         optional = len(l)
