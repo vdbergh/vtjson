@@ -48,7 +48,10 @@ class union:
 class regex:
     def __init__(self, regex, name=None):
         self.regex = regex
-        self.name = name
+        if name is not None:
+            self.__name__ = name
+        else:
+            self.__name__ = f"regex({regex})"
         self.message = ""
         try:
             self.pattern = re.compile(regex)
@@ -61,10 +64,7 @@ class regex:
         if self.pattern.fullmatch(object):
             return ""
         else:
-            if self.name is None:
-                return f"{name} does not match the pattern {self.regex}"
-            else:
-                return f"{name} (value:{object}) is not of type {self.name}"
+            return f"{name} (value:{object}) is not of type {self.__name__}"
 
 
 def _keys(dict):
@@ -207,7 +207,7 @@ def validate_generics(schema, object, name, strict=False):
     return ""
 
 
-def validate(schema, object, name, strict=False):
+def validate(schema, object, name="instance", strict=False):
     if hasattr(schema, "__validate__"):  # duck typing
         return schema.__validate__(object, name, strict=strict)
     elif isinstance(schema, type):

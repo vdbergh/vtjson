@@ -136,6 +136,10 @@ class TestValidation(unittest.TestCase):
         self.assertFalse(isinstance("google.com", url_))
         self.assertTrue(isinstance("https://google.com", url_))
 
+        country_code = make_type(regex("[A-ZA-Z]", "country_code"), debug=DEBUG)
+        self.assertTrue(country_code.__name__ == "country_code")
+        self.assertFalse(isinstance("BEL", country_code))
+
         t = make_type({}, debug=DEBUG)
         self.assertTrue(t.__name__ == "schema")
 
@@ -278,6 +282,7 @@ class TestValidation(unittest.TestCase):
         schema = regex({}, name="test")
         name = "my_object"
         object = "dummy"
+        self.assertTrue(schema.__name__ == "test")
         valid = validate(schema, object, name, strict=True)
         log(valid)
         self.assertFalse(valid == "")
