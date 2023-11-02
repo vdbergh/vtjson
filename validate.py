@@ -14,7 +14,7 @@ class validate_meta(type):
         return valid == ""
 
 
-def make_type(schema, name=None, strict=False, debug=False):
+def make_type(schema, name=None, strict=True, debug=False):
     if name is None:
         if hasattr(schema, "__name__"):
             name = schema.__name__
@@ -34,7 +34,7 @@ class union:
     def __init__(self, *schemas):
         self.schemas = schemas
 
-    def __validate__(self, object, name, strict=False):
+    def __validate__(self, object, name, strict=True):
         messages = []
         for schema in self.schemas:
             message = validate(schema, object, name, strict=strict)
@@ -60,7 +60,7 @@ class regex:
                 f"{regex} (name: {name}) is an invalid regular expression: {str(e)}"
             )
 
-    def __validate__(self, object, name, strict=False):
+    def __validate__(self, object, name, strict=True):
         if self.message != "":
             return self.message
         try:
@@ -97,7 +97,7 @@ def validate_type(schema, object, name):
         return ""
 
 
-def validate_sequence(schema, object_, name, strict=False):
+def validate_sequence(schema, object_, name, strict=True):
     assert isinstance(schema, list) or isinstance(schema, tuple)
 
     def enum_ellipsis(l):
@@ -158,7 +158,7 @@ def validate_sequence(schema, object_, name, strict=False):
     assert False
 
 
-def validate_dict(schema, object, name, strict=False):
+def validate_dict(schema, object, name, strict=True):
     assert isinstance(schema, dict)
     if type(schema) != type(object):
         return f"{name} is not of type {type(schema).__name__}"
@@ -187,7 +187,7 @@ def validate_dict(schema, object, name, strict=False):
     return ""
 
 
-def validate_generics(schema, object, name, strict=False):
+def validate_generics(schema, object, name, strict=True):
     assert isinstance(schema, types.GenericAlias)
     root_type = schema.__origin__
     ret = validate_type(root_type, object, name, strict=strict)
@@ -212,7 +212,7 @@ def validate_generics(schema, object, name, strict=False):
     return ""
 
 
-def validate(schema, object, name="object", strict=False):
+def validate(schema, object, name="object", strict=True):
     if hasattr(schema, "__validate__"):  # duck typing
         return schema.__validate__(object, name, strict=strict)
     elif isinstance(schema, type):
@@ -233,7 +233,7 @@ number = make_type(union(int, float), "number")
 
 class email:
     @staticmethod
-    def __validate__(object, name, strict=False):
+    def __validate__(object, name, strict=True):
         try:
             validate_email(object, check_deliverability=False)
             return ""
@@ -243,7 +243,7 @@ class email:
 
 class ip_address:
     @staticmethod
-    def __validate__(object, name, strict=False):
+    def __validate__(object, name, strict=True):
         try:
             ipaddress.ip_address(object)
             return ""
@@ -253,7 +253,7 @@ class ip_address:
 
 class url:
     @staticmethod
-    def __validate__(object, name, strict=False):
+    def __validate__(object, name, strict=True):
         result = urllib.parse.urlparse(object)
         if all([result.scheme, result.netloc]):
             return ""
