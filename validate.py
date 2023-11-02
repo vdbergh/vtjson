@@ -53,7 +53,7 @@ class regex:
         try:
             self.pattern = re.compile(regex)
         except Exception as e:
-            self.message = f"{regex} is an invalid regular expression: {str(e)}"
+            self.message = f"{regex} (name: {name}) is an invalid regular expression: {str(e)}"
 
     def __validate__(self, object, name, strict=False):
         if self.message != "":

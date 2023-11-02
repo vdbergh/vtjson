@@ -256,7 +256,7 @@ class TestValidation(unittest.TestCase):
         self.assertTrue(valid == "")
 
     def test_regex(self):
-        schema = regex({})
+        schema = regex({}, name="test")
         name = "my_object"
         object = "dummy"
         valid = validate(schema, object, name, strict=True)
