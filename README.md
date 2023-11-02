@@ -200,7 +200,7 @@ schema = {
   If the validation is succesful then the return value `message` is the empty string. Otherwise it contains an explanation what went wrong.
   The full signature of `validate` is
   ```python
-  validate(schema, object, name="instance", strict=False)
+  validate(schema, object, name="object", strict=True)
   ```
   The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
 - A cool feature of the package is that you can transform a schema into a genuine Python type via
@@ -214,12 +214,12 @@ schema = {
   The drawback, compared to using `validate` directly, is that you get no feedback when validation fails. You can get it back as a console debug message via the optional `debug` argument to `make_type`.
   The full signature of `make_type` is
   ```python
-  make_type(schema, name=None, strict=False, debug=False)
+  make_type(schema, name=None, strict=True, debug=False)
   ```
 - A schema can be, in order of precedence:
 - - An object having a `__validate__` attribute with signature
     ```python
-    __validate__(self, object, name, strict=False)
+    __validate__(self, object, name, strict)
     ```
     This is how internally the `union` and `regex` schemas are implemented.
   - A Python type. In that case validation is simply done by checking membership.
