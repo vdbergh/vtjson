@@ -10,6 +10,7 @@ Validation is done according to a "schema". The format of a schema is more or le
 Below is the schema of the run object in the mongodb database underlying the Fishtest web application https://tests.stockfishchess.org/tests
 
 ```python
+from datetime import datetime
 from bson.objectid import ObjectId
 from numbers import Real  # matches int and float
 from fishtest.validate import ip_address, regex, union, url
