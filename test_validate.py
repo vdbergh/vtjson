@@ -310,9 +310,15 @@ class TestValidation(unittest.TestCase):
         self.assertTrue(valid == "")
 
     def test_regex(self):
+        schema = regex({})
+        name = "my_object"
+        object = "dummy"
+        valid = validate(schema, object, name, strict=True)
+        log(valid)
+        self.assertFalse(valid == "")
+        
         ip_address = regex(r"(?:[\d]+\.){3}(?:[\d]+)", name="ip_address")
         schema = {"ip": ip_address}
-        name = "my_object"
         object = {"ip": "123.123.123.123"}
         valid = validate(schema, object, name, strict=True)
         self.assertTrue(valid == "")

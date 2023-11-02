@@ -48,10 +48,18 @@ class union:
 class regex:
     def __init__(self, regex, name=None):
         self.regex = regex
-        self.pattern = re.compile(regex)
         self.name = name
+        self.message = ""
+        try:
+            self.pattern = re.compile(regex)
+        except Exception as e:
+            self.message = f"{regex} is an invalid regular expression: {str(e)}"
+            
+
 
     def __validate__(self, object, name, strict=False):
+        if self.message != "":
+            return self.message
         if self.pattern.fullmatch(object):
             return ""
         else:
