@@ -3,7 +3,7 @@ A package to validate json like data
 
 ## Schemas
 
-The format of a schema is more or less self explanatory as the following example shows,
+Validation is done according to a "schema". The format of a schema is more or less self explanatory as the following example shows.
 
 ### Example
 
