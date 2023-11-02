@@ -197,7 +197,7 @@ schema = {
   ```python
   message = validate(schema, object)
   ```  
-  If the validation is succesful then the return value `message` is the empty string. Otherwise it contains an explanation what when wrong.
+  If the validation is succesful then the return value `message` is the empty string. Otherwise it contains an explanation what went wrong.
   The full signature of `validate` is
   ```python
   validate(schema, object, name="instance", strict=False)
