@@ -3,9 +3,14 @@ A package to validate json like data
 
 ## Schemas
 
-The format of a schema is more or less self explanatory. So let's give an example. Below is the schema of the run object in the mongodb database underlying the Fishtest web application https://tests.stockfishchess.org/tests
+The format of a schema is more or less self explanatory as the following example shows,
+
+### Example
+
+Below is the schema of the run object in the mongodb database underlying the Fishtest web application https://tests.stockfishchess.org/tests
 
 ```python
+from bson.objectid import ObjectId
 from numbers import Real  # matches int and float
 from fishtest.validate import ip_address, regex, union, url
 
