@@ -8,8 +8,8 @@ from validate import (
     number,
     optional_key,
     regex,
-    url,
     union,
+    url,
     validate,
 )
 

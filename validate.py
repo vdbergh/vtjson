@@ -3,7 +3,7 @@ import re
 import types
 import urllib.parse
 
-from email_validator import validate_email, EmailNotValidError
+from email_validator import EmailNotValidError, validate_email
 
 
 class validate_meta(type):
