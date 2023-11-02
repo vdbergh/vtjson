@@ -223,6 +223,6 @@ schema = {
     ```
     This is how internally the `union` and `regex` schemas are implemented.
   - A Python type. In that case validation is simply done by checking membership.
-  - A `list` or a `tuple`. Validation is done recursively.
-  - A dictionary. Validation is done recursively for the items.
+  - A `list` or a `tuple`. Validation is done for each of the entries.
+  - A dictionary. Validation is done for the each of the items.
   - An arbitrary Python object. Validation is done by checking equality of the schema and the object.
