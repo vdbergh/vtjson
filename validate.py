@@ -72,6 +72,8 @@ def _keys(dict):
     for k in dict:
         if isinstance(k, optional_key):
             ret.add(k.key)
+        elif isinstance(k, str) and len(k)>0 and k[-1] == "?":
+            ret.add(k[:-1])
         else:
             ret.add(k)
     return ret
@@ -164,6 +166,10 @@ def validate_dict(schema, object, name, strict=False):
         k_ = k
         if isinstance(k, optional_key):
             k_ = k.key
+            if k_ not in object:
+                continue
+        if isinstance(k, str) and len(k)>0 and k[-1] == "?":
+            k_ = k[:-1]
             if k_ not in object:
                 continue
         name_ = f"{name}['{k_}']"

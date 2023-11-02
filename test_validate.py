@@ -68,6 +68,25 @@ class TestValidation(unittest.TestCase):
         valid = validate(schema, object, name, strict=False)
         self.assertTrue(valid == "")
 
+        schema = {"a?": 1, "b": 2}
+        name = "my_object"
+        object = {"b": 2, "c": 3}
+        valid = validate(schema, object, name, strict=False)
+        self.assertTrue(valid == "")
+
+        object = {"a": 1, "c": 3}
+        valid = validate(schema, object, name, strict=False)
+        log(valid)
+        self.assertFalse(valid == "")
+
+        object = {"a": 1, "b": 2}
+        valid = validate(schema, object, name, strict=False)
+        self.assertTrue(valid == "")
+
+        object = {"b": 2}
+        valid = validate(schema, object, name, strict=False)
+        self.assertTrue(valid == "")
+
         schema = ["a", "b"]
         object = ["a"]
         valid = validate(schema, object, name, strict=False)
