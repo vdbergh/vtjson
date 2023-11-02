@@ -13,6 +13,11 @@ from validate import (
     validate,
 )
 
+DEBUG = True
+
+def log(*l, debug=DEBUG):
+    if debug:
+        print(*l)
 
 class TestValidation(unittest.TestCase):
     def test_keys(self):
@@ -25,12 +30,12 @@ class TestValidation(unittest.TestCase):
         name = "my_object"
         object = {"b": 2, "c": 3}
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         object = {"a": 1, "c": 3}
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         object = {"a": 1, "b": 2}
@@ -50,7 +55,7 @@ class TestValidation(unittest.TestCase):
 
         object = {"a": 1, "c": 3}
         valid = validate(schema, object, name, strict=False)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         object = {"a": 1, "b": 2}
@@ -64,7 +69,7 @@ class TestValidation(unittest.TestCase):
         schema = ["a", "b"]
         object = ["a"]
         valid = validate(schema, object, name, strict=False)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         object = ["a", "b"]
@@ -77,7 +82,7 @@ class TestValidation(unittest.TestCase):
         
         object = ["a", "b", "c"]
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
     def test_union(self):
@@ -89,28 +94,28 @@ class TestValidation(unittest.TestCase):
 
         object = {"b": 4, "c": 3}
         valid = validate(schema, object, name, strict=False)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
     def test_make_type(self):
         global url
         schema = {"a": 1}
-        t = make_type(schema, "example", strict=True)
+        t = make_type(schema, "example", strict=True, debug=DEBUG)
         self.assertTrue(t.__name__ == "example")
         self.assertFalse(isinstance({"a": 2}, t))
         self.assertTrue(isinstance({"a": 1}, t))
         self.assertFalse(isinstance({"a": 1, "b": 1}, t))
 
-        t = make_type(schema, "example", strict=False)
+        t = make_type(schema, "example", strict=False, debug=DEBUG)
         self.assertTrue(t.__name__ == "example")
         self.assertTrue(isinstance({"a": 1, "b": 1}, t))
 
-        url_ = make_type(url)
+        url_ = make_type(url, debug=DEBUG)
         self.assertTrue(url_.__name__ == "url")
         self.assertFalse(isinstance("google.com", url_))
         self.assertTrue(isinstance("https://google.com", url_))
 
-        t = make_type({})
+        t = make_type({}, debug=DEBUG)
         self.assertTrue(t.__name__ == "schema")
 
     def test_generics(self):
@@ -118,19 +123,19 @@ class TestValidation(unittest.TestCase):
         name = "my_object"
         object = {}
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         schema = list[tuple()]
         object = ["a", "b"]
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         schema = list[str]
         object = ("a", "b")
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         object = ["a", "b"]
@@ -139,12 +144,12 @@ class TestValidation(unittest.TestCase):
 
         object = ["a", 10]
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         object = ["a", ["b", "c"]]
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         schema = list[(str, int)]
@@ -155,7 +160,7 @@ class TestValidation(unittest.TestCase):
         schema = list[(str, int)]
         object = [("a", 1), ("b", "c")]
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         schema = list[email]
@@ -166,7 +171,7 @@ class TestValidation(unittest.TestCase):
         schema = list[email]
         object = ["user1@example.com", "user00@user00.user00"]
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
     def test_generics2(self):
@@ -174,7 +179,7 @@ class TestValidation(unittest.TestCase):
         name = "my_object"
         object = ("a", "b")
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         object = ["a", "b"]
@@ -183,12 +188,12 @@ class TestValidation(unittest.TestCase):
 
         object = ["a", 10]
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         object = ["a", ["b", "c"]]
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         schema = [...]
@@ -199,7 +204,7 @@ class TestValidation(unittest.TestCase):
         schema = ["a", ...]
         object = ["a", "b"]
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         object = []
@@ -227,7 +232,7 @@ class TestValidation(unittest.TestCase):
         schema = ["a", "b", "c", "d", ...]
         object = ["a", "b"]
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         schema = [(str, int), ...]
@@ -238,7 +243,7 @@ class TestValidation(unittest.TestCase):
         schema = [(str, int), ...]
         object = [("a", 1), ("b", "c")]
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         schema = [email, ...]
@@ -249,7 +254,7 @@ class TestValidation(unittest.TestCase):
         schema = [email, ...]
         object = ["user1@example.com", "user00@user00.user00"]
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
     def test_sequence(self):
@@ -257,14 +262,14 @@ class TestValidation(unittest.TestCase):
         name = "my_object"
         object = []
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         schema = []
         name = "my_object"
         object = (1, 2)
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
     def test_validate(self):
@@ -282,17 +287,17 @@ class TestValidation(unittest.TestCase):
         object = 1
         name = "my_object"
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         object = "aA"
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         object = "aA"
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         object = "ab"
@@ -314,22 +319,22 @@ class TestValidation(unittest.TestCase):
 
         object = {"ip": "123.123.123"}
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         object = {"ip": "123.123.123.abc"}
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         object = {"ip": "123.123..123"}
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         object = {"ip": "123.123.123.123.123"}
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         object = {"ip": "123.123.123.1000000"}
@@ -338,7 +343,7 @@ class TestValidation(unittest.TestCase):
 
         object = {"ip": ""}
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
     def test_email(self):
@@ -346,12 +351,12 @@ class TestValidation(unittest.TestCase):
         object = "user00@user00.com"
         name = "my_object"
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertTrue(valid == "")
 
         object = "user00@user00.user00"
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
     def test_ip_address(self):
@@ -363,12 +368,12 @@ class TestValidation(unittest.TestCase):
 
         object = {"ip": "123.123.123"}
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
         object = {"ip": "123.123.123.256"}
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
     def test_url(self):
@@ -388,7 +393,7 @@ class TestValidation(unittest.TestCase):
 
         object = {"url": "google.com"}
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
     def test_number(self):
@@ -404,7 +409,7 @@ class TestValidation(unittest.TestCase):
 
         object = {"number": "a"}
         valid = validate(schema, object, name, strict=True)
-        print(valid)
+        log(valid)
         self.assertFalse(valid == "")
 
 
