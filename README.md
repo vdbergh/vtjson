@@ -186,7 +186,7 @@ schema = {
 ## Comments
 
 - A key ending in "?" represents an optional key. The corresponding schema (the item the key points to) will only be used for validation when the key is present in the object that should be validated.
-- If in a list/tuple the last entry is `...` (`ellipsis`) it means that the next to last entry will be repeated zero or more times. Example: `[str, ...]`.
+- If in a list/tuple the last entry is `...` (`ellipsis`) it means that the next to last entry will be repeated zero or more times. For example `[str, ...]` represents a list of strings.
 - An object matches `union(schema1, schema2)` if it matches `schema1` or `schema2`.
 - Strings can be validated using regular expressions.
 - The package contains some predefined schemas. Currently these are `email`, `ip_address` and `url`.
