@@ -84,7 +84,7 @@ def _keys(dict):
     return ret
 
 
-def validate_type(schema, object, name, strict=False):
+def validate_type(schema, object, name):
     assert isinstance(schema, type)
     b = False
     try:
@@ -216,7 +216,7 @@ def validate(schema, object, name="object", strict=False):
     if hasattr(schema, "__validate__"):  # duck typing
         return schema.__validate__(object, name, strict=strict)
     elif isinstance(schema, type):
-        return validate_type(schema, object, name, strict=strict)
+        return validate_type(schema, object, name)
     elif isinstance(schema, list) or isinstance(schema, tuple):
         return validate_sequence(schema, object, name, strict=strict)
     elif isinstance(schema, dict):
