@@ -189,7 +189,7 @@ schema = {
 - An object matches `union(schema1, schema2)` if it matches `schema1` or `schema2`.
 - Strings can be validated using regular expressions.
 - The package contains some predefined schemas. Currently these are `email`, `ip_address` and `url`.
-- The schema accepts tuples, even though these are not valid json. In fact the schema can be an arbitrary Python object.
+- The schema accepts tuples, even though these are not valid json. In fact the schema is an arbitrary Python object (see below).
 
 ## Usage
 - To validate an object against a schema one can simply do
@@ -215,12 +215,12 @@ schema = {
   ```python
   make_type(schema, name=None, strict=False, debug=False)
   ```
-- A schema can be either
+- A schema can be, in order of precedence:
 - - An object having a `__validate__` attribute with signature
     ```python
     __validate__(self, object, name, strict=False)
     ```
   - A Python type. In that case validation is simply done by checking membership.
   - A `list` or a `tuple`. Validation is done recursively.
-  - A dictionary. Validation is done recursively.
-    
+  - A dictionary. Validation is done recursively for the items.
+  - An arbitrary Python object. Validation is done by checking equality of the schema and the object.
