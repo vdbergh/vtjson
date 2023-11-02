@@ -212,7 +212,7 @@ def validate_generics(schema, object, name, strict=False):
     return ""
 
 
-def validate(schema, object, name="instance", strict=False):
+def validate(schema, object, name="object", strict=False):
     if hasattr(schema, "__validate__"):  # duck typing
         return schema.__validate__(object, name, strict=strict)
     elif isinstance(schema, type):
