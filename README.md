@@ -190,7 +190,7 @@ schema = {
 - An object matches `union(schema1, schema2)` if it matches `schema1` or `schema2`.
 - Strings can be validated using regular expressions.
 - The package contains some predefined schemas. Currently these are `email`, `ip_address` and `url`.
-- The schema accepts tuples, even though these are not valid json. In fact the schema is an arbitrary Python object (see below).
+- The schema accepts tuples, even though these are not valid json. In fact a schema is an arbitrary Python object (see below).
 
 ## Usage
 - To validate an object against a schema one can simply do
