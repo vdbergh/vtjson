@@ -54,8 +54,6 @@ class regex:
             self.pattern = re.compile(regex)
         except Exception as e:
             self.message = f"{regex} is an invalid regular expression: {str(e)}"
-            
-
 
     def __validate__(self, object, name, strict=False):
         if self.message != "":
@@ -81,6 +79,11 @@ def _keys(dict):
 
 def validate_type(schema, object, name, strict=False):
     assert isinstance(schema, type)
+    b = False
+    try:
+        b = isinstance(object, schema)
+    except Exception as e:
+        return f"{schema} is not a valid type"
     if not isinstance(object, schema):
         return f"{name} (value:{object}) is not of type {schema.__name__}"
     else:
@@ -201,8 +204,6 @@ def validate_generics(schema, object, name, strict=False):
 def validate(schema, object, name, strict=False):
     if hasattr(schema, "__validate__"):  # duck typing
         return schema.__validate__(object, name, strict=strict)
-    elif isinstance(schema, types.GenericAlias):
-        return validate_generics(schema, object, name, strict=strict)
     elif isinstance(schema, type):
         return validate_type(schema, object, name, strict=strict)
     elif isinstance(schema, list) or isinstance(schema, tuple):

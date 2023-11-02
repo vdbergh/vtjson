@@ -15,9 +15,11 @@ from validate import (
 
 DEBUG = True
 
+
 def log(*l, debug=DEBUG):
     if debug:
         print(*l)
+
 
 class TestValidation(unittest.TestCase):
     def test_keys(self):
@@ -75,11 +77,11 @@ class TestValidation(unittest.TestCase):
         object = ["a", "b"]
         valid = validate(schema, object, name, strict=False)
         self.assertTrue(valid == "")
-        
+
         object = ["a", "b", "c"]
         valid = validate(schema, object, name, strict=False)
         self.assertTrue(valid == "")
-        
+
         object = ["a", "b", "c"]
         valid = validate(schema, object, name, strict=True)
         log(valid)
@@ -119,62 +121,6 @@ class TestValidation(unittest.TestCase):
         self.assertTrue(t.__name__ == "schema")
 
     def test_generics(self):
-        schema = dict[str]
-        name = "my_object"
-        object = {}
-        valid = validate(schema, object, name, strict=True)
-        log(valid)
-        self.assertFalse(valid == "")
-
-        schema = list[tuple()]
-        object = ["a", "b"]
-        valid = validate(schema, object, name, strict=True)
-        log(valid)
-        self.assertFalse(valid == "")
-
-        schema = list[str]
-        object = ("a", "b")
-        valid = validate(schema, object, name, strict=True)
-        log(valid)
-        self.assertFalse(valid == "")
-
-        object = ["a", "b"]
-        valid = validate(schema, object, name, strict=True)
-        self.assertTrue(valid == "")
-
-        object = ["a", 10]
-        valid = validate(schema, object, name, strict=True)
-        log(valid)
-        self.assertFalse(valid == "")
-
-        object = ["a", ["b", "c"]]
-        valid = validate(schema, object, name, strict=True)
-        log(valid)
-        self.assertFalse(valid == "")
-
-        schema = list[(str, int)]
-        object = [("a", 1), ("b", 2)]
-        valid = validate(schema, object, name, strict=True)
-        self.assertTrue(valid == "")
-
-        schema = list[(str, int)]
-        object = [("a", 1), ("b", "c")]
-        valid = validate(schema, object, name, strict=True)
-        log(valid)
-        self.assertFalse(valid == "")
-
-        schema = list[email]
-        object = ["user1@example.com", "user2@example.com"]
-        valid = validate(schema, object, name, strict=True)
-        self.assertTrue(valid == "")
-
-        schema = list[email]
-        object = ["user1@example.com", "user00@user00.user00"]
-        valid = validate(schema, object, name, strict=True)
-        log(valid)
-        self.assertFalse(valid == "")
-
-    def test_generics2(self):
         schema = [str, ...]
         name = "my_object"
         object = ("a", "b")
@@ -316,7 +262,7 @@ class TestValidation(unittest.TestCase):
         valid = validate(schema, object, name, strict=True)
         log(valid)
         self.assertFalse(valid == "")
-        
+
         ip_address = regex(r"(?:[\d]+\.){3}(?:[\d]+)", name="ip_address")
         schema = {"ip": ip_address}
         object = {"ip": "123.123.123.123"}
