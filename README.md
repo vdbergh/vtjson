@@ -13,7 +13,7 @@ Below is the schema of the run object in the mongodb database underlying the Fis
 from datetime import datetime
 from bson.objectid import ObjectId
 from numbers import Real  # matches int and float
-from fishtest.validate import ip_address, regex, union, url
+from validate import ip_address, regex, union, url
 
 net_name = regex("nn-[a-z0-9]{12}.nnue", name="net_name")
 tc = regex(r"^([1-9]\d*/)?\d+(\.\d+)?(\+\d+(\.\d+)?)?$", name="tc")
