@@ -61,10 +61,13 @@ class regex:
     def __validate__(self, object, name, strict=False):
         if self.message != "":
             return self.message
-        if self.pattern.fullmatch(object):
-            return ""
-        else:
-            return f"{name} (value:{object}) is not of type {self.__name__}"
+        try:
+            if self.pattern.fullmatch(object):
+                return ""
+        except:
+            pass
+
+        return f"{name} (value:{object}) is not of type {self.__name__}"
 
 
 def _keys(dict):
