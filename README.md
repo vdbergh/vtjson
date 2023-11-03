@@ -16,7 +16,7 @@ from numbers import Real  # matches int and float
 from validate import ip_address, regex, union, url
 
 net_name = regex("nn-[a-z0-9]{12}.nnue", name="net_name")
-tc = regex(r"^([1-9]\d*/)?\d+(\.\d+)?(\+\d+(\.\d+)?)?$", name="tc")
+tc = regex(r"([1-9]\d*/)?\d+(\.\d+)?(\+\d+(\.\d+)?)?", name="tc")
 str_int = regex(r"[1-9]\d*", name="str_int")
 sha = regex(r"[a-f0-9]{40}", name="sha")
 country_code = regex(r"[A-Z][A-Z]", name="country_code")
