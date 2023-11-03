@@ -111,7 +111,7 @@ def validate_sequence(schema, object_, name, strict):
             optional = len(l) - 2
 
         for i, ll in enumerate(l):
-            if ll == ...:
+            if ll == ... and i == len(l) - 1:
                 yield True, last
             else:
                 last = ll
