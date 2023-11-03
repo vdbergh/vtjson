@@ -190,20 +190,20 @@ schema = {
 - An object matches `union(schema1, schema2)` if it matches `schema1` or `schema2`.
 - Strings can be validated using regular expressions.
 - The package contains some predefined schemas. Currently these are `email`, `ip_address` and `url`.
-- The schema accepts tuples, even though these are not valid json. In fact a schema is an arbitrary Python object (see below).
+- The schema accepts tuples, even though these are not valid json. In fact any Python object is a valid schema (see below).
 
 ## Usage
 - To validate an object against a schema one can simply do
   ```python
-  message = validate(schema, object)
+  explanation = validate(schema, object)
   ```  
-  If the validation is succesful then the return value `message` is the empty string. Otherwise it contains an explanation what went wrong.
+  If the validation is succesful then the return value is the empty string. Otherwise it contains an explanation what went wrong.
   The full signature of `validate` is
   ```python
   validate(schema, object, name="object", strict=True)
   ```
   The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
-- A cool feature of the package is that you can transform a schema into a genuine Python type via
+- A cool feature of the package is that one can can transform a schema into a genuine Python type via
   ```python
   t = make_type(schema)
   ```
@@ -211,18 +211,18 @@ schema = {
   ```python
   isinstance(object, t)
   ```
-  The drawback, compared to using `validate` directly, is that you get no feedback when validation fails. You can get it back as a console debug message via the optional `debug` argument to `make_type`.
+  The drawback, compared to using `validate` directly, is that there is no feedback when validation fails. You can get it back as a console debug message via the optional `debug` argument to `make_type`.
   The full signature of `make_type` is
   ```python
   make_type(schema, name=None, strict=True, debug=False)
   ```
 - A schema can be, in order of precedence:
-- - An object having a `__validate__` attribute with signature
+  - An object having a `__validate__` attribute with signature
     ```python
     __validate__(self, object, name, strict)
     ```
-    This is how internally the `union` and `regex` schemas are implemented.
-  - A Python type. In that case validation is simply done by checking membership.
+    For example this is how the `union` and `regex` schemas are implemented internally.
+  - A Python type. In that case validation is done by checking membership.
   - A `list` or a `tuple`. Validation is done for each of the entries.
   - A dictionary. Validation is done for the each of the items.
   - An arbitrary Python object. Validation is done by checking equality of the schema and the object.
