@@ -6,7 +6,6 @@ from validate import (
     ip_address,
     make_type,
     number,
-    optional_key,
     regex,
     union,
     url,
@@ -23,12 +22,12 @@ def log(*l, debug=DEBUG):
 
 class TestValidation(unittest.TestCase):
     def test_keys(self):
-        schema = {optional_key("a"): 1, "b": 2, optional_key("c"): 3}
+        schema = {"a?": 1, "b": 2, "c?": 3}
         keys = _keys(schema)
         self.assertEqual(keys, {"a", "b", "c"})
 
     def test_strict(self):
-        schema = {optional_key("a"): 1, "b": 2}
+        schema = {"a?": 1, "b": 2}
         object = {"b": 2, "c": 3}
         valid = validate(schema, object)
         log(valid)
@@ -48,7 +47,7 @@ class TestValidation(unittest.TestCase):
         self.assertTrue(valid == "")
 
     def test_missing_keys(self):
-        schema = {optional_key("a"): 1, "b": 2}
+        schema = {"a?": 1, "b": 2}
         object = {"b": 2, "c": 3}
         valid = validate(schema, object, strict=False)
         self.assertTrue(valid == "")
@@ -104,7 +103,7 @@ class TestValidation(unittest.TestCase):
         self.assertFalse(valid == "")
 
     def test_union(self):
-        schema = {optional_key("a"): 1, "b": union(2, 3)}
+        schema = {"a?": 1, "b": union(2, 3)}
         object = {"b": 2, "c": 3}
         valid = validate(schema, object, strict=False)
         self.assertTrue(valid == "")
