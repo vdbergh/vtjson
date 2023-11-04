@@ -26,13 +26,13 @@ jobs:
         id: flake8
         continue-on-error: true
         run: |
-          pipx run flake8 --count --statistics --max-line-length=88 --exclude worker/packages .
+          pipx run flake8 --count --statistics --max-line-length=88  .
 
       - name: Run black
         id: black
         continue-on-error: true
         run: |
-          pipx run black --check --diff --exclude="packages" .
+          pipx run black --check --diff  .
 
       - name: Run isort
         id: isort
@@ -42,14 +42,14 @@ jobs:
 
       - name: Check linters and formatters status
         run: |
-          if [[ "${{ steps.flake8.outcome }}" == "success" ]]; then echo "✔️ flake8"; else echo "❌ flake8"; fi
-          if [[ "${{ steps.black.outcome }}" == "success" ]]; then echo "✔️ black"; else echo "❌ black"; fi
-          if [[ "${{ steps.isort.outcome }}" == "success" ]]; then echo "✔️ isort"; else echo "❌ isort"; fi
-          if [[ "${{ steps.black.outcome }}" == "failure" || "${{ steps.isort.outcome }}" == "failure"; then exit 1; fi
+          if [[ "${{ steps.flake8.outcome }}" == "success" ]]; then echo "✔ flake8"; else echo "❌ flake8"; fi
+          if [[ "${{ steps.black.outcome }}" == "success" ]]; then echo "✔ black"; else echo "❌ black"; fi
+          if [[ "${{ steps.isort.outcome }}" == "success" ]]; then echo "✔ isort"; else echo "❌ isort"; fi
+          if [[ "${{ steps.black.outcome }}" == "failure" || "${{ steps.isort.outcome }}" == "failure" ]]; then exit 1; fi
 
       - name: Print formatting instructions
         if: ${{ failure() }}
         run: |
           echo "Run the following commands to format the code:"
-          echo "black --exclude='env|packages' ."
+          echo "black --exclude='env' ."
           echo "isort --profile black --skip env --skip venv ."
