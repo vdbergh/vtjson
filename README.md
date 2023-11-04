@@ -1,9 +1,9 @@
 # validate
-A package to validate json like data
+A package for validating JSON like Python objects.
 
 ## Schemas
 
-Validation is done according to a "schema". The format of a schema is more or less self explanatory as the following example shows.
+Validation of JSON like Python objects is done according to a "schema" which is somewhat inspired by a typescript type. The format of a schema is more or less self explanatory as the following example shows.
 
 ### Example
 
@@ -185,12 +185,12 @@ schema = {
 ```
 ## Comments
 
-- A key ending in "?" represents an optional key. The corresponding schema (the item the key points to) will only be used for validation when the key is present in the object that should be validated.
-- If in a list/tuple the last entry is `...` (`ellipsis`) it means that the next to last entry will be repeated zero or more times. For example `[str, ...]` represents a list of strings.
-- An object matches `union(schema1, schema2)` if it matches `schema1` or `schema2`.
-- Strings can be validated using regular expressions.
+- As in typescript, a key ending in "?" represents an optional key. The corresponding schema (the item the key points to) will only be used for validation when the key is present in the object that should be validated.
+- If in a list/tuple the last entry is `...` (`ellipsis`) it means that the next to last entry will be repeated zero or more times. In this way generic types can be created. For example the schema `[str, ...]` represents a list of strings.
+- An object matches the schema `union(schema1, schema2)` if it matches `schema1` or `schema2`.
+- Strings can be validated using regular expression schemas which are created by `regex(pattern)`. An optional `name` argument may be used to give the regular expression a descriptive name.
 - The package contains some predefined schemas. Currently these are `email`, `ip_address` and `url`.
-- The schema accepts tuples, even though these are not valid json. In fact any Python object is a valid schema (see below).
+- The schema accepts tuples, even though these are not valid JSON. In fact any Python object is a valid schema (see below).
 
 ## Usage
 - To validate an object against a schema one can simply do
