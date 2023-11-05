@@ -129,7 +129,7 @@ def validate_sequence(schema, object, name, strict):
     if type(schema) is not type(object):
         return f"{name} is not of type {type(schema).__name__}"
     L = len(object)
-    schema = ellipsis_list(schema, length=len(object))
+    schema = ellipsis_list(schema, length=L)
     if strict and L != len(schema):
         return f"{name} does not have length {len(schema)}"
     for i in range(len(schema)):
@@ -137,7 +137,7 @@ def validate_sequence(schema, object, name, strict):
         if i >= L:
             return f"{name_} does not exist"
         else:
-            ret = validate(schema[i], object[i], name_, strict=strict)
+            ret = validate(schema[i], object[i], name=name_, strict=strict)
             if ret != "":
                 return ret
     return ""
