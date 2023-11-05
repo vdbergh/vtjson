@@ -226,6 +226,18 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
+        schema = ["a", "b", None, "c"]
+        object = ["a", "b"]
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = ["a", "b"]
+        object = ["a", "b", None, "c"]
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
     def test_validate(self):
         class lower_case_string:
             @staticmethod
@@ -234,7 +246,8 @@ class TestValidation(unittest.TestCase):
                     return f"{name} (value:{object}) is not of type str"
                 for c in object:
                     if not ("a" <= c <= "z"):
-                        return f"{c}, contained in the string {name}, is not a lower case letter"
+                        return f"{c}, contained in the string {name}, \
+is not a lower case letter"
                 return ""
 
         schema = lower_case_string
