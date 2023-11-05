@@ -4,6 +4,35 @@ import urllib.parse
 
 from email_validator import EmailNotValidError, validate_email
 
+class ellipsis_list:
+    def __init__(self, L, length=0):
+        self.L = L
+        self.length = length
+        self.has_ellipsis = False
+        if len(L) > 0 and L[-1] == ...:
+            self.has_ellipsis = True
+            if len(L) >= 2:
+                self.last = L[-2]
+            else:
+                self.last = object
+
+    def __len__(self):
+        if not self.has_ellipsis:
+            return len(self.L)
+        elif self.length <= len(self.L) - 2:
+                return len(self.L) - 2
+        else:
+            return self.length
+
+    def __getitem__(self, index):
+        if not self.has_ellipsis or index < len(self.L) - 2:
+            return self.L[index]
+        elif index < self.length:
+            return self.last
+        else:
+            raise IndexError(index)
+        
+
 
 class validate_meta(type):
     def __instancecheck__(cls, object):
@@ -101,18 +130,18 @@ def validate_sequence(schema, object_, name, strict):
     OPTIONAL = 2
     EOL = 3
 
-    def enum_ellipsis(l_):
+    def enum_ellipsis(L):
         """If the last entry is an ellipsis then the next to last
         entry is repeated zero or more times."""
         last = object
         has_ellipsis = False
-        optional = len(l_)
-        if len(l_) > 0 and l_[-1] == ...:
+        optional = len(L)
+        if len(L) > 0 and L[-1] == ...:
             has_ellipsis = True
-            optional = len(l_) - 2
+            optional = len(L) - 2
 
-        for i, ll in enumerate(l_):
-            if ll == ... and i == len(l_) - 1:
+        for i, ll in enumerate(L):
+            if ll == ... and i == len(L) - 1:
                 yield OPTIONAL, last
             else:
                 last = ll
@@ -123,8 +152,8 @@ def validate_sequence(schema, object_, name, strict):
             else:
                 yield EOL, None
 
-    def enum(l_):
-        for ll in l_:
+    def enum(L):
+        for ll in L:
             yield START, ll
         while True:
             yield EOL, None
