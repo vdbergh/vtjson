@@ -4,6 +4,7 @@ import urllib.parse
 
 from email_validator import EmailNotValidError, validate_email
 
+
 class ellipsis_list:
     def __init__(self, L, length=0):
         self.L = L
@@ -15,14 +16,15 @@ class ellipsis_list:
                 self.last = L[-2]
             else:
                 self.last = object
+        if not self.has_ellipsis:
+            self.len = len(self.L)
+        elif self.length <= len(self.L) - 2:
+            self.len = len(self.L) - 2
+        else:
+            self.len = self.length
 
     def __len__(self):
-        if not self.has_ellipsis:
-            return len(self.L)
-        elif self.length <= len(self.L) - 2:
-                return len(self.L) - 2
-        else:
-            return self.length
+        return self.len
 
     def __getitem__(self, index):
         if not self.has_ellipsis or index < len(self.L) - 2:
@@ -31,7 +33,6 @@ class ellipsis_list:
             return self.last
         else:
             raise IndexError(index)
-        
 
 
 class validate_meta(type):
@@ -123,69 +124,23 @@ def validate_type(schema, object, name):
         return f"{schema} is not a valid type"
 
 
-def validate_sequence(schema, object_, name, strict):
+def validate_sequence(schema, object, name, strict):
     assert isinstance(schema, list) or isinstance(schema, tuple)
-
-    START = 1
-    OPTIONAL = 2
-    EOL = 3
-
-    def enum_ellipsis(L):
-        """If the last entry is an ellipsis then the next to last
-        entry is repeated zero or more times."""
-        last = object
-        has_ellipsis = False
-        optional = len(L)
-        if len(L) > 0 and L[-1] == ...:
-            has_ellipsis = True
-            optional = len(L) - 2
-
-        for i, ll in enumerate(L):
-            if ll == ... and i == len(L) - 1:
-                yield OPTIONAL, last
-            else:
-                last = ll
-                yield OPTIONAL if i >= optional else START, ll
-        while True:
-            if has_ellipsis:
-                yield OPTIONAL, last
-            else:
-                yield EOL, None
-
-    def enum(L):
-        for ll in L:
-            yield START, ll
-        while True:
-            yield EOL, None
-
-    if type(schema) is not type(object_):
+    if type(schema) is not type(object):
         return f"{name} is not of type {type(schema).__name__}"
-
-    sch = enum_ellipsis(schema)
-    obj = enum(object_)
-    i = 0
-    while True:
+    L = len(object)
+    schema = ellipsis_list(schema, length=len(object))
+    if strict and L != len(schema):
+        return f"{name} does not have length {len(schema)}"
+    for i in range(len(schema)):
         name_ = f"{name}[{i}]"
-        i += 1
-        s_schema, u = next(sch)
-        s_obj, v = next(obj)
-        if s_obj == EOL and s_schema == EOL:
-            return ""
-        elif s_schema == EOL:
-            if strict:
-                return f"{name_} is not in the schema"
-            else:
-                return ""
-        elif s_obj == EOL:
-            if s_schema == START:
-                return f"{name_} is missing"
-            else:
-                return ""
+        if i >= L:
+            return f"{name_} does not exist"
         else:
-            ret = validate(u, v, name=name_, strict=strict)
+            ret = validate(schema[i], object[i], name_, strict=strict)
             if ret != "":
                 return ret
-    assert False
+    return ""
 
 
 def validate_dict(schema, object, name, strict):
