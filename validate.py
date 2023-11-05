@@ -1,11 +1,12 @@
 import ipaddress
 import re
 import urllib.parse
+from collections.abc import Sequence
 
 from email_validator import EmailNotValidError, validate_email
 
 
-class ellipsis_list:
+class ellipsis_list(Sequence):
     def __init__(self, L, length=0):
         self.L = L
         self.length = length
