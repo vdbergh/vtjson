@@ -131,8 +131,9 @@ def validate_sequence(schema, object, name, strict):
         return f"{name} is not of type {type(schema).__name__}"
     L = len(object)
     schema = ellipsis_list(schema, length=L)
-    if strict and L != len(schema):
-        return f"{name} does not have length {len(schema)}"
+    if strict and L > len(schema):
+        name_ = f"{name}[{len(schema)}]"
+        return f"{name_} is not in the schema"
     for i in range(len(schema)):
         name_ = f"{name}[{i}]"
         if i >= L:
