@@ -115,7 +115,6 @@ class regex:
 
 
 def _validate_type(schema, object, name):
-    assert isinstance(schema, type)
     try:
         if not isinstance(object, schema):
             return f"{name} (value:{object}) is not of type {schema.__name__}"
@@ -126,7 +125,6 @@ def _validate_type(schema, object, name):
 
 
 def _validate_sequence(schema, object, name, strict):
-    assert isinstance(schema, list) or isinstance(schema, tuple)
     if type(schema) is not type(object):
         return f"{name} is not of type {type(schema).__name__}"
     L = len(object)
@@ -146,7 +144,6 @@ def _validate_sequence(schema, object, name, strict):
 
 
 def _validate_dict(schema, object, name, strict):
-    assert isinstance(schema, dict)
     if type(schema) is not type(object):
         return f"{name} is not of type {type(schema).__name__}"
     if strict:
