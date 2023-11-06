@@ -219,7 +219,7 @@ schema = {
 - A schema can be, in order of precedence:
   - An object having a `__validate__` attribute with signature
     ```python
-    __validate__(self, object, name, strict)
+    __validate__(object, name, strict)
     ```
     For example this is how the `union` and `regex` schemas are implemented internally.
   - A Python type. In that case validation is done by checking membership.
