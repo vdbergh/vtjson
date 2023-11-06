@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from email_validator import EmailNotValidError, validate_email
 
 
-class ellipsis_list(Sequence):
+class _ellipsis_list(Sequence):
     def __init__(self, L, length=0):
         self.L = L
         self.length = length
@@ -36,7 +36,19 @@ class ellipsis_list(Sequence):
             raise IndexError(index)
 
 
-class validate_meta(type):
+def _keys(dict):
+    ret = set()
+    for k in dict:
+        if isinstance(k, optional_key):
+            ret.add(k.key)
+        elif isinstance(k, str) and len(k) > 0 and k[-1] == "?":
+            ret.add(k[:-1])
+        else:
+            ret.add(k)
+    return ret
+
+
+class _validate_meta(type):
     def __instancecheck__(cls, object):
         valid = validate(cls.__schema__, object, "object", strict=cls.__strict__)
         if cls.__debug__ and valid != "":
@@ -50,7 +62,7 @@ def make_type(schema, name=None, strict=True, debug=False):
             name = schema.__name__
         else:
             name = "schema"
-    return validate_meta(
+    return _validate_meta(
         name, (), {"__schema__": schema, "__strict__": strict, "__debug__": debug}
     )
 
@@ -102,19 +114,7 @@ class regex:
         return f"{name} (value:{object}) is not of type {self.__name__}"
 
 
-def _keys(dict):
-    ret = set()
-    for k in dict:
-        if isinstance(k, optional_key):
-            ret.add(k.key)
-        elif isinstance(k, str) and len(k) > 0 and k[-1] == "?":
-            ret.add(k[:-1])
-        else:
-            ret.add(k)
-    return ret
-
-
-def validate_type(schema, object, name):
+def _validate_type(schema, object, name):
     assert isinstance(schema, type)
     try:
         if not isinstance(object, schema):
@@ -125,12 +125,12 @@ def validate_type(schema, object, name):
         return f"{schema} is not a valid type"
 
 
-def validate_sequence(schema, object, name, strict):
+def _validate_sequence(schema, object, name, strict):
     assert isinstance(schema, list) or isinstance(schema, tuple)
     if type(schema) is not type(object):
         return f"{name} is not of type {type(schema).__name__}"
     L = len(object)
-    schema = ellipsis_list(schema, length=L)
+    schema = _ellipsis_list(schema, length=L)
     if strict and L > len(schema):
         name_ = f"{name}[{len(schema)}]"
         return f"{name_} is not in the schema"
@@ -145,7 +145,7 @@ def validate_sequence(schema, object, name, strict):
     return ""
 
 
-def validate_dict(schema, object, name, strict):
+def _validate_dict(schema, object, name, strict):
     assert isinstance(schema, dict)
     if type(schema) is not type(object):
         return f"{name} is not of type {type(schema).__name__}"
@@ -178,11 +178,11 @@ def validate(schema, object, name="object", strict=True):
     if hasattr(schema, "__validate__"):  # duck typing
         return schema.__validate__(object, name, strict)
     elif isinstance(schema, type):
-        return validate_type(schema, object, name)
+        return _validate_type(schema, object, name)
     elif isinstance(schema, list) or isinstance(schema, tuple):
-        return validate_sequence(schema, object, name, strict)
+        return _validate_sequence(schema, object, name, strict)
     elif isinstance(schema, dict):
-        return validate_dict(schema, object, name, strict)
+        return _validate_dict(schema, object, name, strict)
     elif object != schema:
         return f"{name} (value:{object}) is not equal to {repr(schema)}"
     return ""
