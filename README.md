@@ -15,13 +15,6 @@ from bson.objectid import ObjectId
 from numbers import Real  # matches int and float
 from validate import ip_address, regex, union, url
 
-net_name = regex("nn-[a-z0-9]{12}.nnue", name="net_name")
-tc = regex(r"([1-9]\d*/)?\d+(\.\d+)?(\+\d+(\.\d+)?)?", name="tc")
-str_int = regex(r"[1-9]\d*", name="str_int")
-sha = regex(r"[a-f0-9]{40}", name="sha")
-country_code = regex(r"[A-Z][A-Z]", name="country_code")
-run_id = regex(r"[a-f0-9]{24}", name="run_id")
-
 worker_info_schema = {
     "uname": str,
     "architecture": [str, str],
@@ -105,7 +98,7 @@ schema = {
             "beta": Real,
             "elo0": Real,
             "elo1": Real,
-            "elo_model": union("BayesElo", "logistic", "normalized"),
+            "elo_model": "normalized",
             "state": union("", "accepted", "rejected"),
             "llr": Real,
             "batch_size": int,
