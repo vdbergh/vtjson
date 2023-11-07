@@ -203,7 +203,7 @@ schema = {
   validate(schema, object, name="object", strict=True)
   ```
   - The optional `name` argument is used to refer to the object being validated in the returned message.
-  - The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
+  - The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema. Alternatively one may use the schemas `lax(schema)` and `strict(schema)` to override the value of the `strict` argument.
 - A cool feature of the package is that one can can transform a schema into a genuine Python type via
   ```python
   t = make_type(schema)
