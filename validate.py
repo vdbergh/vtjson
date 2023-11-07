@@ -87,6 +87,22 @@ class union:
         return " and ".join(messages)
 
 
+class lax:
+    def __init__(self, schema):
+        self.schema = schema
+
+    def __validate__(self, object, name, strict):
+        return validate(self.schema, object, name=name, strict=False)
+
+
+class strict:
+    def __init__(self, schema):
+        self.schema = schema
+
+    def __validate__(self, object, name, strict):
+        return validate(self.schema, object, name=name, strict=True)
+
+
 class regex:
     def __init__(self, regex, name=None):
         self.regex = regex

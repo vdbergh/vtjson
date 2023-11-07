@@ -4,9 +4,11 @@ from validate import (
     _keys,
     email,
     ip_address,
+    lax,
     make_type,
     number,
     regex,
+    strict,
     union,
     url,
     validate,
@@ -103,6 +105,19 @@ class TestValidation(unittest.TestCase):
 
         object = {"b": 4, "c": 3}
         valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+    def test_lax(self):
+        schema = lax(["a", "b", "c"])
+        object = ["a", "b", "c", "d"]
+        valid = validate(schema, object)
+        self.assertTrue(valid == "")
+
+    def test_strict(self):
+        schema = strict(["a", "b", "c"])
+        object = ["a", "b", "c", "d"]
+        valid = validate(schema, object, strict=False)
         print(valid)
         self.assertFalse(valid == "")
 
