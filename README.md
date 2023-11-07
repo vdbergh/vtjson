@@ -202,7 +202,8 @@ schema = {
   ```python
   validate(schema, object, name="object", strict=True)
   ```
-  The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
+  - The optional `name` argument is used to refer to the object being validated in the returned message.
+  - The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
 - A cool feature of the package is that one can can transform a schema into a genuine Python type via
   ```python
   t = make_type(schema)
@@ -216,13 +217,14 @@ schema = {
   ```python
   make_type(schema, name=None, strict=True, debug=False)
   ```
+  The optional `name` argument is used to set the `__name__` attribute of the type. If it is not supplied then the package tries to make an educated guess.
 - A schema can be, in order of precedence:
   - An object having a `__validate__` attribute with signature
     ```python
     __validate__(object, name, strict)
     ```
-    For example this is how the `union` and `regex` schemas are implemented internally.
+    This is for example how the `union` and `regex` schemas are implemented internally. The parameters and the return value of `__validate__()` have the same semantics as those of `validate()`, as discussed above.
   - A Python type. In that case validation is done by checking membership.
-  - A `list` or a `tuple`. Validation is done for each of the entries.
-  - A dictionary. Validation is done for the each of the items.
+  - A `list` or a `tuple`. Validation is done by first checking membership of the corresponding types, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
+  - A dictionary. Validation is done by first checking membership of the `dict` type, and then performing validation for each of the items of the object being validated against the corresponding items of the schema.
   - An arbitrary Python object. Validation is done by checking equality of the schema and the object.
