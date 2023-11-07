@@ -241,5 +241,6 @@ schema = {
 >>> validate(schema, object)
 "object['fruit'] (value:dog) is not of type fruit"
 >>> object = {"fruit" : "apple"}
+>>> validate(schema, object)
 "object['price'] is missing"
 ```
