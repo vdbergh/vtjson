@@ -114,7 +114,7 @@ class TestValidation(unittest.TestCase):
         valid = validate(schema, object)
         self.assertTrue(valid == "")
 
-    def test_strict(self):
+    def test_strict_wrapper(self):
         schema = strict(["a", "b", "c"])
         object = ["a", "b", "c", "d"]
         valid = validate(schema, object, strict=False)
