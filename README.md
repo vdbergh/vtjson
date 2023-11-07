@@ -228,3 +228,18 @@ schema = {
   - A `list` or a `tuple`. Validation is done by first checking membership of the corresponding types, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
   - A dictionary. Validation is done by first checking membership of the `dict` type, and then performing validation for each of the items of the object being validated against the corresponding items of the schema.
   - An arbitrary Python object. Validation is done by checking equality of the schema and the object.
+
+## Examples
+```python
+>>> from validate import make_type, union, validate
+>>> schema = {"fruit" : union("apple", "pear", "strawberry"), "price" : float}
+>>> object = {"fruit" : "dog", "price": 1.0 }
+>>> validate(schema, object)
+"object['fruit'] (value:dog) is not equal to 'apple' and object['fruit'] (value:dog) is not equal to 'pear' and object['fruit'] (value:dog) is not equal to 'strawberry'"
+>>> fruit = make_type(union("apple", "pear", "strawberry"), name="fruit")
+>>> schema = {"fruit" : fruit, "price" : float}
+>>> validate(schema, object)
+"object['fruit'] (value:dog) is not of type fruit"
+>>> object = {"fruit" : "apple"}
+"object['price'] is missing"
+```
