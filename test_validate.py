@@ -2,6 +2,7 @@ import unittest
 
 from validate import (
     _keys,
+    complement,
     email,
     intersect,
     ip_address,
@@ -115,11 +116,22 @@ class TestValidation(unittest.TestCase):
         valid = validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
-        
+
         object = "https://example.com"
         valid = validate(schema, object)
         self.assertTrue(valid == "")
-        
+
+    def test_complement(self):
+        schema = intersect(url, complement(regex(r"^https", fullmatch=False)))
+        object = "ftp://example.com"
+        valid = validate(schema, object)
+        self.assertTrue(valid == "")
+
+        object = "https://example.com"
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
     def test_lax(self):
         schema = lax(["a", "b", "c"])
         object = ["a", "b", "c", "d"]

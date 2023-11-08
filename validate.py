@@ -92,12 +92,23 @@ class intersect:
         self.schemas = schemas
 
     def __validate__(self, object, name, strict):
-        messages = []
         for schema in self.schemas:
             message = validate(schema, object, name=name, strict=strict)
             if message != "":
                 return message
         return ""
+
+
+class complement:
+    def __init__(self, schema):
+        self.schema = schema
+
+    def __validate__(self, object, name, strict):
+        message = validate(self.schema, object, name=name, strict=strict)
+        if message != "":
+            return ""
+        else:
+            return f"{name} does not match the complemented schema"
 
 
 class lax:
@@ -229,7 +240,9 @@ class email:
             validate_email(object, check_deliverability=False)
             return ""
         except EmailNotValidError as e:
-            return f"{name} (value:{repr(object)}) is not a valid email address: {str(e)}"
+            return (
+                f"{name} (value:{repr(object)}) is not a valid email address: {str(e)}"
+            )
 
 
 class ip_address:

@@ -181,35 +181,36 @@ schema = {
 - If in a list/tuple the last entry is `...` (`ellipsis`) it means that the next to last entry will be repeated zero or more times. In this way generic types can be created. For example the schema `[str, ...]` represents a list of strings.
 - The schema may contain tuples, even though these are not valid JSON. In fact any Python object is a valid schema (see below).
 ## Usage
-- To validate an object against a schema one can simply do
-  ```python
-  explanation = validate(schema, object)
-  ```  
-  If the validation is succesful then the return value is the empty string. Otherwise it contains an explanation what went wrong.
-  The full signature of `validate` is
-  ```python
-  validate(schema, object, name="object", strict=True)
-  ```
-  - The optional `name` argument is used to refer to the object being validated in the returned message.
-  - The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
-- A cool feature of the package is that one can can transform a schema into a genuine Python type via
-  ```python
-  t = make_type(schema)
-  ```
-  so that validation can be done via
-  ```python
-  isinstance(object, t)
-  ```
-  The drawback, compared to using `validate` directly, is that there is no feedback when validation fails. You can get it back as a console debug message via the optional `debug` argument to `make_type`.
-  The full signature of `make_type` is
-  ```python
-  make_type(schema, name=None, strict=True, debug=False)
-  ```
-  The optional `name` argument is used to set the `__name__` attribute of the type. If it is not supplied then the package tries to make an educated guess.
+To validate an object against a schema one can simply do
+```python
+explanation = validate(schema, object)
+```  
+If the validation is succesful then the return value is the empty string. Otherwise it contains an explanation what went wrong. The full signature of `validate` is
+```python
+validate(schema, object, name="object", strict=True)
+```
+- The optional `name` argument is used to refer to the object being validated in the returned message.
+- The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
+## Creating types
+A cool feature of the package is that one can can transform a schema into a genuine Python type via
+```python
+t = make_type(schema)
+```
+so that validation can be done via
+```python
+isinstance(object, t)
+```
+The drawback, compared to using `validate` directly, is that there is no feedback when validation fails. You can get it back as a console debug message via the optional `debug` argument to `make_type`.
+The full signature of `make_type` is
+```python
+make_type(schema, name=None, strict=True, debug=False)
+```
+The optional `name` argument is used to set the `__name__` attribute of the type. If it is not supplied then the package tries to make an educated guess.
 ## Wrappers
 A wrapper takes one or more schemas as arguments and produces a new schema.
 - An object matches the schema `union(schema1, schema2)` if it matches `schema1` or `schema2`. Unions of more than two schemas are also valid.
 - An object matches the schema `intersect(schema1, schema2)` if it matches `schema1` and `schema2`. Intersections of more than two schemas are also valid.
+- An object matches the schema `complement(schema)` if it does not match `schema`.
 - An object matches the schema `lax(schema)` when it matches `schema` with `strict=False`, see below.
 - An object matches the schema `strict(schema)` when it matches `schema` with `strict=True`, see below.
 ## Built-ins
