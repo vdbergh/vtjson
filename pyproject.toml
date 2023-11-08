@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vtjson"
-version = "1.0.1"
+version = "1.0.2"
 authors = [
   { name="Michel Van den Bergh", email="michel.vandenbergh@uhasselt.be" },
 ]
@@ -19,7 +19,7 @@ classifiers = [
 ]
 
 [tool.setuptools]
-py-modules = ["validate_json"]
+py-modules = ["vtjson"]
 
 [project.urls]
 "Homepage" = "https://github.com/vdbergh/vtjson"

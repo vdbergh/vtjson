@@ -13,7 +13,7 @@ Below is the schema of the run object in the mongodb database underlying the Fis
 from datetime import datetime
 from bson.objectid import ObjectId
 from numbers import Real  # matches int and float
-from validate import ip_address, regex, union, url
+from vtjson import ip_address, regex, union, url
 
 worker_info_schema = {
     "uname": str,

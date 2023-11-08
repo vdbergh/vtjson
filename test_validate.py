@@ -1,6 +1,6 @@
 import unittest
 
-from validate_json import (
+from vtjson import (
     _keys,
     complement,
     email,
