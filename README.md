@@ -1,5 +1,5 @@
 # validate
-A package for validating JSON like Python objects.
+A lightweight package for validating JSON like Python objects.
 
 ## Schemas
 
@@ -192,7 +192,7 @@ validate(schema, object, name="object", strict=True)
 - The optional `name` argument is used to refer to the object being validated in the returned message.
 - The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
 ## Creating types
-A cool feature of the package is that one can can transform a schema into a genuine Python type via
+A cool feature of vtjson is that one can transform a schema into a genuine Python type via
 ```python
 t = make_type(schema)
 ```
@@ -205,7 +205,7 @@ The full signature of `make_type` is
 ```python
 make_type(schema, name=None, strict=True, debug=False)
 ```
-The optional `name` argument is used to set the `__name__` attribute of the type. If it is not supplied then the package tries to make an educated guess.
+The optional `name` argument is used to set the `__name__` attribute of the type. If it is not supplied then vtjson tries to make an educated guess.
 ## Wrappers
 A wrapper takes one or more schemas as arguments and produces a new schema.
 - An object matches the schema `union(schema1, schema2)` if it matches `schema1` or `schema2`. Unions of more than two schemas are also valid.
