@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vtjson"
-version = "1.0.3"
+version = "1.0.4"
 authors = [
   { name="Michel Van den Bergh", email="michel.vandenbergh@uhasselt.be" },
 ]
-description = "A package for validating JSON like Python objects"
+description = "A lightweight package for validating JSON like Python objects"
 readme = "README.md"
 dependencies = ["email_validator"]
 requires-python = ">=3.7"
