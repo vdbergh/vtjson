@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vtjson"
+version = "1.0.0"
+authors = [
+  { name="Michel Van den Bergh", email="michel.vandenbergh@uhasselt.be" },
+]
+description = "A package for validating JSON like Python objects"
+readme = "README.md"
+dependencies = ["email_validator"]
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[tool.setuptools]
+py-modules = ["validate_json"]
+
+[project.urls]
+"Homepage" = "https://github.com/vdbergh/validate"
+"Bug Tracker" = "https://github.com/vdbergh/validate/issues"
