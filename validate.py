@@ -87,6 +87,19 @@ class union:
         return " and ".join(messages)
 
 
+class intersect:
+    def __init__(self, *schemas):
+        self.schemas = schemas
+
+    def __validate__(self, object, name, strict):
+        messages = []
+        for schema in self.schemas:
+            message = validate(schema, object, name=name, strict=strict)
+            if message != "":
+                return message
+        return ""
+
+
 class lax:
     def __init__(self, schema):
         self.schema = schema
@@ -104,36 +117,39 @@ class strict:
 
 
 class regex:
-    def __init__(self, regex, name=None):
+    def __init__(self, regex, name=None, fullmatch=True):
         self.regex = regex
+        self.fullmatch = fullmatch
         if name is not None:
             self.__name__ = name
         else:
-            self.__name__ = f"regex({regex})"
+            self.__name__ = f"regex({repr(regex)})"
         self.message = ""
         try:
             self.pattern = re.compile(regex)
         except Exception as e:
             self.message = (
-                f"{regex} (name: {name}) is an invalid regular expression: {str(e)}"
+                f"{regex} (name: {'name'}) is an invalid regular expression: {str(e)}"
             )
 
     def __validate__(self, object, name, strict):
         if self.message != "":
             return self.message
         try:
-            if self.pattern.fullmatch(object):
+            if self.fullmatch and self.pattern.fullmatch(object):
+                return ""
+            elif not self.fullmatch and self.pattern.match(object):
                 return ""
         except Exception:
             pass
 
-        return f"{name} (value:{object}) is not of type {self.__name__}"
+        return f"{name} (value:{repr(object)}) is not of type '{self.__name__}'"
 
 
 def _validate_type(schema, object, name):
     try:
         if not isinstance(object, schema):
-            return f"{name} (value:{object}) is not of type {schema.__name__}"
+            return f"{name} (value:{repr(object)}) is not of type '{schema.__name__}'"
         else:
             return ""
     except Exception:
@@ -142,7 +158,7 @@ def _validate_type(schema, object, name):
 
 def _validate_sequence(schema, object, name, strict):
     if type(schema) is not type(object):
-        return f"{name} is not of type {type(schema).__name__}"
+        return f"{name} is not of type '{type(schema).__name__}'"
     L = len(object)
     schema = _ellipsis_list(schema, length=L)
     if strict and L > len(schema):
@@ -151,7 +167,7 @@ def _validate_sequence(schema, object, name, strict):
     for i in range(len(schema)):
         name_ = f"{name}[{i}]"
         if i >= L:
-            return f"{name_} does not exist"
+            return f"{name_} is missing"
         else:
             ret = validate(schema[i], object[i], name=name_, strict=strict)
             if ret != "":
@@ -161,7 +177,7 @@ def _validate_sequence(schema, object, name, strict):
 
 def _validate_dict(schema, object, name, strict):
     if type(schema) is not type(object):
-        return f"{name} is not of type {type(schema).__name__}"
+        return f"{name} is not of type '{type(schema).__name__}'"
     if strict:
         _k = _keys(schema)
         for x in object:
@@ -197,7 +213,7 @@ def validate(schema, object, name="object", strict=True):
     elif isinstance(schema, dict):
         return _validate_dict(schema, object, name, strict)
     elif object != schema:
-        return f"{name} (value:{object}) is not equal to {repr(schema)}"
+        return f"{name} (value:{repr(object)}) is not equal to {repr(schema)}"
     return ""
 
 
@@ -213,7 +229,7 @@ class email:
             validate_email(object, check_deliverability=False)
             return ""
         except EmailNotValidError as e:
-            return f"{name} (value:{object}) is not a valid email address: {str(e)}"
+            return f"{name} (value:{repr(object)}) is not a valid email address: {str(e)}"
 
 
 class ip_address:
@@ -223,7 +239,7 @@ class ip_address:
             ipaddress.ip_address(object)
             return ""
         except ValueError:
-            return f"{name} (value:{object}) is not of type ip_address"
+            return f"{name} (value:{repr(object)}) is not of type 'ip_address'"
 
 
 class url:
@@ -232,4 +248,4 @@ class url:
         result = urllib.parse.urlparse(object)
         if all([result.scheme, result.netloc]):
             return ""
-        return f"{name} (value:{object}) is not of type url"
+        return f"{name} (value:{repr(object)}) is not of type 'url'"

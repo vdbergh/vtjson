@@ -3,6 +3,7 @@ import unittest
 from validate import (
     _keys,
     email,
+    intersect,
     ip_address,
     lax,
     make_type,
@@ -108,6 +109,17 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
+    def test_intersect(self):
+        schema = intersect(url, regex(r"^https", fullmatch=False))
+        object = "ftp://example.com"
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+        
+        object = "https://example.com"
+        valid = validate(schema, object)
+        self.assertTrue(valid == "")
+        
     def test_lax(self):
         schema = lax(["a", "b", "c"])
         object = ["a", "b", "c", "d"]
@@ -262,8 +274,8 @@ class TestValidation(unittest.TestCase):
                 for c in object:
                     if not ("a" <= c <= "z"):
                         return (
-                            f"{c}, contained in the string {name}, "
-                            + "is not a lower case letter"
+                            f"{c}, contained in the string {repr(name)} "
+                            + f"(value: {repr(object)}) is not a lower case letter"
                         )
                 return ""
 
