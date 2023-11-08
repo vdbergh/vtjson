@@ -4,7 +4,7 @@ from numbers import Real  # matches int and float
 from timeit import timeit
 
 from bson.objectid import ObjectId
-from validate import ip_address, regex, union, url, validate
+from vtjson import ip_address, regex, union, url, validate
 
 # This schema only matches new runs.
 
