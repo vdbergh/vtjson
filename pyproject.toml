@@ -22,5 +22,5 @@ classifiers = [
 py-modules = ["validate_json"]
 
 [project.urls]
-"Homepage" = "https://github.com/vdbergh/validate"
-"Bug Tracker" = "https://github.com/vdbergh/validate/issues"
+"Homepage" = "https://github.com/vdbergh/vtjson"
+"Bug Tracker" = "https://github.com/vdbergh/vtjson/issues"
