@@ -1,3 +1,4 @@
+import copy
 from datetime import datetime, timezone
 from numbers import Real  # matches int and float
 from timeit import timeit
@@ -299,7 +300,7 @@ run_sprt_object = {
 
 total_tasks = 500
 for i in range(total_tasks):
-    run_sprt_object["tasks"].append(task_object)
+    run_sprt_object["tasks"].append(copy.deepcopy(task_object))
 
 
 valid = validate(runs_schema, run_sprt_object)
