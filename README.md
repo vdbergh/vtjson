@@ -1,4 +1,4 @@
-# validate
+# vtjson
 A lightweight package for validating JSON like Python objects.
 
 ## Schemas
