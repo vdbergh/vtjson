@@ -176,15 +176,18 @@ schema = {
     ],
 }
 ```
-## Comments
-
-- As in typescript, a key ending in "?" represents an optional key. The corresponding schema (the item the key points to) will only be used for validation when the key is present in the object that should be validated.
+## Conventions
+- As in typescript, a (string) key ending in "?" represents an optional key. The corresponding schema (the item the key points to) will only be used for validation when the key is present in the object that should be validated. A key can also be made optional by wrapping it as `optional_key(key)`.
 - If in a list/tuple the last entry is `...` (`ellipsis`) it means that the next to last entry will be repeated zero or more times. In this way generic types can be created. For example the schema `[str, ...]` represents a list of strings.
-- An object matches the schema `union(schema1, schema2)` if it matches `schema1` or `schema2`.
-- Strings can be validated using regular expression schemas which are created by `regex(pattern)`. An optional `name` argument may be used to give the regular expression a descriptive name.
-- The package contains some predefined schemas. Currently these are `email`, `ip_address` and `url`.
 - The schema accepts tuples, even though these are not valid JSON. In fact any Python object is a valid schema (see below).
-
+## Wrappers
+A wrapper takes one or more schemas as arguments and produces a new schema.
+- An object matches the schema `union(schema1, schema2)` if it matches `schema1` or `schema2`.
+- An object matches the schema `lax(schema)` when it matches `schema` with `strict=False`, see below.
+- An object matches the schema `strict(schema)` when it matches `schema` with `strict=True`, see below.
+## Built-ins
+- `regex(pattern, name=None)`. This matches the strings which match the given pattern. The optional `name` argument may be used to give the regular expression a descriptive name.
+- `email`, `ip_address` and `url`. These match strings with the implied format.
 ## Usage
 - To validate an object against a schema one can simply do
   ```python
@@ -196,7 +199,7 @@ schema = {
   validate(schema, object, name="object", strict=True)
   ```
   - The optional `name` argument is used to refer to the object being validated in the returned message.
-  - The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema. Alternatively one may use the wrappers `lax(schema)` and `strict(schema)` to override the value of the `strict` argument.
+  - The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
 - A cool feature of the package is that one can can transform a schema into a genuine Python type via
   ```python
   t = make_type(schema)
