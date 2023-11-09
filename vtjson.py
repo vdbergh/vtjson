@@ -6,7 +6,7 @@ from collections.abc import Sequence
 
 from email_validator import EmailNotValidError, validate_email
 
-__version__ = "1.0.11"
+__version__ = "1.1.0"
 
 
 class _ellipsis_list(Sequence):
@@ -161,16 +161,14 @@ class regex:
 
 
 class interval:
-    def __init__(self, lb, ub, name=None):
+    def __init__(self, lb, ub):
         self.lb = lb
         self.ub = ub
-        if name is not None:
-            self.__name__ = name
-        else:
-            self.__name__ = f"interval({repr(lb)},{repr(ub)})"
+        self.lb_s = "..." if lb == ... else repr(lb)
+        self.ub_s = "..." if ub == ... else repr(ub)
 
     def __validate__(self, object, name, strict):
-        self.message = f"{name} (value:{repr(object)}) is not of type '{self.__name__}'"
+        self.message = f"{name} (value:{repr(object)}) is not in the interval ({self.lb_s},{self.ub_s})"
         try:
             if self.lb != ... and object < self.lb:
                 return self.message

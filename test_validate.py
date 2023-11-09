@@ -367,7 +367,7 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
-        schema = interval(1, 9, name="digits")
+        schema = interval(1, 9)
         object = "a"
         valid = validate(schema, object)
         print(valid)
@@ -387,7 +387,7 @@ class TestValidation(unittest.TestCase):
         valid = validate(schema, object)
         self.assertTrue(valid == "")
 
-        schema = interval(0, ..., name="pos_int")
+        schema = interval(0, ...)
         object = 5
         valid = validate(schema, object)
         self.assertTrue(valid == "")
@@ -397,7 +397,7 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
-        schema = interval(..., 0, name="pos_int")
+        schema = interval(..., 0)
         object = -5
         valid = validate(schema, object)
         self.assertTrue(valid == "")
@@ -407,12 +407,12 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
-        schema = interval(..., ..., name="everything")
+        schema = interval(..., ...)
         object = "0"
         valid = validate(schema, object)
         self.assertTrue(valid == "")
 
-        schema = interval(0, "z", name="everything")
+        schema = interval(0, "z")
         object = "0"
         valid = validate(schema, object)
         print(valid)
