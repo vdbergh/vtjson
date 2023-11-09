@@ -10,6 +10,7 @@ Validation of JSON like Python objects is done according to a "schema" which is 
 Below is the schema of the run object in the mongodb database underlying the Fishtest web application https://tests.stockfishchess.org/tests
 
 ```python
+import math
 from datetime import datetime
 from bson.objectid import ObjectId
 from vtjson import ip_address, number, regex, union, url
@@ -100,16 +101,16 @@ schema = {
         "priority": number,
         "adjudication": bool,
         "sprt?": {
-            "alpha": number,
-            "beta": number,
+            "alpha": 0.05,
+            "beta": 0.05,
             "elo0": number,
             "elo1": number,
             "elo_model": "normalized",
             "state": union("", "accepted", "rejected"),
             "llr": number,
             "batch_size": int,
-            "lower_bound": number,
-            "upper_bound": number,
+            "lower_bound": -math.log(19),
+            "upper_bound": math.log(19),
             "lost_samples?": int,
             "illegal_update?": int,
             "overshoot?": {
@@ -221,6 +222,7 @@ A wrapper takes one or more schemas as arguments and produces a new schema.
 - An object matches the schema `strict(schema)` when it matches `schema` with `strict=True`, see below.
 ## Built-ins
 - `regex(pattern, name=None, fullmatch=True)`. This matches the strings which match the given pattern. The optional `name` argument may be used to give the regular expression a descriptive name. By default the entire string is matched, but this can be overruled via the `fullmatch` argument.
+- `interval(lowerbound, upperbound, name=None)`. This checks if `lowerbound <= object <= upperbound`, provided the comparisons make sense.
 - `number`. Matches `int` and `float`.
 - `email`, `ip_address` and `url`. These match strings with the implied format.
 ## Format

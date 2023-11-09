@@ -5,6 +5,7 @@ from vtjson import (
     complement,
     email,
     intersect,
+    interval,
     ip_address,
     lax,
     make_type,
@@ -355,6 +356,64 @@ class TestValidation(unittest.TestCase):
         self.assertTrue(valid == "")
 
         object = {"ip": ""}
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+    def test_interval(self):
+        schema = interval(1, 10)
+        object = "a"
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = interval(1, 9, name="digits")
+        object = "a"
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = -1
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = 10
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = 5
+        valid = validate(schema, object)
+        self.assertTrue(valid == "")
+
+        schema = interval(0, ..., name="pos_int")
+        object = 5
+        valid = validate(schema, object)
+        self.assertTrue(valid == "")
+
+        object = -1
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = interval(..., 0, name="pos_int")
+        object = -5
+        valid = validate(schema, object)
+        self.assertTrue(valid == "")
+
+        object = 1
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = interval(..., ..., name="everything")
+        object = "0"
+        valid = validate(schema, object)
+        self.assertTrue(valid == "")
+
+        schema = interval(0, "z", name="everything")
+        object = "0"
         valid = validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")

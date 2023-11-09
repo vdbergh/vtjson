@@ -160,6 +160,27 @@ class regex:
         return f"{name} (value:{repr(object)}) is not of type '{self.__name__}'"
 
 
+class interval:
+    def __init__(self, lb, ub, name=None):
+        self.lb = lb
+        self.ub = ub
+        if name is not None:
+            self.__name__ = name
+        else:
+            self.__name__ = f"interval({repr(lb)},{repr(ub)})"
+
+    def __validate__(self, object, name, strict):
+        self.message = f"{name} (value:{repr(object)}) is not of type '{self.__name__}'"
+        try:
+            if self.lb != ... and object < self.lb:
+                return self.message
+            if self.ub != ... and object > self.ub:
+                return self.message
+            return ""
+        except Exception:
+            return self.message
+
+
 def _validate_type(schema, object, name):
     try:
         if not isinstance(object, schema):
@@ -175,13 +196,14 @@ def _validate_callable(schema, object, name):
         __name__ = schema.__name__
     except Exception:
         __name__ = schema
+    message = f"{name} (value:{repr(object)}) is not of type '{__name__}'"
     try:
         if schema(object):
             return ""
         else:
-            return f"{name} (value:{repr(object)}) is not of type {repr(__name__)}"
+            return message
     except Exception:
-        return f"Invoking {repr(__name__)} on {name} (value: {repr(object)}) failed"
+        return message
 
 
 def _validate_sequence(schema, object, name, strict):
