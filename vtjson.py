@@ -181,7 +181,7 @@ def _validate_callable(schema, object, name):
         else:
             return f"{name} (value:{repr(object)}) is not of type {repr(__name__)}"
     except Exception:
-        return f"Invoking {__name__} on {repr(object)} failed"
+        return f"Invoking {repr(__name__)} on {name} (value: {repr(object)}) failed"
 
 
 def _validate_sequence(schema, object, name, strict):

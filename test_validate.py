@@ -433,7 +433,10 @@ class TestValidation(unittest.TestCase):
         self.assertTrue(valid == "")
 
     def test_callable(self):
-        schema = lambda x: x % 2 == 0
+        def even(x):
+            return x % 2 == 0
+
+        schema = even
         object = 1
         valid = validate(schema, object)
         print(valid)
@@ -441,8 +444,16 @@ class TestValidation(unittest.TestCase):
 
         object = 2
         valid = validate(schema, object)
-        print(valid)
         self.assertTrue(valid == "")
+
+        def fails(x):
+            return 1 / x == 0
+
+        schema = fails
+        object = 0
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
 
 
 if __name__ == "__main__":
