@@ -6,7 +6,7 @@ from collections.abc import Sequence
 
 from email_validator import EmailNotValidError, validate_email
 
-__version__ = "1.0.10"
+__version__ = "1.0.11"
 
 
 class _ellipsis_list(Sequence):
