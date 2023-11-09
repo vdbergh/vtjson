@@ -421,6 +421,17 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
+    def test_float_equal(self):
+        schema = 2.94
+        object = 2.95
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = schema + 1e-10
+        valid = validate(schema, object)
+        self.assertTrue(valid == "")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,4 +1,5 @@
 import ipaddress
+import math
 import re
 import urllib.parse
 from collections.abc import Sequence
@@ -216,6 +217,22 @@ def _validate_dict(schema, object, name, strict):
     return ""
 
 
+def _validate_object(schema, object, name, strict):
+    message = f"{name} (value:{repr(object)}) is not equal to {repr(schema)}"
+    # special case
+    if isinstance(schema, float):
+        try:
+            if math.isclose(schema, object):
+                return ""
+            else:
+                return message
+        except Exception:
+            return message
+    elif object != schema:
+        return message
+    return ""
+
+
 def validate(schema, object, name="object", strict=True):
     if hasattr(schema, "__validate__"):  # duck typing
         return schema.__validate__(object, name, strict)
@@ -225,9 +242,9 @@ def validate(schema, object, name="object", strict=True):
         return _validate_sequence(schema, object, name, strict)
     elif isinstance(schema, dict):
         return _validate_dict(schema, object, name, strict)
-    elif object != schema:
-        return f"{name} (value:{repr(object)}) is not equal to {repr(schema)}"
-    return ""
+    else:
+        return _validate_object(schema, object, name, strict)
+    assert False
 
 
 # Some predefined schemas

@@ -233,7 +233,7 @@ A schema can be, in order of precedence:
 - A Python type. In that case validation is done by checking membership.
 - A `list` or a `tuple`. Validation is done by first checking membership of the corresponding types, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
 - A dictionary. Validation is done by first checking membership of the `dict` type, and then performing validation for each of the items of the object being validated against the corresponding items of the schema.
-- An arbitrary Python object. Validation is done by checking equality of the schema and the object.
+- An arbitrary Python object. Validation is done by checking equality of the schema and the object, except when the schema is of type `float`, in which case `math.isclose` is used.
 ## Examples
 ```python
 >>> from vtjson import make_type, union, validate
