@@ -432,6 +432,18 @@ class TestValidation(unittest.TestCase):
         valid = validate(schema, object)
         self.assertTrue(valid == "")
 
+    def test_callable(self):
+        schema = lambda x: x % 2 == 0
+        object = 1
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = 2
+        valid = validate(schema, object)
+        print(valid)
+        self.assertTrue(valid == "")
+
 
 if __name__ == "__main__":
     unittest.main()

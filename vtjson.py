@@ -170,6 +170,20 @@ def _validate_type(schema, object, name):
         return f"{schema} is not a valid type"
 
 
+def _validate_callable(schema, object, name):
+    try:
+        __name__ = schema.__name__
+    except Exception:
+        __name__ = schema
+    try:
+        if schema(object):
+            return ""
+        else:
+            return f"{name} (value:{repr(object)}) is not of type {repr(__name__)}"
+    except Exception:
+        return f"Invoking {__name__} on {repr(object)} failed"
+
+
 def _validate_sequence(schema, object, name, strict):
     if type(schema) is not type(object):
         return f"{name} is not of type '{type(schema).__name__}'"
@@ -238,6 +252,8 @@ def validate(schema, object, name="object", strict=True):
         return schema.__validate__(object, name, strict)
     elif isinstance(schema, type):
         return _validate_type(schema, object, name)
+    elif callable(schema):
+        return _validate_callable(schema, object, name)
     elif isinstance(schema, list) or isinstance(schema, tuple):
         return _validate_sequence(schema, object, name, strict)
     elif isinstance(schema, dict):
