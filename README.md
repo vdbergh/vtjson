@@ -232,13 +232,13 @@ A schema can be, in order of precedence:
 >>> from vtjson import make_type, union, validate
 >>> schema = {"fruit" : union("apple", "pear", "strawberry"), "price" : float}
 >>> object = {"fruit" : "dog", "price": 1.0 }
->>> validate(schema, object)
-"object['fruit'] (value:dog) is not equal to 'apple' and object['fruit'] (value:dog) is not equal to 'pear' and object['fruit'] (value:dog) is not equal to 'strawberry'"
+>>> print(validate(schema, object))
+object['fruit'] (value:'dog') is not equal to 'apple' and object['fruit'] (value:'dog') is not equal to 'pear' and object['fruit'] (value:'dog') is not equal to 'strawberry'
 >>> fruit = make_type(union("apple", "pear", "strawberry"), name="fruit")
 >>> schema = {"fruit" : fruit, "price" : float}
->>> validate(schema, object)
-"object['fruit'] (value:dog) is not of type fruit"
+>>> print(validate(schema, object))
+object['fruit'] (value:'dog') is not of type 'fruit'
 >>> object = {"fruit" : "apple"}
->>> validate(schema, object)
-"object['price'] is missing"
+>>> print(validate(schema, object))
+object['price'] is missing
 ```
