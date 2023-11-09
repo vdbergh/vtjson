@@ -12,8 +12,14 @@ Below is the schema of the run object in the mongodb database underlying the Fis
 ```python
 from datetime import datetime
 from bson.objectid import ObjectId
-from numbers import Real  # matches int and float
-from vtjson import ip_address, regex, union, url
+from vtjson import ip_address, number, regex, union, url
+
+net_name = regex("nn-[a-z0-9]{12}.nnue", name="net_name")
+tc = regex(r"([1-9]\d*/)?\d+(\.\d+)?(\+\d+(\.\d+)?)?", name="tc")
+str_int = regex(r"[1-9]\d*", name="str_int")
+sha = regex(r"[a-f0-9]{40}", name="sha")
+country_code = regex(r"[A-Z][A-Z]", name="country_code")
+run_id = regex(r"[a-f0-9]{24}", name="run_id")
 
 worker_info_schema = {
     "uname": str,
@@ -29,7 +35,7 @@ worker_info_schema = {
     "unique_key": str,
     "modified": bool,
     "ARCH": str,
-    "nps": Real,
+    "nps": number,
     "near_github_api_limit": bool,
     "remote_addr": ip_address,
     "country_code": union(country_code, "?"),
@@ -48,7 +54,7 @@ schema = {
     "_id?": ObjectId,
     "start_time": datetime,
     "last_updated": datetime,
-    "tc_base": Real,
+    "tc_base": number,
     "base_same_as_master": bool,
     "results_stale?": bool,
     "rescheduled_from?": run_id,
@@ -89,58 +95,58 @@ schema = {
         "username": str,
         "tests_repo": url,
         "auto_purge": bool,
-        "throughput": Real,
-        "itp": Real,
-        "priority": Real,
+        "throughput": number,
+        "itp": number,
+        "priority": number,
         "adjudication": bool,
         "sprt?": {
-            "alpha": Real,
-            "beta": Real,
-            "elo0": Real,
-            "elo1": Real,
+            "alpha": number,
+            "beta": number,
+            "elo0": number,
+            "elo1": number,
             "elo_model": "normalized",
             "state": union("", "accepted", "rejected"),
-            "llr": Real,
+            "llr": number,
             "batch_size": int,
-            "lower_bound": Real,
-            "upper_bound": Real,
+            "lower_bound": number,
+            "upper_bound": number,
             "lost_samples?": int,
             "illegal_update?": int,
             "overshoot?": {
                 "last_update": int,
                 "skipped_updates": int,
-                "ref0": Real,
-                "m0": Real,
-                "sq0": Real,
-                "ref1": Real,
-                "m1": Real,
-                "sq1": Real,
+                "ref0": number,
+                "m0": number,
+                "sq0": number,
+                "ref1": number,
+                "m1": number,
+                "sq1": number,
             },
         },
         "spsa?": {
-            "A": Real,
-            "alpha": Real,
-            "gamma": Real,
+            "A": number,
+            "alpha": number,
+            "gamma": number,
             "raw_params": str,
             "iter": int,
             "num_iter": int,
             "params": [
                 {
                     "name": str,
-                    "start": Real,
-                    "min": Real,
-                    "max": Real,
-                    "c_end": Real,
-                    "r_end": Real,
-                    "c": Real,
-                    "a_end": Real,
-                    "a": Real,
-                    "theta": Real,
+                    "start": number,
+                    "min": number,
+                    "max": number,
+                    "c_end": number,
+                    "r_end": number,
+                    "c": number,
+                    "a_end": number,
+                    "a": number,
+                    "theta": number,
                 },
                 ...,
             ],
             "param_history?": [
-                [{"theta": Real, "R": Real, "c": Real}, ...],
+                [{"theta": number, "R": number, "c": number}, ...],
                 ...,
             ],
         },
@@ -151,7 +157,7 @@ schema = {
             "active": bool,
             "last_updated": datetime,
             "start": int,
-            "residual?": Real,
+            "residual?": number,
             "residual_color?": str,
             "bad?": True,
             "stats": results_schema,
@@ -165,7 +171,7 @@ schema = {
             "active": False,
             "last_updated": datetime,
             "start": int,
-            "residual": Real,
+            "residual": number,
             "residual_color": str,
             "bad": True,
             "task_id": int,
@@ -215,6 +221,7 @@ A wrapper takes one or more schemas as arguments and produces a new schema.
 - An object matches the schema `strict(schema)` when it matches `schema` with `strict=True`, see below.
 ## Built-ins
 - `regex(pattern, name=None, fullmatch=True)`. This matches the strings which match the given pattern. The optional `name` argument may be used to give the regular expression a descriptive name. By default the entire string is matched, but this can be overruled via the `fullmatch` argument.
+- `number`. Matches `int` and `float`.
 - `email`, `ip_address` and `url`. These match strings with the implied format.
 ## Format
 A schema can be, in order of precedence:

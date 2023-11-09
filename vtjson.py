@@ -5,7 +5,7 @@ from collections.abc import Sequence
 
 from email_validator import EmailNotValidError, validate_email
 
-__version__ = "1.0.8"
+__version__ = "1.0.9"
 
 
 class _ellipsis_list(Sequence):
@@ -232,7 +232,14 @@ def validate(schema, object, name="object", strict=True):
 
 # Some predefined schemas
 
-number = make_type(union(int, float), "number")
+
+class number:
+    @staticmethod
+    def __validate__(object, name, strict):
+        if isinstance(object, int) or isinstance(object, float):
+            return ""
+        else:
+            return f"{name} (value:{repr(object)}) is not of type 'number'"
 
 
 class email:
