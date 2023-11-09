@@ -178,7 +178,7 @@ schema = {
 ```
 ## Conventions
 - As in typescript, a (string) key ending in "?" represents an optional key. The corresponding schema (the item the key points to) will only be used for validation when the key is present in the object that should be validated. A key can also be made optional by wrapping it as `optional_key(key)`.
-- If in a list/tuple the last entry is `...` (`ellipsis`) it means that the next to last entry will be repeated zero or more times. In this way generic types can be created. For example the schema `[str, ...]` represents a list of strings.
+- If in a list/tuple the last entry is `...` (ellipsis) it means that the next to last entry will be repeated zero or more times. In this way generic types can be created. For example the schema `[str, ...]` represents a list of strings.
 - The schema may contain tuples, even though these are not valid JSON. In fact any Python object is a valid schema (see below).
 ## Usage
 To validate an object against a schema one can simply do
@@ -192,7 +192,7 @@ validate(schema, object, name="object", strict=True)
 - The optional `name` argument is used to refer to the object being validated in the returned message.
 - The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
 ## Creating types
-A cool feature of vtjson is that one can transform a schema into a genuine Python type via
+A cool feature of `vtjson` is that one can transform a schema into a genuine Python type via
 ```python
 t = make_type(schema)
 ```
@@ -205,7 +205,7 @@ The full signature of `make_type` is
 ```python
 make_type(schema, name=None, strict=True, debug=False)
 ```
-The optional `name` argument is used to set the `__name__` attribute of the type. If it is not supplied then vtjson tries to make an educated guess.
+The optional `name` argument is used to set the `__name__` attribute of the type. If it is not supplied then `vtjson` tries to make an educated guess.
 ## Wrappers
 A wrapper takes one or more schemas as arguments and produces a new schema.
 - An object matches the schema `union(schema1, schema2)` if it matches `schema1` or `schema2`. Unions of more than two schemas are also valid.
@@ -222,14 +222,14 @@ A schema can be, in order of precedence:
   ```python
   __validate__(object, name, strict)
   ```
-  This is for example how the `union` and `regex` schemas are implemented internally. The parameters and the return value of `__validate__()` have the same semantics as those of `validate()`, as discussed above.
+  This is for example how the wrapper schemas are implemented internally. The parameters and the return value of `__validate__()` have the same semantics as those of `validate()`, as discussed above.
 - A Python type. In that case validation is done by checking membership.
 - A `list` or a `tuple`. Validation is done by first checking membership of the corresponding types, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
 - A dictionary. Validation is done by first checking membership of the `dict` type, and then performing validation for each of the items of the object being validated against the corresponding items of the schema.
 - An arbitrary Python object. Validation is done by checking equality of the schema and the object.
 ## Examples
 ```python
->>> from validate import make_type, union, validate
+>>> from vtjson import make_type, union, validate
 >>> schema = {"fruit" : union("apple", "pear", "strawberry"), "price" : float}
 >>> object = {"fruit" : "dog", "price": 1.0 }
 >>> validate(schema, object)
