@@ -1,5 +1,6 @@
 import copy
 import math
+import sys
 from datetime import datetime, timezone
 from timeit import timeit
 
@@ -103,7 +104,7 @@ runs_schema = {
             "state": union("", "accepted", "rejected"),
             "llr": number,
             "batch_size": int,
-            "lower_bound": math.log(19),
+            "lower_bound": -math.log(19),
             "upper_bound": math.log(19),
             "lost_samples?": int,
             "illegal_update?": int,
@@ -304,7 +305,9 @@ for i in range(total_tasks):
 
 
 valid = validate(runs_schema, run_sprt_object)
-assert valid == ""
+if valid != "":
+    print(valid)
+    sys.exit()
 
 N = 20
 t = timeit("validate(runs_schema, run_sprt_object)", number=N, globals=globals())
