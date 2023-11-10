@@ -264,9 +264,9 @@ A: Perhaps. That would be more Pythonic. On the other hand the current approach 
 
 Q: How to combine validations?
 
-A: Use `intersect`. For example the following schema validates postive integers.
+A: Use `intersect`. For example the following schema validates positive integers.
 ```python
-schema = intersect(int, interval(0, ...)
+schema = intersect(int, interval(0, ...))
 ```
 More generally one can use `intersect(schema, more_validations)` where the first argument makes sure that the object to be validated has the desired layout to be an acceptable input for the following arguments. E.g. an ordered pair of integers can be validated
 using the schema
