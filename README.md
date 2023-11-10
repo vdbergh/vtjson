@@ -266,20 +266,20 @@ Q: How to combine validations?
 
 A: Use `intersect`. For example the following schema validates postive integers.
 ```python
-intersect(int, interval(0, ...)
+schema = intersect(int, interval(0, ...)
 ```
-More generally one can use `intersect(schema, more_validations)` where the first argument makes sure that the `object` has the desired layout to be an acceptable input for the second argument. E.g. an ordered pair of integers can be validated
+More generally one can use `intersect(schema, more_validations)` where the first argument makes sure that the object to be validated has the desired layout to be an acceptable input for the following arguments. E.g. an ordered pair of integers can be validated
 using the schema
 ```python
 def ordered_pair(o):
     return o[0] <= o[1]
-intersect((int, int), ordered_pair)
+schema = intersect((int, int), ordered_pair)
 ```
 Or in a one liner
 ```python
-intersect((int, int), make_type(lambda o: o[0] <= o[1], name="ordered_pair"))
+schema = intersect((int, int), make_type(lambda o: o[0] <= o[1], name="ordered_pair"))
 ```
-The following also works if you are content with less nice output (try it)
+The following also works if you are content with less nice output on validation failure (try it)
 ```
-intersect((int, int), lambda o: o[0] <= o[1])
+schema = intersect((int, int), lambda o: o[0] <= o[1])
 ```
