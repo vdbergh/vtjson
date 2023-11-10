@@ -304,11 +304,11 @@ for i in range(total_tasks):
     run_sprt_object["tasks"].append(copy.deepcopy(task_object))
 
 
-valid = validate(runs_schema, run_sprt_object)
+valid = validate(runs_schema, run_sprt_object, "run")
 if valid != "":
     print(valid)
     sys.exit()
 
 N = 20
-t = timeit("validate(runs_schema, run_sprt_object)", number=N, globals=globals())
+t = timeit("validate(runs_schema, run_sprt_object, 'run')", number=N, globals=globals())
 print(f"Validating an SPRT run with {total_tasks} tasks takes {1000*t/N:.0f} ms")

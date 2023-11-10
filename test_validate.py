@@ -491,6 +491,13 @@ class TestValidation(unittest.TestCase):
         valid = validate(schema, object)
         self.assertTrue(valid == "")
 
+    def test_type(self):
+        schema = list[str]
+        object = ["a", "b"]
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
     def test_callable(self):
         def even(x):
             return x % 2 == 0

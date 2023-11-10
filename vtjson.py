@@ -168,15 +168,18 @@ class interval:
         self.ub_s = "..." if ub == ... else repr(ub)
 
     def __validate__(self, object, name, strict):
-        self.message = f"{name} (value:{repr(object)}) is not in the interval ({self.lb_s},{self.ub_s})"
+        message = (
+            f"{name} (value:{repr(object)}) is not in the interval "
+            + f"[{self.lb_s},{self.ub_s}]"
+        )
         try:
             if self.lb != ... and object < self.lb:
-                return self.message
+                return message
             if self.ub != ... and object > self.ub:
-                return self.message
+                return message
             return ""
-        except Exception:
-            return self.message
+        except Exception as e:
+            return f"{message}: {str(e)}"
 
 
 def _validate_type(schema, object, name):
@@ -185,8 +188,8 @@ def _validate_type(schema, object, name):
             return f"{name} (value:{repr(object)}) is not of type '{schema.__name__}'"
         else:
             return ""
-    except Exception:
-        return f"{schema} is not a valid type"
+    except Exception as e:
+        return f"{schema} is not a valid type: {str(e)}"
 
 
 def _validate_callable(schema, object, name):
@@ -200,8 +203,8 @@ def _validate_callable(schema, object, name):
             return ""
         else:
             return message
-    except Exception:
-        return message
+    except Exception as e:
+        return f"{message}: {str(e)}"
 
 
 def _validate_sequence(schema, object, name, strict):
