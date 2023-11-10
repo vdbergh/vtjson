@@ -268,7 +268,7 @@ A: Use `intersect`. For example the following schema validates positive integers
 ```python
 schema = intersect(int, interval(0, ...))
 ```
-More generally one can use `intersect(schema, more_validations)` where the first argument makes sure that the object to be validated has the desired layout to be an acceptable input for the following arguments. E.g. an ordered pair of integers can be validated
+More generally one can use the pattern `intersect(schema, more_validations)` where the first argument makes sure that the object to be validated has the desired layout to be an acceptable input for the following arguments. E.g. an ordered pair of integers can be validated
 using the schema
 ```python
 def ordered_pair(o):
