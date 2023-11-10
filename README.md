@@ -256,7 +256,7 @@ object['price'] is missing
 ## FAQ
 Q: Why not just use `json-schema`?
 
-A: `vtjson` can validate objects which are more general than strictly json. See the example above. But the main reason for the existence of `vtjson` is that it is easily extensible in a Pythonic way.
+A: `vtjson` can validate objects which are more general than strictly JSON. See the example above. But the main reason for the existence of `vtjson` is that it is easily extensible in a Pythonic way.
 
 Q: Shouldn't `validate` throw an exception instead of returning a string when validation fails?
 
