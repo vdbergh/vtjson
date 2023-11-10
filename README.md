@@ -253,3 +253,33 @@ object['fruit'] (value:'dog') is not of type 'fruit'
 >>> print(validate(schema, object))
 object['price'] is missing
 ```
+## FAQ
+Q: Why not just use `json-schema`?
+
+A: `vtjson` can validate objects which are more general than strictly json. See the example above. But the main reason for the existence of `vtjson` is that it is easily extensible in a Pythonic way.
+
+Q: Shouldn't `validate` throw an exception instead of returning a string when validation fails?
+
+A: Perhaps. That would be more Pythonic. On the other hand the current approach seems easier to use. I am thinking about it.
+
+Q: How to combine validations?
+
+A: Use `intersect`. For example the following schema validates postive integers.
+```python
+intersect(int, interval(0, ...)
+```
+More generally one can use `intersect(schema, more_validations)` where the first argument makes sure that the `object` has the desired layout to be an acceptable input for the second argument. E.g. an ordered pair of integers can be validated
+using the schema
+```python
+def ordered_pair(o):
+    return o[0] <= o[1]
+intersect((int, int), ordered_pair)
+```
+Or in a one liner
+```python
+intersect((int, int), make_type(lambda o: o[0] <= o[1], name="ordered_pair"))
+```
+The following also works if you are content with less nice output (try it)
+```
+intersect((int, int), lambda o: o[0] <= o[1])
+```
