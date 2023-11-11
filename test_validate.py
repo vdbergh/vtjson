@@ -1,3 +1,4 @@
+import sys
 import unittest
 
 from vtjson import (
@@ -491,6 +492,10 @@ class TestValidation(unittest.TestCase):
         valid = validate(schema, object)
         self.assertTrue(valid == "")
 
+    @unittest.skipUnless(
+        sys.version_info.major == 3 and sys.version_info.minor in [9, 10],
+        "Parametrized types are in flux",
+    )
     def test_type(self):
         schema = list[str]
         object = ["a", "b"]
