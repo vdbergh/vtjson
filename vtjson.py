@@ -6,6 +6,14 @@ from collections.abc import Sequence
 
 from email_validator import EmailNotValidError, validate_email
 
+try:
+    from types import GenericAlias
+except ImportError:
+    # For compatibility with older Pythons
+    class GenericAlias(type):
+        pass
+
+
 __version__ = "1.1.3"
 
 
@@ -273,7 +281,8 @@ def _validate_object(schema, object, name, strict):
 def validate(schema, object, name="object", strict=True):
     if hasattr(schema, "__validate__"):  # duck typing
         return schema.__validate__(object, name, strict)
-    elif isinstance(schema, type):
+    # In Python 3.11 instances of GenericAlias are not types
+    elif isinstance(schema, type) or isinstance(schema, GenericAlias):
         return _validate_type(schema, object, name)
     elif callable(schema):
         return _validate_callable(schema, object, name)

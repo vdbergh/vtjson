@@ -493,8 +493,8 @@ class TestValidation(unittest.TestCase):
         self.assertTrue(valid == "")
 
     @unittest.skipUnless(
-        sys.version_info.major == 3 and sys.version_info.minor in [9, 10],
-        "Parametrized types are in flux",
+        sys.version_info.major == 3 and sys.version_info.minor >= 9,
+        "Parametrized types were introduced in Python 3.9",
     )
     def test_type(self):
         schema = list[str]
