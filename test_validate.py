@@ -431,6 +431,11 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
+        object = "@user00.user00"
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
     def test_ip_address(self):
         schema = {"ip": ip_address}
         object = {"ip": "123.123.123.123"}
