@@ -152,9 +152,8 @@ class regex:
         try:
             self.pattern = re.compile(regex, flags)
         except Exception as e:
-            self.message = (
-                f"{regex} (name: {'name'}) is an invalid regular expression: {str(e)}"
-            )
+            _name = f" (name: {repr(name)})" if name is not None else ""
+            self.message = f"{regex}{_name} is an invalid regular expression: {str(e)}"
 
     def __validate__(self, object, name, strict):
         if self.message != "":

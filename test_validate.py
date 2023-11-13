@@ -320,6 +320,12 @@ class TestValidation(unittest.TestCase):
         self.assertTrue(valid == "")
 
     def test_regex(self):
+        schema = regex({})
+        object = "dummy"
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
         schema = regex({}, name="test")
         object = "dummy"
         self.assertTrue(schema.__name__ == "test")
