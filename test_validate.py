@@ -1,3 +1,4 @@
+import re
 import sys
 import unittest
 
@@ -357,6 +358,23 @@ class TestValidation(unittest.TestCase):
         self.assertTrue(valid == "")
 
         object = {"ip": ""}
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = regex(".")
+        object = "\n"
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = regex(".", flags=re.DOTALL)
+        object = "\n"
+        valid = validate(schema, object)
+        self.assertTrue(valid == "")
+
+        schema = regex(".", flags=re.ASCII | re.MULTILINE)
+        object = "\n"
         valid = validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")

@@ -14,7 +14,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.1.4"
+__version__ = "1.1.5"
 
 
 class _ellipsis_list(Sequence):
@@ -139,16 +139,18 @@ class strict:
 
 
 class regex:
-    def __init__(self, regex, name=None, fullmatch=True):
+    def __init__(self, regex, name=None, fullmatch=True, flags=0):
         self.regex = regex
         self.fullmatch = fullmatch
         if name is not None:
             self.__name__ = name
         else:
-            self.__name__ = f"regex({repr(regex)})"
+            _flags = "" if flags == 0 else f", flags={flags}"
+            _fullmatch = "" if fullmatch else ", fullmatch=False"
+            self.__name__ = f"regex({repr(regex)}{_fullmatch}{_flags})"
         self.message = ""
         try:
-            self.pattern = re.compile(regex)
+            self.pattern = re.compile(regex, flags)
         except Exception as e:
             self.message = (
                 f"{regex} (name: {'name'}) is an invalid regular expression: {str(e)}"

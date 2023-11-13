@@ -221,7 +221,7 @@ A wrapper takes one or more schemas as arguments and produces a new schema.
 - An object matches the schema `lax(schema)` when it matches `schema` with `strict=False`, see below.
 - An object matches the schema `strict(schema)` when it matches `schema` with `strict=True`, see below.
 ## Built-ins
-- `regex(pattern, name=None, fullmatch=True)`. This matches the strings which match the given pattern. The optional `name` argument may be used to give the regular expression a descriptive name. By default the entire string is matched, but this can be overruled via the `fullmatch` argument.
+- `regex(pattern, name=None, fullmatch=True, flags=0)`. This matches the strings which match the given pattern. The optional `name` argument may be used to give the regular expression a descriptive name. By default the entire string is matched, but this can be overruled via the `fullmatch` argument. The `flags` argument has the usual meaning.
 - `interval(lowerbound, upperbound)`. This checks if `lowerbound <= object <= upperbound`, provided the comparisons make sense. An upper/lowerbound `...` (ellipsis) means that the
 corresponding inequality is not checked.
 - `number`. Matches `int` and `float`.
