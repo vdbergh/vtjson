@@ -14,7 +14,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.1.5"
+__version__ = "1.1.6"
 
 
 class _ellipsis_list(Sequence):
