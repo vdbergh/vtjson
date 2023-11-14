@@ -146,7 +146,7 @@ class set_name:
     def __validate__(self, object, name, strict):
         message = validate(self.schema, object, name=name, strict=strict)
         if message != "":
-            return f"{name} is not of type '{self.__name__}'"
+            return f"{name} (value: {repr(object)}) is not of type '{self.__name__}'"
         return ""
 
 

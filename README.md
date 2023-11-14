@@ -246,7 +246,7 @@ A schema can be, in order of precedence:
 >>> object = {"fruit" : "dog", "price": 1.0 }
 >>> print(validate(schema, object))
 object['fruit'] (value:'dog') is not equal to 'apple' and object['fruit'] (value:'dog') is not equal to 'pear' and object['fruit'] (value:'dog') is not equal to 'strawberry'
->>> fruit = make_type(union("apple", "pear", "strawberry"), name="fruit")
+>>> fruit = set_name(union("apple", "pear", "strawberry"), "fruit")
 >>> schema = {"fruit" : fruit, "price" : float}
 >>> print(validate(schema, object))
 object['fruit'] (value:'dog') is not of type 'fruit'
