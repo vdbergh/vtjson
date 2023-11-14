@@ -14,7 +14,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.1.6"
+__version__ = "1.1.7"
 
 
 class _ellipsis_list(Sequence):
@@ -136,6 +136,18 @@ class strict:
 
     def __validate__(self, object, name, strict):
         return validate(self.schema, object, name=name, strict=True)
+
+
+class set_name:
+    def __init__(self, schema, name):
+        self.schema = schema
+        self.__name__ = name
+
+    def __validate__(self, object, name, strict):
+        message = validate(self.schema, object, name=name, strict=strict)
+        if message != "":
+            return f"{name} is not of type '{self.__name__}'"
+        return ""
 
 
 class regex:

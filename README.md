@@ -220,6 +220,7 @@ A wrapper takes one or more schemas as arguments and produces a new schema.
 - An object matches the schema `complement(schema)` if it does not match `schema`.
 - An object matches the schema `lax(schema)` when it matches `schema` with `strict=False`, see below.
 - An object matches the schema `strict(schema)` when it matches `schema` with `strict=True`, see below.
+- An object matches the schema `set_name(schema, name)` when it matches `schema`. But the `name` argument will be used in non-validation messages.
 ## Built-ins
 - `regex(pattern, name=None, fullmatch=True, flags=0)`. This matches the strings which match the given pattern. The optional `name` argument may be used to give the regular expression a descriptive name. By default the entire string is matched, but this can be overruled via the `fullmatch` argument. The `flags` argument has the usual meaning.
 - `interval(lowerbound, upperbound)`. This checks if `lowerbound <= object <= upperbound`, provided the comparisons make sense. An upper/lowerbound `...` (ellipsis) means that the
@@ -276,7 +277,7 @@ schema = intersect((int, int), ordered_pair)
 ```
 Or in a one liner
 ```python
-schema = intersect((int, int), make_type(lambda o: o[0] <= o[1], name="ordered_pair"))
+schema = intersect((int, int), set_name(lambda o: o[0] <= o[1], "ordered_pair"))
 ```
 The following also works if you are content with less nice output on validation failure (try it)
 ```

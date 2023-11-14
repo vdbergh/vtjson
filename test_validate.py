@@ -13,6 +13,7 @@ from vtjson import (
     make_type,
     number,
     regex,
+    set_name,
     strict,
     union,
     url,
@@ -147,6 +148,12 @@ class TestValidation(unittest.TestCase):
         valid = validate(schema, object)
         self.assertTrue(valid == "")
 
+        schema = intersect((int, int), set_name(lambda o: o[0] <= o[1], "ordered_pair"))
+        object = (3, 2)
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
     def test_complement(self):
         schema = intersect(url, complement(regex(r"^https", fullmatch=False)))
         object = "ftp://example.com"
@@ -157,6 +164,19 @@ class TestValidation(unittest.TestCase):
         valid = validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
+
+    def test_set_name(self):
+        schema = set_name("a", "dummy")
+        self.assertTrue(schema.__name__ == "dummy")
+
+        object = "b"
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = "a"
+        valid = validate(schema, object)
+        self.assertTrue(valid == "")
 
     def test_lax(self):
         schema = lax(["a", "b", "c"])
@@ -312,7 +332,7 @@ class TestValidation(unittest.TestCase):
                 for c in object:
                     if not ("a" <= c <= "z"):
                         return (
-                            f"{c}, contained in the string {repr(name)} "
+                            f"{c}, contained in the string {name} "
                             + f"(value: {repr(object)}) is not a lower case letter"
                         )
                 return ""
