@@ -124,6 +124,29 @@ class TestValidation(unittest.TestCase):
         valid = validate(schema, object)
         self.assertTrue(valid == "")
 
+        def ordered_pair(o):
+            return o[0] <= o[1]
+
+        schema = intersect((int, int), ordered_pair)
+        object = (3, 2)
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = (1, 3, 2)
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = ("a", "b")
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = (1, 2)
+        valid = validate(schema, object)
+        self.assertTrue(valid == "")
+
     def test_complement(self):
         schema = intersect(url, complement(regex(r"^https", fullmatch=False)))
         object = "ftp://example.com"
