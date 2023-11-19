@@ -228,7 +228,7 @@ corresponding inequality is not checked.
 - `number`. Matches `int` and `float`.
 - `email`. Checks if the object is a valid email address. This uses the package `email_validator`. The `email` schema accepts the same options as `validate_email` in loc. cit.
 - `ip_address` and `url`. These are similar to `email`.
-- `date`. Without argument this represents an ISO_8601 date. An argument corresponds to a format string for `strftime`.
+- `date`. Without argument this represents an ISO 8601 date. An argument corresponds to a format string for `strftime`.
 ## Format
 A schema can be, in order of precedence:
 - An object having a `__validate__` attribute with signature
