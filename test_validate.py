@@ -5,6 +5,7 @@ import unittest
 from vtjson import (
     _keys,
     complement,
+    date,
     email,
     intersect,
     interval,
@@ -113,6 +114,37 @@ class TestValidation(unittest.TestCase):
         valid = validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
+
+    def test_date(self):
+        schema = date
+        object = "2000-30-30"
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = "2000-12-300"
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = "2000-12-30"
+        valid = validate(schema, object)
+        self.assertTrue(valid == "")
+
+        schema = date("%Y^%m^%d")
+        object = "2000^12^300"
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = "2000^12-30"
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = "2000^12^30"
+        valid = validate(schema, object)
+        self.assertTrue(valid == "")
 
     def test_set(self):
         schema = {2, 3}

@@ -1,3 +1,4 @@
+import datetime
 import ipaddress
 import math
 import re
@@ -14,7 +15,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.1.9"
+__version__ = "1.1.10"
 
 
 class _ellipsis_list(Sequence):
@@ -364,3 +365,30 @@ class url:
         if all([result.scheme, result.netloc]):
             return ""
         return f"{name} (value:{repr(object)}) is not of type 'url'"
+
+
+class date:
+    @staticmethod
+    def __validate__(object, name, strict):
+        try:
+            datetime.datetime.fromisoformat(object)
+        except Exception as e:
+            return (
+                f"{name} (value:{repr(object)}) is not a valid ISO 8601 date: {str(e)}"
+            )
+        return ""
+
+    def __init__(self, format):
+        self.format = format
+        self.__validate__ = self.__validate2__
+        self.__name__ = f"date({repr(format)})"
+
+    def __validate2__(self, object, name, strict):
+        try:
+            datetime.datetime.strptime(object, self.format)
+        except Exception:
+            return (
+                f"{name} (value:{repr(object)}) is not "
+                + "of type {repr(self.__name__)}: {str(e)}"
+            )
+        return ""
