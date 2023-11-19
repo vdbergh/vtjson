@@ -226,7 +226,8 @@ A wrapper takes one or more schemas as arguments and produces a new schema.
 - `interval(lowerbound, upperbound)`. This checks if `lowerbound <= object <= upperbound`, provided the comparisons make sense. An upper/lowerbound `...` (ellipsis) means that the
 corresponding inequality is not checked.
 - `number`. Matches `int` and `float`.
-- `email`, `ip_address` and `url`. These match strings with the implied format.
+- `email`. Checks if the object is a valid email address. This uses the package `email_validator`. The `email` schema accepts the same options as `validate_email` in loc. cit.
+- ip_address` and `url`. These are similar to `email`.
 ## Format
 A schema can be, in order of precedence:
 - An object having a `__validate__` attribute with signature
@@ -254,8 +255,9 @@ object['fruit'] (value:'dog') is not of type 'fruit'
 >>> print(validate(schema, object))
 object['price'] is missing
 ```
+For many more examples see the file `test_validate.py` in the source distribution.
 ## FAQ
-Q: Why not just use `json-schema`?
+Q: Why not just use `jsonschema`?
 
 A: `vtjson` can validate objects which are more general than strictly JSON. See the example above. But the main reason for the existence of `vtjson` is that it is easily extensible in a Pythonic way.
 
