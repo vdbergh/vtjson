@@ -243,7 +243,7 @@ A schema can be, in order of precedence:
 - An arbitrary Python object. Validation is done by checking equality of the schema and the object, except when the schema is of type `float`, in which case `math.isclose` is used.
 ## Examples
 ```python
->>> from vtjson import make_type, union, validate
+>>> from vtjson import set_name, validate
 >>> schema = {"fruit" : {"apple", "pear", "strawberry"}, "price" : float}
 >>> object = {"fruit" : "dog", "price": 1.0 }
 >>> print(validate(schema, object))
