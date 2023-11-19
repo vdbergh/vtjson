@@ -115,7 +115,11 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
-    def test_date(self):
+    @unittest.skipUnless(
+        sys.version_info.major == 3 and sys.version_info.minor >= 7,
+        "datetime.datetime.fromisoformat was introduced in Python 3.7",
+    )
+    def test_date2(self):
         schema = date
         object = "2000-30-30"
         valid = validate(schema, object)
@@ -131,6 +135,7 @@ class TestValidation(unittest.TestCase):
         valid = validate(schema, object)
         self.assertTrue(valid == "")
 
+    def test_date(self):
         schema = date("%Y^%m^%d")
         object = "2000^12^300"
         valid = validate(schema, object)
