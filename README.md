@@ -227,7 +227,7 @@ A wrapper takes one or more schemas as arguments and produces a new schema.
 corresponding inequality is not checked.
 - `number`. Matches `int` and `float`.
 - `email`. Checks if the object is a valid email address. This uses the package `email_validator`. The `email` schema accepts the same options as `validate_email` in loc. cit.
-- ip_address` and `url`. These are similar to `email`.
+- `ip_address` and `url`. These are similar to `email`.
 ## Format
 A schema can be, in order of precedence:
 - An object having a `__validate__` attribute with signature
