@@ -323,8 +323,16 @@ class number:
 class email:
     @staticmethod
     def __validate__(object, name, strict):
+        return email(check_deliverability=False).__validate__(object, name, strict)
+
+    def __init__(self, *args, **kw):
+        self.args = args
+        self.kw = kw
+        self.__validate__ = self.__validate2__
+
+    def __validate2__(self, object, name, strict):
         try:
-            validate_email(object, check_deliverability=False)
+            validate_email(object, *self.args, **self.kw)
             return ""
         except EmailNotValidError as e:
             return (

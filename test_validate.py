@@ -503,6 +503,21 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
+        schema = email(check_deliverability=True)
+        object = "user@example.com"
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        object = "user@google.com"
+        valid = validate(schema, object)
+        self.assertTrue(valid == "")
+
+        object = "user@ffdfsdfsdfsasddasdadasad.com"
+        valid = validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
     def test_ip_address(self):
         schema = {"ip": ip_address}
         object = {"ip": "123.123.123.123"}
