@@ -32,14 +32,14 @@ worker_info_schema = {
     "version": int,
     "python_version": [int, int, int],
     "gcc_version": [int, int, int],
-    "compiler": union("clang++", "g++"),
+    "compiler": {"clang++", "g++"},
     "unique_key": str,
     "modified": bool,
     "ARCH": str,
     "nps": number,
     "near_github_api_limit": bool,
     "remote_addr": ip_address,
-    "country_code": union(country_code, "?"),
+    "country_code": {country_code, "?"},
 }
 
 results_schema = {
@@ -106,7 +106,7 @@ schema = {
             "elo0": number,
             "elo1": number,
             "elo_model": "normalized",
-            "state": union("", "accepted", "rejected"),
+            "state": {"", "accepted", "rejected"},
             "llr": number,
             "batch_size": int,
             "lower_bound": -math.log(19),
@@ -215,7 +215,7 @@ make_type(schema, name=None, strict=True, debug=False)
 The optional `name` argument is used to set the `__name__` attribute of the type. If it is not supplied then `vtjson` tries to make an educated guess.
 ## Wrappers
 A wrapper takes one or more schemas as arguments and produces a new schema.
-- An object matches the schema `union(schema1, schema2)` if it matches `schema1` or `schema2`. Unions of more than two schemas are also valid.
+- An object matches the schema `union(schema1, schema2)` if it matches `schema1` or `schema2`. Unions of more than two schemas are also valid. This is almost the same as `{schema1, schema2}`. Or `set(schema1, schema2)`.
 - An object matches the schema `intersect(schema1, schema2)` if it matches `schema1` and `schema2`. Intersections of more than two schemas are also valid.
 - An object matches the schema `complement(schema)` if it does not match `schema`.
 - An object matches the schema `lax(schema)` when it matches `schema` with `strict=False`, see below.
@@ -239,15 +239,16 @@ A schema can be, in order of precedence:
 - A callable. Validation is done by applying the callable to the object.
 - A `list` or a `tuple`. Validation is done by first checking membership of the corresponding types, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
 - A dictionary. Validation is done by first checking membership of the `dict` type, and then performing validation for each of the items of the object being validated against the corresponding items of the schema.
+- A `set`. A set validates an object, if one of its members does.
 - An arbitrary Python object. Validation is done by checking equality of the schema and the object, except when the schema is of type `float`, in which case `math.isclose` is used.
 ## Examples
 ```python
 >>> from vtjson import make_type, union, validate
->>> schema = {"fruit" : union("apple", "pear", "strawberry"), "price" : float}
+>>> schema = {"fruit" : {"apple", "pear", "strawberry"}, "price" : float}
 >>> object = {"fruit" : "dog", "price": 1.0 }
 >>> print(validate(schema, object))
 object['fruit'] (value:'dog') is not equal to 'apple' and object['fruit'] (value:'dog') is not equal to 'pear' and object['fruit'] (value:'dog') is not equal to 'strawberry'
->>> fruit = set_name(union("apple", "pear", "strawberry"), "fruit")
+>>> fruit = set_name({"apple", "pear", "strawberry"}, "fruit")
 >>> schema = {"fruit" : fruit, "price" : float}
 >>> print(validate(schema, object))
 object['fruit'] (value:'dog') is not of type 'fruit'

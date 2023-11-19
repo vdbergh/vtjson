@@ -114,6 +114,19 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
+    def test_set(self):
+        schema = {2, 3}
+        object = 5
+        valid = validate(schema, object, strict=False)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = {int, str}
+        object = 1.0
+        valid = validate(schema, object, strict=False)
+        print(valid)
+        self.assertFalse(valid == "")
+
     def test_intersect(self):
         schema = intersect(url, regex(r"^https", fullmatch=False))
         object = "ftp://example.com"

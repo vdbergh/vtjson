@@ -4,7 +4,7 @@ import re
 import urllib.parse
 from collections.abc import Sequence
 
-from email_validator import EmailNotValidError, validate_email
+import email_validator
 
 try:
     from types import GenericAlias as _GenericAlias
@@ -14,7 +14,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.1.8"
+__version__ = "1.1.9"
 
 
 class _ellipsis_list(Sequence):
@@ -247,6 +247,11 @@ def _validate_sequence(schema, object, name, strict):
     return ""
 
 
+def _validate_set(schema, object, name, strict):
+    schema_ = union(*(list(schema)))
+    return validate(schema_, object, name, strict)
+
+
 def _validate_dict(schema, object, name, strict):
     if type(schema) is not type(object):
         return f"{name} is not of type '{type(schema).__name__}'"
@@ -303,6 +308,8 @@ def validate(schema, object, name="object", strict=True):
         return _validate_sequence(schema, object, name, strict)
     elif isinstance(schema, dict):
         return _validate_dict(schema, object, name, strict)
+    elif isinstance(schema, set):
+        return _validate_set(schema, object, name, strict)
     else:
         return _validate_object(schema, object, name, strict)
     assert False
@@ -332,9 +339,9 @@ class email:
 
     def __validate2__(self, object, name, strict):
         try:
-            validate_email(object, *self.args, **self.kw)
+            email_validator.validate_email(object, *self.args, **self.kw)
             return ""
-        except EmailNotValidError as e:
+        except email_validator.EmailNotValidError as e:
             return (
                 f"{name} (value:{repr(object)}) is not a valid email address: {str(e)}"
             )
