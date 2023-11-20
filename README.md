@@ -189,9 +189,9 @@ schema = {
 ## Usage
 To validate an object against a schema one can simply do
 ```python
-explanation = validate(schema, object)
+validate(schema, object)
 ```  
-If the validation is succesful then the return value is the empty string. Otherwise it contains an explanation what went wrong. The full signature of `validate` is
+If the validation fails this will throw a `ValidationError` and the exception contains an explanation about what went wrong. The full signature of `validate` is
 ```python
 validate(schema, object, name="object", strict=True)
 ```
@@ -219,7 +219,7 @@ A schema can be, in order of precedence:
   ```python
   __validate__(object, name, strict)
   ```
-  This is for example how the wrapper schemas are implemented internally. The parameters and the return value of `__validate__()` have the same semantics as those of `validate()`, as discussed above.
+  This is for example how the wrapper schemas are implemented internally. The parameters of `__validate__()` have the same semantics as those of `validate()`. The return value of `__validate__()` should e `""` if validation succeeds, and otherwise it should be an explanation about what went wrong.
 - A Python type. In that case validation is done by checking membership.
 - A callable. Validation is done by applying the callable to the object.
 - A `list` or a `tuple`. Validation is done by first checking membership of the corresponding types, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
@@ -246,25 +246,24 @@ The optional `name` argument is used to set the `__name__` attribute of the type
 >>> from vtjson import set_name, validate
 >>> schema = {"fruit" : {"apple", "pear", "strawberry"}, "price" : float}
 >>> object = {"fruit" : "dog", "price": 1.0 }
->>> print(validate(schema, object))
-object['fruit'] (value:'dog') is not equal to 'apple' and object['fruit'] (value:'dog') is not equal to 'pear' and object['fruit'] (value:'dog') is not equal to 'strawberry'
+>>> validate(schema, object)
+...
+vtjson.ValidationError: object['fruit'] (value:'dog') is not equal to 'pear' and object['fruit'] (value:'dog') is not equal to 'strawberry' and object['fruit'] (value:'dog') is not equal to 'apple'
 >>> fruit = set_name({"apple", "pear", "strawberry"}, "fruit")
 >>> schema = {"fruit" : fruit, "price" : float}
->>> print(validate(schema, object))
-object['fruit'] (value:'dog') is not of type 'fruit'
+>>> validate(schema, object)
+...
+vtjson.ValidationError: object['fruit'] (value: 'dog') is not of type 'fruit'
 >>> object = {"fruit" : "apple"}
->>> print(validate(schema, object))
-object['price'] is missing
+>>> validate(schema, object)
+...
+vtjson.ValidationError: object['price'] is missing
 ```
 For many more examples see the file `test_validate.py` in the source distribution.
 ## FAQ
 Q: Why not just use `jsonschema`?
 
 A: `vtjson` can validate objects which are more general than strictly JSON. See the example above. But the main reason for the existence of `vtjson` is that it is easily extensible in a Pythonic way.
-
-Q: Shouldn't `validate` throw an exception instead of returning a string when validation fails?
-
-A: Perhaps. That would be more Pythonic. On the other hand the current approach seems easier to use. I am thinking about it.
 
 Q: How to combine validations?
 
