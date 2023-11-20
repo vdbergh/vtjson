@@ -4,6 +4,7 @@ import unittest
 
 from vtjson import (
     _keys,
+    _validate,
     complement,
     date,
     email,
@@ -18,7 +19,6 @@ from vtjson import (
     strict,
     union,
     url,
-    _validate,
 )
 
 

@@ -7,8 +7,10 @@ from collections.abc import Sequence
 
 import email_validator
 
+
 class ValidationError(Exception):
     pass
+
 
 try:
     from types import GenericAlias as _GenericAlias
@@ -18,7 +20,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.1.10"
+__version__ = "1.1.11"
 
 
 class _ellipsis_list(Sequence):
