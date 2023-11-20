@@ -18,7 +18,7 @@ from vtjson import (
     strict,
     union,
     url,
-    validate,
+    _validate,
 )
 
 
@@ -31,87 +31,87 @@ class TestValidation(unittest.TestCase):
     def test_strict(self):
         schema = {"a?": 1, "b": 2}
         object = {"b": 2, "c": 3}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = {"a": 1, "c": 3}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = {"a": 1, "b": 2}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         object = {"b": 2}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
     def test_missing_keys(self):
         schema = {"a?": 1, "b": 2}
         object = {"b": 2, "c": 3}
-        valid = validate(schema, object, strict=False)
+        valid = _validate(schema, object, strict=False)
         self.assertTrue(valid == "")
 
         object = {"a": 1, "c": 3}
-        valid = validate(schema, object, strict=False)
+        valid = _validate(schema, object, strict=False)
         print(valid)
         self.assertFalse(valid == "")
 
         object = {"a": 1, "b": 2}
-        valid = validate(schema, object, strict=False)
+        valid = _validate(schema, object, strict=False)
         self.assertTrue(valid == "")
 
         object = {"b": 2}
-        valid = validate(schema, object, strict=False)
+        valid = _validate(schema, object, strict=False)
         self.assertTrue(valid == "")
 
         schema = {"a?": 1, "b": 2}
         object = {"b": 2, "c": 3}
-        valid = validate(schema, object, strict=False)
+        valid = _validate(schema, object, strict=False)
         self.assertTrue(valid == "")
 
         object = {"a": 1, "c": 3}
-        valid = validate(schema, object, strict=False)
+        valid = _validate(schema, object, strict=False)
         print(valid)
         self.assertFalse(valid == "")
 
         object = {"a": 1, "b": 2}
-        valid = validate(schema, object, strict=False)
+        valid = _validate(schema, object, strict=False)
         self.assertTrue(valid == "")
 
         object = {"b": 2}
-        valid = validate(schema, object, strict=False)
+        valid = _validate(schema, object, strict=False)
         self.assertTrue(valid == "")
 
         schema = ["a", "b"]
         object = ["a"]
-        valid = validate(schema, object, strict=False)
+        valid = _validate(schema, object, strict=False)
         print(valid)
         self.assertFalse(valid == "")
 
         object = ["a", "b"]
-        valid = validate(schema, object, strict=False)
+        valid = _validate(schema, object, strict=False)
         self.assertTrue(valid == "")
 
         object = ["a", "b", "c"]
-        valid = validate(schema, object, strict=False)
+        valid = _validate(schema, object, strict=False)
         self.assertTrue(valid == "")
 
         object = ["a", "b", "c"]
-        valid = validate(schema, object, strict=True)
+        valid = _validate(schema, object, strict=True)
         print(valid)
         self.assertFalse(valid == "")
 
     def test_union(self):
         schema = {"a?": 1, "b": union(2, 3)}
         object = {"b": 2, "c": 3}
-        valid = validate(schema, object, strict=False)
+        valid = _validate(schema, object, strict=False)
         self.assertTrue(valid == "")
 
         object = {"b": 4, "c": 3}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
@@ -122,57 +122,57 @@ class TestValidation(unittest.TestCase):
     def test_date2(self):
         schema = date
         object = "2000-30-30"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = "2000-12-300"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = "2000-12-30"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
     def test_date(self):
         schema = date("%Y^%m^%d")
         object = "2000^12^300"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = "2000^12-30"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = "2000^12^30"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
     def test_set(self):
         schema = {2, 3}
         object = 5
-        valid = validate(schema, object, strict=False)
+        valid = _validate(schema, object, strict=False)
         print(valid)
         self.assertFalse(valid == "")
 
         schema = {int, str}
         object = 1.0
-        valid = validate(schema, object, strict=False)
+        valid = _validate(schema, object, strict=False)
         print(valid)
         self.assertFalse(valid == "")
 
     def test_intersect(self):
         schema = intersect(url, regex(r"^https", fullmatch=False))
         object = "ftp://example.com"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = "https://example.com"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         def ordered_pair(o):
@@ -180,38 +180,38 @@ class TestValidation(unittest.TestCase):
 
         schema = intersect((int, int), ordered_pair)
         object = (3, 2)
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = (1, 3, 2)
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = ("a", "b")
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = (1, 2)
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         schema = intersect((int, int), set_name(lambda o: o[0] <= o[1], "ordered_pair"))
         object = (3, 2)
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
     def test_complement(self):
         schema = intersect(url, complement(regex(r"^https", fullmatch=False)))
         object = "ftp://example.com"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         object = "https://example.com"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
@@ -220,24 +220,24 @@ class TestValidation(unittest.TestCase):
         self.assertTrue(schema.__name__ == "dummy")
 
         object = "b"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = "a"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
     def test_lax(self):
         schema = lax(["a", "b", "c"])
         object = ["a", "b", "c", "d"]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
     def test_strict_wrapper(self):
         schema = strict(["a", "b", "c"])
         object = ["a", "b", "c", "d"]
-        valid = validate(schema, object, strict=False)
+        valid = _validate(schema, object, strict=False)
         print(valid)
         self.assertFalse(valid == "")
 
@@ -269,111 +269,111 @@ class TestValidation(unittest.TestCase):
     def test_generics(self):
         schema = [str, ...]
         object = ("a", "b")
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = ["a", "b"]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         object = ["a", 10]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = ["a", ["b", "c"]]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         schema = [...]
         object = ["a", "b", 1, 2]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         schema = ["a", ...]
         object = ["a", "b"]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = []
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         object = ["a", "a"]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         object = ["a", "a", "a", "a", "a"]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         schema = ["a", "b", ...]
         object = ["a", "b"]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         schema = ["a", "b", "c", ...]
         object = ["a", "b"]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         schema = ["a", "b", "c", "d", ...]
         object = ["a", "b"]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         schema = [(str, int), ...]
         object = [("a", 1), ("b", 2)]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         schema = [(str, int), ...]
         object = [("a", 1), ("b", "c")]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         schema = [email, ...]
         object = ["user1@example.com", "user2@example.com"]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         schema = [email, ...]
         object = ["user1@example.com", "user00@user00.user00"]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
     def test_sequence(self):
         schema = {"a": 1}
         object = []
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         schema = []
         object = (1, 2)
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         schema = ["a", "b", None, "c"]
         object = ["a", "b"]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         schema = ["a", "b"]
         object = ["a", "b", None, "c"]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
-    def test_validate(self):
+    def test__validate(self):
         class lower_case_string:
             @staticmethod
             def __validate__(object, name, strict):
@@ -389,244 +389,244 @@ class TestValidation(unittest.TestCase):
 
         schema = lower_case_string
         object = 1
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = "aA"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = "aA"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = "ab"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         schema = {"a": lower_case_string}
         object = {"a": "ab"}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
     def test_regex(self):
         schema = regex({})
         object = "dummy"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         schema = regex({}, name="test")
         object = "dummy"
         self.assertTrue(schema.__name__ == "test")
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         ip_address = regex(r"(?:[\d]+\.){3}(?:[\d]+)", name="ip_address")
         schema = {"ip": ip_address}
         object = {"ip": "123.123.123.123"}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         object = {"ip": "123.123.123"}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = {"ip": "123.123.123.abc"}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = {"ip": "123.123..123"}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = {"ip": "123.123.123.123.123"}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = {"ip": "123.123.123.1000000"}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         object = {"ip": ""}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         schema = regex(".")
         object = "\n"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         schema = regex(".", flags=re.DOTALL)
         object = "\n"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         schema = regex(".", flags=re.ASCII | re.MULTILINE)
         object = "\n"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
     def test_interval(self):
         schema = interval(1, 10)
         object = "a"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         schema = interval(1, 9)
         object = "a"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = -1
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = 10
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = 5
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         schema = interval(0, ...)
         object = 5
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         object = -1
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         schema = interval(..., 0)
         object = -5
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         object = 1
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         schema = interval(..., ...)
         object = "0"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         schema = interval(0, "z")
         object = "0"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
     def test_email(self):
         schema = email
         object = "user00@user00.com"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertTrue(valid == "")
 
         object = "user00@user00.user00"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = "@user00.user00"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         schema = email(check_deliverability=True)
         object = "user@example.com"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = "user@google.com"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         object = "user@ffdfsdfsdfsasddasdadasad.com"
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
     def test_ip_address(self):
         schema = {"ip": ip_address}
         object = {"ip": "123.123.123.123"}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         object = {"ip": "123.123.123"}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = {"ip": "123.123.123.256"}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
     def test_url(self):
         schema = {"url": url}
         object = {"url": "https://google.com"}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         object = {"url": "https://google.com?search=chatgpt"}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         object = {"url": "https://user:pass@google.com?search=chatgpt"}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         object = {"url": "google.com"}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
     def test_number(self):
         schema = {"number": number}
         object = {"number": 1}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         object = {"number": 1.0}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         object = {"number": "a"}
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
     def test_float_equal(self):
         schema = 2.94
         object = 2.95
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = schema + 1e-10
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
     @unittest.skipUnless(
@@ -636,7 +636,7 @@ class TestValidation(unittest.TestCase):
     def test_type(self):
         schema = list[str]
         object = ["a", "b"]
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
@@ -646,12 +646,12 @@ class TestValidation(unittest.TestCase):
 
         schema = even
         object = 1
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
         object = 2
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
         def fails(x):
@@ -659,7 +659,7 @@ class TestValidation(unittest.TestCase):
 
         schema = fails
         object = 0
-        valid = validate(schema, object)
+        valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 

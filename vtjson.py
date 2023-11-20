@@ -7,6 +7,9 @@ from collections.abc import Sequence
 
 import email_validator
 
+class ValidationError(Exception):
+    pass
+
 try:
     from types import GenericAlias as _GenericAlias
 except ImportError:
@@ -62,7 +65,7 @@ def _keys(dict):
 
 class _validate_meta(type):
     def __instancecheck__(cls, object):
-        valid = validate(cls.__schema__, object, "object", strict=cls.__strict__)
+        valid = _validate(cls.__schema__, object, "object", strict=cls.__strict__)
         if cls.__debug__ and valid != "":
             print(f"DEBUG: {valid}")
         return valid == ""
@@ -91,7 +94,7 @@ class union:
     def __validate__(self, object, name, strict):
         messages = []
         for schema in self.schemas:
-            message = validate(schema, object, name=name, strict=strict)
+            message = _validate(schema, object, name=name, strict=strict)
             if message == "":
                 return ""
             else:
@@ -105,7 +108,7 @@ class intersect:
 
     def __validate__(self, object, name, strict):
         for schema in self.schemas:
-            message = validate(schema, object, name=name, strict=strict)
+            message = _validate(schema, object, name=name, strict=strict)
             if message != "":
                 return message
         return ""
@@ -116,7 +119,7 @@ class complement:
         self.schema = schema
 
     def __validate__(self, object, name, strict):
-        message = validate(self.schema, object, name=name, strict=strict)
+        message = _validate(self.schema, object, name=name, strict=strict)
         if message != "":
             return ""
         else:
@@ -128,7 +131,7 @@ class lax:
         self.schema = schema
 
     def __validate__(self, object, name, strict):
-        return validate(self.schema, object, name=name, strict=False)
+        return _validate(self.schema, object, name=name, strict=False)
 
 
 class strict:
@@ -136,7 +139,7 @@ class strict:
         self.schema = schema
 
     def __validate__(self, object, name, strict):
-        return validate(self.schema, object, name=name, strict=True)
+        return _validate(self.schema, object, name=name, strict=True)
 
 
 class set_name:
@@ -145,7 +148,7 @@ class set_name:
         self.__name__ = name
 
     def __validate__(self, object, name, strict):
-        message = validate(self.schema, object, name=name, strict=strict)
+        message = _validate(self.schema, object, name=name, strict=strict)
         if message != "":
             return f"{name} (value: {repr(object)}) is not of type '{self.__name__}'"
         return ""
@@ -242,7 +245,7 @@ def _validate_sequence(schema, object, name, strict):
         if i >= L:
             return f"{name_} is missing"
         else:
-            ret = validate(schema[i], object[i], name=name_, strict=strict)
+            ret = _validate(schema[i], object[i], name=name_, strict=strict)
             if ret != "":
                 return ret
     return ""
@@ -274,7 +277,7 @@ def _validate_dict(schema, object, name, strict):
         if k_ not in object:
             return f"{name_} is missing"
         else:
-            ret = validate(schema[k], object[k_], name=name_, strict=strict)
+            ret = _validate(schema[k], object[k_], name=name_, strict=strict)
             if ret != "":
                 return ret
     return ""
@@ -296,7 +299,7 @@ def _validate_object(schema, object, name, strict):
     return ""
 
 
-def validate(schema, object, name="object", strict=True):
+def _validate(schema, object, name="object", strict=True):
     if hasattr(schema, "__validate__"):  # duck typing
         return schema.__validate__(object, name, strict)
     # In Python 3.11 instances of GenericAlias are not types
@@ -313,6 +316,12 @@ def validate(schema, object, name="object", strict=True):
     else:
         return _validate_object(schema, object, name, strict)
     assert False
+
+
+def validate(schema, object, name="object", strict=True):
+    message = _validate(schema, object, name=name, strict=strict)
+    if message != "":
+        raise ValidationError(message)
 
 
 # Some predefined schemas
