@@ -13,7 +13,7 @@ Below is the schema of the run object in the mongodb database underlying the Fis
 import math
 from datetime import datetime
 from bson.objectid import ObjectId
-from vtjson import ip_address, number, regex, union, url
+from vtjson import ip_address, number, regex, url
 
 net_name = regex("nn-[a-z0-9]{12}.nnue", name="net_name")
 tc = regex(r"([1-9]\d*/)?\d+(\.\d+)?(\+\d+(\.\d+)?)?", name="tc")
