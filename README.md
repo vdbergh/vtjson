@@ -219,7 +219,7 @@ A schema can be, in order of precedence:
   ```python
   __validate__(object, name, strict)
   ```
-  This is for example how the wrapper schemas are implemented internally. The parameters of `__validate__()` have the same semantics as those of `validate()`. The return value of `__validate__()` should e `""` if validation succeeds, and otherwise it should be an explanation about what went wrong.
+  This is for example how the wrapper schemas are implemented internally. The parameters of `__validate__()` have the same semantics as those of `validate()`. The return value of `__validate__()` should be the empty string if validation succeeds, and otherwise it should be an explanation about what went wrong.
 - A Python type. In that case validation is done by checking membership.
 - A callable. Validation is done by applying the callable to the object.
 - A `list` or a `tuple`. Validation is done by first checking membership of the corresponding types, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
