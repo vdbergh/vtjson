@@ -198,21 +198,7 @@ validate(schema, object, name="object", strict=True)
 ```
 - The optional `name` argument is used to refer to the object being validated in the returned message.
 - The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
-## Creating types
-A cool feature of `vtjson` is that one can transform a schema into a genuine Python type via
-```python
-t = make_type(schema)
-```
-so that validation can be done via
-```python
-isinstance(object, t)
-```
-The drawback, compared to using `validate` directly, is that there is no feedback when validation fails. You can get it back as a console debug message via the optional `debug` argument to `make_type`.
-The full signature of `make_type` is
-```python
-make_type(schema, name=None, strict=True, debug=False)
-```
-The optional `name` argument is used to set the `__name__` attribute of the type. If it is not supplied then `vtjson` tries to make an educated guess.
+
 ## Wrappers
 A wrapper takes one or more schemas as arguments and produces a new schema.
 - An object matches the schema `union(schema1, ..., schemaN)` if it matches one of the schemas `schema1, ..., schemaN`. This is almost the same as `{schema1, ..., schemaN}`, or equivalently `set(schema1, ..., schemaN)`.
@@ -242,6 +228,21 @@ A schema can be, in order of precedence:
 - A dictionary. Validation is done by first checking membership of the `dict` type, and then performing validation for each of the items of the object being validated against the corresponding items of the schema.
 - A `set`. A set validates an object, if one of its members does.
 - An arbitrary Python object. Validation is done by checking equality of the schema and the object, except when the schema is of type `float`, in which case `math.isclose` is used.
+## Creating types
+A cool feature of `vtjson` is that one can transform a schema into a genuine Python type via
+```python
+t = make_type(schema)
+```
+so that validation can be done via
+```python
+isinstance(object, t)
+```
+The drawback, compared to using `validate` directly, is that there is no feedback when validation fails. You can get it back as a console debug message via the optional `debug` argument to `make_type`.
+The full signature of `make_type` is
+```python
+make_type(schema, name=None, strict=True, debug=False)
+```
+The optional `name` argument is used to set the `__name__` attribute of the type. If it is not supplied then `vtjson` tries to make an educated guess.
 ## Examples
 ```python
 >>> from vtjson import set_name, validate
