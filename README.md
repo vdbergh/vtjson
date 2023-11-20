@@ -271,11 +271,11 @@ A: Good question! I discovered `json-checker` after I had written `vtjson`. Alth
 
 Q: How to combine validations?
 
-A: Use `intersect`. For example the following schema validates positive integers.
+A: Use `intersect`. For example the following schema validates positive integers but reject positive floats.
 ```python
 schema = intersect(int, interval(0, ...))
 ```
-(but rejects positive floats). More generally one can use the pattern `intersect(schema, more_validations)` where the first argument makes sure that the object to be validated has the required layout to be an acceptable input for the later arguments. For example an ordered pair of integers can be validated using the schema
+More generally one may use the pattern `intersect(schema, more_validations)` where the first argument makes sure that the object to be validated has the required layout to be an acceptable input for the later arguments. For example an ordered pair of integers can be validated using the schema
 ```python
 def ordered_pair(o):
     return o[0] <= o[1]
