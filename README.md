@@ -186,7 +186,6 @@ schema = {
 ## Conventions
 - As in typescript, a (string) key ending in "?" represents an optional key. The corresponding schema (the item the key points to) will only be used for validation when the key is present in the object that should be validated. A key can also be made optional by wrapping it as `optional_key(key)`.
 - If in a list/tuple the last entry is `...` (ellipsis) it means that the next to last entry will be repeated zero or more times. In this way generic types can be created. For example the schema `[str, ...]` represents a list of strings.
-- The schema may contain tuples, even though these are not valid JSON. In fact any Python object is a valid schema (see below).
 ## Usage
 To validate an object against a schema one can simply do
 ```python
@@ -198,7 +197,6 @@ validate(schema, object, name="object", strict=True)
 ```
 - The optional `name` argument is used to refer to the object being validated in the returned message.
 - The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
-
 ## Wrappers
 A wrapper takes one or more schemas as arguments and produces a new schema.
 - An object matches the schema `union(schema1, ..., schemaN)` if it matches one of the schemas `schema1, ..., schemaN`. This is almost the same as `{schema1, ..., schemaN}`, or equivalently `set(schema1, ..., schemaN)`.
