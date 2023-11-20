@@ -215,8 +215,8 @@ make_type(schema, name=None, strict=True, debug=False)
 The optional `name` argument is used to set the `__name__` attribute of the type. If it is not supplied then `vtjson` tries to make an educated guess.
 ## Wrappers
 A wrapper takes one or more schemas as arguments and produces a new schema.
-- An object matches the schema `union(schema1, schema2)` if it matches `schema1` or `schema2`. Unions of more than two schemas are also valid. This is almost the same as `{schema1, schema2}`. Or `set(schema1, schema2)`.
-- An object matches the schema `intersect(schema1, schema2)` if it matches `schema1` and `schema2`. Intersections of more than two schemas are also valid.
+- An object matches the schema `union(schema1, ..., schemaN)` if it matches one of the schemas `schema1, ..., schemaN`. This is almost the same as `{schema1, ..., schemaN}`, or equivalently `set(schema1, ..., schemaN)`.
+- An object matches the schema `intersect(schema1, ..., schemaN)` if it matches all the schemas `schema1, ..., schemaN`.
 - An object matches the schema `complement(schema)` if it does not match `schema`.
 - An object matches the schema `lax(schema)` when it matches `schema` with `strict=False`, see below.
 - An object matches the schema `strict(schema)` when it matches `schema` with `strict=True`, see below.
