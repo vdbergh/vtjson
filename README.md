@@ -265,7 +265,7 @@ Q: Why not just use `jsonschema`?
 
 A: `vtjson` can validate objects which are more general than strictly JSON. See the example above. But the main reason for the existence of `vtjson` is that it is easily extensible in a Pythonic way.
 
-Q: How is this different from https://pypi.org/project/json-checker/ ?
+Q: How is this different from https://pypi.org/project/json-checker/ \?
 
 A: Good question! I discovered `json-checker` after I had written `vtjson`. Although the details are different `json-checker` and `vtjson` share many of the same principles.
 
