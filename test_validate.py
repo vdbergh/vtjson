@@ -8,6 +8,7 @@ from vtjson import (
     complement,
     date,
     email,
+    freeze,
     intersect,
     interval,
     ip_address,
@@ -114,6 +115,18 @@ class TestValidation(unittest.TestCase):
         valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
+
+    def test_freeze(self):
+        schema = str
+        object = str
+        valid = _validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = freeze(str)
+        valid = _validate(schema, object)
+        self.assertTrue(valid == "")
+        
 
     @unittest.skipUnless(
         sys.version_info.major == 3 and sys.version_info.minor >= 7,

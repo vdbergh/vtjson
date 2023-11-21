@@ -144,6 +144,14 @@ class strict:
         return _validate(self.schema, object, name=name, strict=True)
 
 
+class freeze:
+    def __init__(self, schema):
+        self.schema = schema
+
+    def __validate__(self, object, name, strict):
+        return _validate_object(self.schema, object, name, strict)
+
+
 class set_name:
     def __init__(self, schema, name):
         self.schema = schema
