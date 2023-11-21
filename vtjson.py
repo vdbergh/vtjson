@@ -20,7 +20,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.1.12"
+__version__ = "1.1.14"
 
 
 class _ellipsis_list(Sequence):
@@ -144,7 +144,7 @@ class strict:
         return _validate(self.schema, object, name=name, strict=True)
 
 
-class freeze:
+class quote:
     def __init__(self, schema):
         self.schema = schema
 

@@ -8,13 +8,13 @@ from vtjson import (
     complement,
     date,
     email,
-    freeze,
     intersect,
     interval,
     ip_address,
     lax,
     make_type,
     number,
+    quote,
     regex,
     set_name,
     strict,
@@ -116,14 +116,35 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
-    def test_freeze(self):
+    def test_quote(self):
         schema = str
         object = str
         valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
-        schema = freeze(str)
+        schema = quote(str)
+        valid = _validate(schema, object)
+        self.assertTrue(valid == "")
+
+        schema = {1, 2}
+        object = 1
+        valid = _validate(schema, object)
+        self.assertTrue(valid == "")
+
+        schema = quote({1, 2})
+        object = 1
+        valid = _validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = {1, 2}
+        object = {1, 2}
+        valid = _validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = quote({1, 2})
         valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
