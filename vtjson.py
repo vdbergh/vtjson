@@ -254,7 +254,7 @@ def _validate_sequence(schema, object, name, strict):
 
 
 def _validate_set(schema, object, name, strict):
-    return union(*(list(schema))).__validate__(object, name, strict)
+    return union(*schema).__validate__(object, name, strict)
 
 
 def _validate_dict(schema, object, name, strict):
