@@ -126,7 +126,6 @@ class TestValidation(unittest.TestCase):
         schema = freeze(str)
         valid = _validate(schema, object)
         self.assertTrue(valid == "")
-        
 
     @unittest.skipUnless(
         sys.version_info.major == 3 and sys.version_info.minor >= 7,
