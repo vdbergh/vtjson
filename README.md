@@ -199,7 +199,7 @@ validate(schema, object, name="object", strict=True)
 - The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
 ## Wrappers
 A wrapper takes one or more schemas as arguments and produces a new schema.
-- An object matches the schema `union(schema1, ..., schemaN)` if it matches one of the schemas `schema1, ..., schemaN`. This is almost the same as `{schema1, ..., schemaN}`, or equivalently `set(schema1, ..., schemaN)`.
+- An object matches the schema `union(schema1, ..., schemaN)` if it matches one of the schemas `schema1, ..., schemaN`. This is almost the same as `{schema1, ..., schemaN}`, or equivalently `set((schema1, ..., schemaN))` if `schema1, ..., schemaN` are hashable.
 - An object matches the schema `intersect(schema1, ..., schemaN)` if it matches all the schemas `schema1, ..., schemaN`.
 - An object matches the schema `complement(schema)` if it does not match `schema`.
 - An object matches the schema `lax(schema)` when it matches `schema` with `strict=False`, see below.
