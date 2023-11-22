@@ -6,7 +6,7 @@ from timeit import timeit
 
 from bson.objectid import ObjectId
 
-from vtjson import ip_address, number, regex, union, url, _validate, validate
+from vtjson import _validate, ip_address, number, regex, union, url, validate
 
 # This schema only matches new runs.
 
@@ -307,5 +307,7 @@ for i in range(total_tasks):
 validate(runs_schema, run_sprt_object, "run")
 
 N = 20
-t = timeit("_validate(runs_schema, run_sprt_object, 'run')", number=N, globals=globals())
+t = timeit(
+    "_validate(runs_schema, run_sprt_object, 'run')", number=N, globals=globals()
+)
 print(f"Validating an SPRT run with {total_tasks} tasks takes {1000*t/N:.0f} ms")
