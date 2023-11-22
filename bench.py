@@ -1,12 +1,12 @@
 import copy
 import math
-import sys
 from datetime import datetime, timezone
 from timeit import timeit
 
 from bson.objectid import ObjectId
+from vstjson import ip_address, number, regex, union, url, validate
 
-from vtjson import _validate, ip_address, number, regex, union, url, validate
+from vtjson import _validate  # noqa: F401
 
 # This schema only matches new runs.
 
