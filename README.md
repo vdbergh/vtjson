@@ -265,8 +265,9 @@ For many more examples see the file `test_validate.py` in the source distributio
 Q: Why not just use the Python implementation of `JSON schema` (see https://pypi.org/project/jsonschema/)?
 
 A: Various reasons.
-- `vtjson` can validate objects which are more general than strictly JSON. See the introductory example above. 
-- More fundamentally the design philosophy of `vtsjon` is different. A `vtjson` schema leverages the versatile Python language whereas a `JSON` schema  is language independent and fully declarative. Both of these are of course a very nice properties, but, this being said, declarative languages have a tendency to suffer from feature creep when trying to deal with more and more exotic use cases (e.g. `css`). `vtjson` on the other hand is partially declarative, but it is also expected that, when needed, additional functionality will be provided with bits of imperative code (see the `ordered_pair` example below). In practice this is what you will need anyway since a purely declarative language will never be able to deal with every possible validation scenario. 
+- A `vtjson` schema is much more concise than a `JSON` schema!
+- `vtjson` can validate objects which are more general than strictly `JSON`. See the introductory example above. 
+- More fundamentally the design philosophy of `vtsjon` is different. A `vtjson` schema leverages the versatile Python language whereas a `JSON` schema  is language independent and fully declarative. Both of these are of course a very nice properties, but, this being said, declarative languages have a tendency to suffer from feature creep when trying to deal with more and more exotic use cases (e.g. `css`). `vtjson` on the other hand is partially declarative, with a limited, but easily extendable set of primitives. Additional functionality can be provided with bits of imperative code when appropriate (see the `ordered_pair` example below). In practice this is what you will need anyway since a purely declarative language will never be able to deal with every possible validation scenario. 
 
 Q: How is this different from https://pypi.org/project/json-checker/ \?
 
