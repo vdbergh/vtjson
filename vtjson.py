@@ -20,7 +20,14 @@ except ImportError:
         pass
 
 
-__version__ = "1.1.15"
+__version__ = "1.1.16"
+
+
+def _c(s):
+    s = str(s)
+    if len(s) < 100:
+        return s
+    return f"{s[:100]}... (truncated)"
 
 
 class _ellipsis_list(Sequence):
@@ -160,7 +167,9 @@ class set_name:
     def __validate__(self, object, name, strict):
         message = _validate(self.schema, object, name=name, strict=strict)
         if message != "":
-            return f"{name} (value: {repr(object)}) is not of type '{self.__name__}'"
+            return (
+                f"{name} (value: {repr(_c(object))}) is not of type '{self.__name__}'"
+            )
         return ""
 
 
@@ -192,7 +201,7 @@ class regex:
         except Exception:
             pass
 
-        return f"{name} (value:{repr(object)}) is not of type '{self.__name__}'"
+        return f"{name} (value:{repr(_c(object))}) is not of type '{self.__name__}'"
 
 
 class interval:
@@ -204,7 +213,7 @@ class interval:
 
     def __validate__(self, object, name, strict):
         message = (
-            f"{name} (value:{repr(object)}) is not in the interval "
+            f"{name} (value:{repr(_c(object))}) is not in the interval "
             + f"[{self.lb_s},{self.ub_s}]"
         )
         try:
@@ -220,7 +229,9 @@ class interval:
 def _validate_type(schema, object, name):
     try:
         if not isinstance(object, schema):
-            return f"{name} (value:{repr(object)}) is not of type '{schema.__name__}'"
+            return (
+                f"{name} (value:{repr(_c(object))}) is not of type '{schema.__name__}'"
+            )
         else:
             return ""
     except Exception as e:
@@ -232,7 +243,7 @@ def _validate_callable(schema, object, name):
         __name__ = schema.__name__
     except Exception:
         __name__ = schema
-    message = f"{name} (value:{repr(object)}) is not of type '{__name__}'"
+    message = f"{name} (value:{repr(_c(object))}) is not of type '{__name__}'"
     try:
         if schema(object):
             return ""
@@ -294,7 +305,7 @@ def _validate_dict(schema, object, name, strict):
 
 
 def _validate_object(schema, object, name, strict):
-    message = f"{name} (value:{repr(object)}) is not equal to {repr(schema)}"
+    message = f"{name} (value:{repr(_c(object))}) is not equal to {repr(schema)}"
     # special case
     if isinstance(schema, float):
         try:
@@ -343,7 +354,7 @@ class number:
         if isinstance(object, int) or isinstance(object, float):
             return ""
         else:
-            return f"{name} (value:{repr(object)}) is not of type 'number'"
+            return f"{name} (value:{repr(_c(object))}) is not of type 'number'"
 
 
 class email:
@@ -362,7 +373,8 @@ class email:
             return ""
         except email_validator.EmailNotValidError as e:
             return (
-                f"{name} (value:{repr(object)}) is not a valid email address: {str(e)}"
+                f"{name} (value:{repr(_c(object))})"
+                + f" is not a valid email address: {str(e)}"
             )
 
 
@@ -373,7 +385,7 @@ class ip_address:
             ipaddress.ip_address(object)
             return ""
         except ValueError:
-            return f"{name} (value:{repr(object)}) is not of type 'ip_address'"
+            return f"{name} (value:{repr(_c(object))}) is not of type 'ip_address'"
 
 
 class url:
@@ -382,7 +394,7 @@ class url:
         result = urllib.parse.urlparse(object)
         if all([result.scheme, result.netloc]):
             return ""
-        return f"{name} (value:{repr(object)}) is not of type 'url'"
+        return f"{name} (value:{repr(_c(object))}) is not of type 'url'"
 
 
 class date:
@@ -401,7 +413,7 @@ class date:
                 datetime.datetime.strptime(object, self.format)
             except Exception as e:
                 return (
-                    f"{name} (value:{repr(object)}) is not "
+                    f"{name} (value:{repr(_c(object))}) is not "
                     + f"of type {repr(self.__name__)}: {str(e)}"
                 )
         else:
@@ -409,7 +421,7 @@ class date:
                 datetime.datetime.fromisoformat(object)
             except Exception as e:
                 return (
-                    f"{name} (value:{repr(object)}) is not "
+                    f"{name} (value:{repr(_c(object))}) is not "
                     + f"a valid ISO 8601 date: {str(e)}"
                 )
         return ""
