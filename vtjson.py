@@ -167,9 +167,7 @@ class set_name:
     def __validate__(self, object, name, strict):
         message = _validate(self.schema, object, name=name, strict=strict)
         if message != "":
-            return (
-                f"{name} (value: {_c(object)}) is not of type '{self.__name__}'"
-            )
+            return f"{name} (value: {_c(object)}) is not of type '{self.__name__}'"
         return ""
 
 
@@ -229,9 +227,7 @@ class interval:
 def _validate_type(schema, object, name):
     try:
         if not isinstance(object, schema):
-            return (
-                f"{name} (value:{_c(object)}) is not of type '{schema.__name__}'"
-            )
+            return f"{name} (value:{_c(object)}) is not of type '{schema.__name__}'"
         else:
             return ""
     except Exception as e:
