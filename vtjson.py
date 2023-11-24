@@ -401,7 +401,10 @@ class date:
     def __init__(self, format=None):
         self.format = format
         self.__validate__ = self.__validate2__
-        self.__name__ = f"date({repr(format)})"
+        if format is not None:
+            self.__name__ = f"date({repr(format)})"
+        else:
+            self.__name__ = 'date'
 
     def __validate2__(self, object, name, strict):
         if self.format is not None:
