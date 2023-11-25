@@ -254,7 +254,7 @@ vtjson.ValidationError: object['fruit'] (value:dog) is not equal to 'pear' and o
 >>> schema = {"fruit" : fruit, "price" : float}
 >>> validate(schema, object)
 ...
-vtjson.ValidationError: object['fruit'] (value: 'dog') is not of type 'fruit'
+vtjson.ValidationError: object['fruit'] (value:dog) is not of type 'fruit'
 >>> object = {"fruit" : "apple"}
 >>> validate(schema, object)
 ...
