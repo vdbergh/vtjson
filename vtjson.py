@@ -30,7 +30,7 @@ def _c(s):
     return f"{s[:100]}... (truncated)"
 
 
-def _is_not_of_type(object, name, type_name):
+def _wrong_type_message(object, name, type_name):
     return f"{name} (value: {_c(object)}) is not of type '{type_name}'"
 
 
@@ -171,7 +171,7 @@ class set_name:
     def __validate__(self, object, name, strict):
         message = _validate(self.schema, object, name=name, strict=strict)
         if message != "":
-            return _is_not_of_type(object, name, self.__name__)
+            return _wrong_type_message(object, name, self.__name__)
         return ""
 
 
@@ -202,7 +202,7 @@ class regex:
                 return ""
         except Exception:
             pass
-        return _is_not_of_type(object, name, self.__name__)
+        return _wrong_type_message(object, name, self.__name__)
 
 
 class interval:
@@ -230,7 +230,7 @@ class interval:
 def _validate_type(schema, object, name):
     try:
         if not isinstance(object, schema):
-            return _is_not_of_type(object, name, schema.__name__)
+            return _wrong_type_message(object, name, schema.__name__)
         else:
             return ""
     except Exception as e:
@@ -242,7 +242,7 @@ def _validate_callable(schema, object, name):
         __name__ = schema.__name__
     except Exception:
         __name__ = schema
-    message = _is_not_of_type(object, name, __name__)
+    message = _wrong_type_message(object, name, __name__)
     try:
         if schema(object):
             return ""
@@ -254,7 +254,7 @@ def _validate_callable(schema, object, name):
 
 def _validate_sequence(schema, object, name, strict):
     if type(schema) is not type(object):
-        return _is_not_of_type(object, name, type(schema).__name__)
+        return _wrong_type_message(object, name, type(schema).__name__)
     L = len(object)
     schema = _ellipsis_list(schema, length=L)
     if strict and L > len(schema):
@@ -277,7 +277,7 @@ def _validate_set(schema, object, name, strict):
 
 def _validate_dict(schema, object, name, strict):
     if type(schema) is not type(object):
-        return _is_not_of_type(object, name, type(schema).__name__)
+        return _wrong_type_message(object, name, type(schema).__name__)
     if strict:
         _k = _keys(schema)
         for x in object:
@@ -353,7 +353,7 @@ class number:
         if isinstance(object, int) or isinstance(object, float):
             return ""
         else:
-            return _is_not_of_type(object, name, "number")
+            return _wrong_type_message(object, name, "number")
 
 
 class email:
@@ -384,7 +384,7 @@ class ip_address:
             ipaddress.ip_address(object)
             return ""
         except ValueError:
-            return _is_not_of_type(object, name, "ip_address")
+            return _wrong_type_message(object, name, "ip_address")
 
 
 class url:
@@ -393,7 +393,7 @@ class url:
         result = urllib.parse.urlparse(object)
         if all([result.scheme, result.netloc]):
             return ""
-        return _is_not_of_type(object, name, "url")
+        return _wrong_type_message(object, name, "url")
 
 
 class date:
