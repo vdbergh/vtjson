@@ -249,7 +249,7 @@ The optional `name` argument is used to set the `__name__` attribute of the type
 >>> object = {"fruit" : "dog", "price": 1.0 }
 >>> validate(schema, object)
 ...
-vtjson.ValidationError: object['fruit'] (value:'dog') is not equal to 'pear' and object['fruit'] (value:'dog') is not equal to 'strawberry' and object['fruit'] (value:'dog') is not equal to 'apple'
+vtjson.ValidationError: object['fruit'] (value:dog) is not equal to 'pear' and object['fruit'] (value:dog) is not equal to 'strawberry' and object['fruit'] (value:dog) is not equal to 'apple'
 >>> fruit = set_name({"apple", "pear", "strawberry"}, "fruit")
 >>> schema = {"fruit" : fruit, "price" : float}
 >>> validate(schema, object)
