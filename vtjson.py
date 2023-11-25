@@ -20,7 +20,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.1.17"
+__version__ = "1.1.18"
 
 
 def _c(s):
