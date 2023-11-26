@@ -222,7 +222,7 @@ class interval:
 
     def __validate__(self, object, name, strict):
         message = (
-            f"{name} (value: {_c(object)}) is not in the interval "
+            f"{name} (value:{_c(object)}) is not in the interval "
             f"[{self.lb_s},{self.ub_s}]"
         )
         try:
@@ -311,7 +311,7 @@ def _validate_dict(schema, object, name, strict):
 
 
 def _validate_object(schema, object, name, strict):
-    message = f"{name} (value: {_c(object)}) is not equal to {repr(schema)}"
+    message = f"{name} (value:{_c(object)}) is not equal to {repr(schema)}"
     # special case
     if isinstance(schema, float):
         try:
