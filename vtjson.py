@@ -30,8 +30,11 @@ def _c(s):
     return f"{s[:100]}... (truncated)"
 
 
-def _wrong_type_message(object, name, type_name):
-    return f"{name} (value: {_c(object)}) is not of type '{type_name}'"
+def _wrong_type_message(object, name, type_name, explanation=None):
+    message = f"{name} (value: {_c(object)}) is not of type '{type_name}'"
+    if explanation is not None:
+        message += f": {explanation}"
+    return message
 
 
 class _ellipsis_list(Sequence):
@@ -242,14 +245,13 @@ def _validate_callable(schema, object, name):
         __name__ = schema.__name__
     except Exception:
         __name__ = schema
-    message = _wrong_type_message(object, name, __name__)
     try:
         if schema(object):
             return ""
         else:
-            return message
+            return _wrong_type_message(object, name, __name__)
     except Exception as e:
-        return f"{message}: {str(e)}"
+        return _wrong_type_message(object, name, __name__, str(e))
 
 
 def _validate_sequence(schema, object, name, strict):
@@ -371,10 +373,7 @@ class email:
             email_validator.validate_email(object, *self.args, **self.kw)
             return ""
         except email_validator.EmailNotValidError as e:
-            return (
-                f"{name} (value:{_c(object)})"
-                f" is not a valid email address: {str(e)}"
-            )
+            return _wrong_type_message(object, name, "email", str(e))
 
 
 class ip_address:
@@ -414,16 +413,10 @@ class date:
             try:
                 datetime.datetime.strptime(object, self.format)
             except Exception as e:
-                return (
-                    f"{name} (value:{_c(object)}) is not "
-                    f"of type {repr(self.__name__)}: {str(e)}"
-                )
+                return _wrong_type_message(object, name, self.__name__, str(e))
         else:
             try:
                 datetime.datetime.fromisoformat(object)
             except Exception as e:
-                return (
-                    f"{name} (value:{_c(object)}) is not "
-                    f"a valid ISO 8601 date: {str(e)}"
-                )
+                return _wrong_type_message(object, name, self.__name__, str(e))
         return ""
