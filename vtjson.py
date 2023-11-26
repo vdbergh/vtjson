@@ -24,10 +24,15 @@ __version__ = "1.1.18"
 
 
 def _c(s):
-    s = str(s)
-    if len(s) < 100:
-        return s
-    return f"{s[:100]}... (truncated)"
+    ss = str(s)
+    if len(ss) < 100:
+        ret = ss
+    else:
+        ret = f"{ss[:100]} [TRUNCATED]"
+    if isinstance(s, str):
+        return repr(ret)
+    else:
+        return ret
 
 
 def _wrong_type_message(object, name, type_name, explanation=None):
