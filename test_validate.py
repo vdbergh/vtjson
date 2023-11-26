@@ -7,6 +7,7 @@ from vtjson import (
     _validate,
     complement,
     date,
+    domain_name,
     email,
     intersect,
     interval,
@@ -636,6 +637,27 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
+    def test_domain_name(self):
+        schema = domain_name
+        object = "www.uhasselt.be"
+        valid = _validate(schema, object)
+        self.assertTrue(valid == "")
+
+        object = "www.uhassëlt.be"
+        valid = _validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = domain_name(ascii_only=False)
+        valid = _validate(schema, object)
+        print(valid)
+        self.assertTrue(valid == "")
+
+        object = "-www.uhassëlt.be"
+        valid = _validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
     def test_number(self):
         schema = {"number": number}
         object = {"number": 1}
@@ -675,7 +697,7 @@ class TestValidation(unittest.TestCase):
 
         object = {}
         for i in range(1000):
-            object[i] = 7*i
+            object[i] = 7 * i
         valid = _validate(schema, object)
         print(valid)
         self.assertTrue(r"value:{" in valid)

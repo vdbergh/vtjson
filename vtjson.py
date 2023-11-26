@@ -6,6 +6,7 @@ import urllib.parse
 from collections.abc import Sequence
 
 import email_validator
+import idna
 
 
 class ValidationError(Exception):
@@ -20,7 +21,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.1.20"
+__version__ = "1.1.21"
 
 
 def _c(s):
@@ -430,4 +431,27 @@ class date:
                 datetime.datetime.fromisoformat(object)
             except Exception as e:
                 return _wrong_type_message(object, name, self.__name__, str(e))
+        return ""
+
+
+class domain_name:
+    def __validate__(object, name, strict):
+        return domain_name().__validate__(object, name, strict)
+
+    def __init__(self, ascii_only=True):
+        self.re_ascii = re.compile(r"[a-zA-Z0-9-\.]*")
+        self.ascii_only = ascii_only
+        self.__validate__ = self.__validate2__
+        self.__name__ = "domain_name" if ascii_only else "domain_name(ascii_only=False)"
+
+    def __validate2__(self, object, name, strict):
+        if self.ascii_only:
+            if not self.re_ascii.fullmatch(object):
+                return _wrong_type_message(
+                    object, name, self.__name__, "Non-ascii characters"
+                )
+        try:
+            idna.encode(object, uts46=False)
+        except idna.core.IDNAError as e:
+            return _wrong_type_message(object, name, self.__name__, str(e))
         return ""

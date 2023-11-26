@@ -207,12 +207,14 @@ A wrapper takes one or more schemas as arguments and produces a new schema.
 - An object matches the schema `quote(schema)` if it is equal to `schema`. For example the schema `{"cats", "dogs"}` matches the strings `"cats"` and `"dogs"` but the schema `quote({"cats", "dogs"})` matches the set `{"cats", "dogs"}`. 
 - An object matches the schema `set_name(schema, name)` if it matches `schema`. But the `name` argument will be used in non-validation messages.
 ## Built-ins
+Some built-ins take arguments. If no arguments are given then the `()` can be omitted. So `email` is equivalent to `email()`.
 - `regex(pattern, name=None, fullmatch=True, flags=0)`. This matches the strings which match the given pattern. The optional `name` argument may be used to give the regular expression a descriptive name. By default the entire string is matched, but this can be overruled via the `fullmatch` argument. The `flags` argument has the usual meaning.
 - `interval(lowerbound, upperbound)`. This checks if `lowerbound <= object <= upperbound`, provided the comparisons make sense. An upper/lowerbound `...` (ellipsis) means that the
 corresponding inequality is not checked.
 - `number`. Matches `int` and `float`.
 - `email`. Checks if the object is a valid email address. This uses the package `email_validator`. The `email` schema accepts the same options as `validate_email` in loc. cit.
 - `ip_address` and `url`. These are similar to `email`.
+- `domain_name(ascii_only=True)`. Checks if the object is a valid domain name. If `ascii_only=False` then allow IDNA domain names.
 - `date`. Without argument this represents an ISO 8601 date. An argument corresponds to a format string for `strftime`.
 ## Format
 A schema can be, in order of precedence:
