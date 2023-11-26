@@ -215,7 +215,7 @@ class interval:
     def __validate__(self, object, name, strict):
         message = (
             f"{name} (value:{_c(object)}) is not in the interval "
-            + f"[{self.lb_s},{self.ub_s}]"
+            f"[{self.lb_s},{self.ub_s}]"
         )
         try:
             if self.lb != ... and object < self.lb:
@@ -373,7 +373,7 @@ class email:
         except email_validator.EmailNotValidError as e:
             return (
                 f"{name} (value:{_c(object)})"
-                + f" is not a valid email address: {str(e)}"
+                f" is not a valid email address: {str(e)}"
             )
 
 
@@ -416,7 +416,7 @@ class date:
             except Exception as e:
                 return (
                     f"{name} (value:{_c(object)}) is not "
-                    + f"of type {repr(self.__name__)}: {str(e)}"
+                    f"of type {repr(self.__name__)}: {str(e)}"
                 )
         else:
             try:
@@ -424,6 +424,6 @@ class date:
             except Exception as e:
                 return (
                     f"{name} (value:{_c(object)}) is not "
-                    + f"a valid ISO 8601 date: {str(e)}"
+                    f"a valid ISO 8601 date: {str(e)}"
                 )
         return ""
