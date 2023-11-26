@@ -651,6 +651,37 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
+    def test_truncation(self):
+        schema = 100 * "a"
+        object = 1000 * "a"
+        valid = _validate(schema, object)
+        print(valid)
+        self.assertTrue(r"...'" in valid)
+        self.assertTrue("TRUNCATED" in valid)
+        self.assertTrue(r"value:'" in valid)
+
+        object = 50 * "a"
+        valid = _validate(schema, object)
+        print(valid)
+        self.assertTrue(r"value:'" in valid)
+        self.assertFalse("TRUNCATED" in valid)
+
+        object = 1000 * ["a"]
+        valid = _validate(schema, object)
+        print(valid)
+        self.assertTrue(r"value:[" in valid)
+        self.assertTrue(r"...]" in valid)
+        self.assertTrue("TRUNCATED" in valid)
+
+        object = {}
+        for i in range(1000):
+            object[i] = i
+        valid = _validate(schema, object)
+        print(valid)
+        self.assertTrue(r"value:{" in valid)
+        self.assertTrue("...}" in valid)
+        self.assertTrue("TRUNCATED" in valid)
+
     def test_float_equal(self):
         schema = 2.94
         object = 2.95

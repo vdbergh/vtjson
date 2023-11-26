@@ -25,10 +25,16 @@ __version__ = "1.1.19"
 
 def _c(s):
     ss = str(s)
+    if len(ss) > 0:
+        c = ss[-1]
+    else:
+        c = ""
     if len(ss) < 100:
         ret = ss
     else:
-        ret = f"{ss[:100]} [TRUNCATED]"
+        ret = f"{ss[:100]}...[TRUNCATED]..."
+        if not isinstance(s, str) and c in r"])}":
+            ret += c
     if isinstance(s, str):
         return repr(ret)
     else:
