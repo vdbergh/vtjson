@@ -658,6 +658,11 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertFalse(valid == "")
 
+        object = "www.u_hassëlt.be"
+        valid = _validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
     def test_number(self):
         schema = {"number": number}
         object = {"number": 1}

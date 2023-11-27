@@ -439,7 +439,7 @@ class domain_name:
         return domain_name().__validate__(object, name, strict)
 
     def __init__(self, ascii_only=True):
-        self.re_ascii = re.compile(r"[a-zA-Z0-9-\.]*")
+        self.re_ascii = re.compile(r"[\x00-\x7F]*")
         self.ascii_only = ascii_only
         self.__validate__ = self.__validate2__
         self.__name__ = "domain_name" if ascii_only else "domain_name(ascii_only=False)"
