@@ -365,16 +365,25 @@ def validate(schema, object, name="object", strict=True):
 class number:
     @staticmethod
     def __validate__(object, name, strict):
+        return _number.__validate__(object, name, strict)
+
+    def __init__(self):
+        self.__validate__ = self.__validate2__
+
+    def __validate2__(self, object, name, strict):
         if isinstance(object, int) or isinstance(object, float):
             return ""
         else:
             return _wrong_type_message(object, name, "number")
 
 
+_number = number()
+
+
 class email:
     @staticmethod
     def __validate__(object, name, strict):
-        return email(check_deliverability=False).__validate__(object, name, strict)
+        return _email.__validate__(object, name, strict)
 
     def __init__(self, *args, **kw):
         self.args = args
@@ -389,9 +398,18 @@ class email:
             return _wrong_type_message(object, name, "email", str(e))
 
 
+_email = email(check_deliverability=False)
+
+
 class ip_address:
     @staticmethod
     def __validate__(object, name, strict):
+        return _ip_address.__validate__(object, name, strict)
+
+    def __init__(self):
+        self.__validate__ = self.__validate2__
+
+    def __validate2__(self, object, name, strict):
         try:
             ipaddress.ip_address(object)
             return ""
@@ -399,19 +417,31 @@ class ip_address:
             return _wrong_type_message(object, name, "ip_address")
 
 
+_ip_address = ip_address()
+
+
 class url:
     @staticmethod
     def __validate__(object, name, strict):
+        return _url.__validate__(object, name, strict)
+
+    def __init__(self):
+        self.__validate__ = self.__validate2__
+
+    def __validate2__(self, object, name, strict):
         result = urllib.parse.urlparse(object)
         if all([result.scheme, result.netloc]):
             return ""
         return _wrong_type_message(object, name, "url")
 
 
+_url = url()
+
+
 class date:
     @staticmethod
     def __validate__(object, name, strict):
-        return date().__validate__(object, name, strict)
+        return _date.__validate__(object, name, strict)
 
     def __init__(self, format=None):
         self.format = format
@@ -435,9 +465,12 @@ class date:
         return ""
 
 
+_date = date()
+
+
 class domain_name:
     def __validate__(object, name, strict):
-        return domain_name().__validate__(object, name, strict)
+        return _domain_name.__validate__(object, name, strict)
 
     def __init__(self, ascii_only=True, resolve=False):
         self.re_ascii = re.compile(r"[\x00-\x7F]*")
@@ -472,3 +505,6 @@ class domain_name:
             except Exception as e:
                 return _wrong_type_message(object, name, self.__name__, str(e))
         return ""
+
+
+_domain_name = domain_name()
