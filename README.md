@@ -214,7 +214,7 @@ corresponding inequality is not checked.
 - `number`. Matches `int` and `float`.
 - `email`. Checks if the object is a valid email address. This uses the package `email_validator`. The `email` schema accepts the same options as `validate_email` in loc. cit.
 - `ip_address` and `url`. These are similar to `email`.
-- `domain_name(ascii_only=True, resolve=False)`. Checks if the object is a valid domain name. If `ascii_only=False` then allow IDNA domain names. If `resolve=TRUE` check if the domain name resolves.
+- `domain_name(ascii_only=True, resolve=False)`. Checks if the object is a valid domain name. If `ascii_only=False` then allow IDNA domain names. If `resolve=True` check if the domain name resolves.
 - `date`. Without argument this represents an ISO 8601 date. An argument corresponds to a format string for `strftime`.
 ## Format
 A schema can be, in order of precedence:
