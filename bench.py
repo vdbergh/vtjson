@@ -4,9 +4,9 @@ from datetime import datetime, timezone
 from timeit import timeit
 
 from bson.objectid import ObjectId
-from vtjson import ip_address, number, regex, url, validate
 
 from vtjson import _validate  # noqa: F401
+from vtjson import ip_address, number, regex, url, validate
 
 # This schema only matches new runs.
 
