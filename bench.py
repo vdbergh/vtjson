@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from timeit import timeit
 
 from bson.objectid import ObjectId
-from vstjson import ip_address, number, regex, union, url, validate
+from vtjson import ip_address, number, regex, url, validate
 
 from vtjson import _validate  # noqa: F401
 
@@ -27,14 +27,14 @@ worker_info_schema = {
     "version": int,
     "python_version": [int, int, int],
     "gcc_version": [int, int, int],
-    "compiler": union("clang++", "g++"),
+    "compiler": {"clang++", "g++"},
     "unique_key": str,
     "modified": bool,
     "ARCH": str,
     "nps": number,
     "near_github_api_limit": bool,
     "remote_addr": ip_address,
-    "country_code": union(country_code, "?"),
+    "country_code": {country_code, "?"},
 }
 
 results_schema = {
@@ -101,7 +101,7 @@ runs_schema = {
             "elo0": number,
             "elo1": number,
             "elo_model": "normalized",
-            "state": union("", "accepted", "rejected"),
+            "state": {"", "accepted", "rejected"},
             "llr": number,
             "batch_size": int,
             "lower_bound": -math.log(19),
