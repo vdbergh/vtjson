@@ -5,6 +5,7 @@ import re
 import urllib.parse
 from collections.abc import Sequence
 
+import dns.resolver
 import email_validator
 import idna
 
@@ -21,7 +22,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.1.21"
+__version__ = "1.1.22"
 
 
 def _c(s):
@@ -438,11 +439,21 @@ class domain_name:
     def __validate__(object, name, strict):
         return domain_name().__validate__(object, name, strict)
 
-    def __init__(self, ascii_only=True):
+    def __init__(self, ascii_only=True, resolve=False):
         self.re_ascii = re.compile(r"[\x00-\x7F]*")
         self.ascii_only = ascii_only
+        self.resolve = resolve
         self.__validate__ = self.__validate2__
-        self.__name__ = "domain_name" if ascii_only else "domain_name(ascii_only=False)"
+        arg_string = ""
+        if not ascii_only:
+            arg_string += ", ascii_only=False"
+        if resolve:
+            arg_string += ", resolve=True"
+        if arg_string != "":
+            arg_string = arg_string[2:]
+        self.__name__ = (
+            "domain_name" if not arg_string else f"domain_name({arg_string})"
+        )
 
     def __validate2__(self, object, name, strict):
         if self.ascii_only:
@@ -454,4 +465,10 @@ class domain_name:
             idna.encode(object, uts46=False)
         except idna.core.IDNAError as e:
             return _wrong_type_message(object, name, self.__name__, str(e))
+
+        if self.resolve:
+            try:
+                dns.resolver.resolve(object)
+            except Exception as e:
+                return _wrong_type_message(object, name, self.__name__, str(e))
         return ""

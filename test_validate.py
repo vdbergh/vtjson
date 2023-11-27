@@ -639,11 +639,11 @@ class TestValidation(unittest.TestCase):
 
     def test_domain_name(self):
         schema = domain_name
-        object = "www.uhasselt.be"
+        object = "www.example.com"
         valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
-        object = "www.uhassëlt.be"
+        object = "www.éxample.com"
         valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
@@ -653,12 +653,18 @@ class TestValidation(unittest.TestCase):
         print(valid)
         self.assertTrue(valid == "")
 
-        object = "-www.uhassëlt.be"
+        object = "-www.éxample.com"
         valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
 
-        object = "www.u_hassëlt.be"
+        object = "www.é_xample.com"
+        valid = _validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+        schema = domain_name(resolve=True)
+        object = "www.exaaaaaaaaaaaaaaaaaaaaaaaaample.com"
         valid = _validate(schema, object)
         print(valid)
         self.assertFalse(valid == "")
