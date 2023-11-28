@@ -438,18 +438,18 @@ class url:
 _url = url()
 
 
-class date:
+class date_time:
     @staticmethod
     def __validate__(object, name, strict):
-        return _date.__validate__(object, name, strict)
+        return _date_time.__validate__(object, name, strict)
 
     def __init__(self, format=None):
         self.format = format
         self.__validate__ = self.__validate2__
         if format is not None:
-            self.__name__ = f"date({repr(format)})"
+            self.__name__ = f"date_time({repr(format)})"
         else:
-            self.__name__ = "date"
+            self.__name__ = "date_time"
 
     def __validate2__(self, object, name, strict):
         if self.format is not None:
@@ -465,7 +465,7 @@ class date:
         return ""
 
 
-_date = date()
+_date_time = date_time()
 
 
 class domain_name:

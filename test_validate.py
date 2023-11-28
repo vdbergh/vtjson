@@ -6,7 +6,7 @@ from vtjson import (
     _keys,
     _validate,
     complement,
-    date,
+    date_time,
     domain_name,
     email,
     intersect,
@@ -153,8 +153,8 @@ class TestValidation(unittest.TestCase):
         sys.version_info.major == 3 and sys.version_info.minor >= 7,
         "datetime.datetime.fromisoformat was introduced in Python 3.7",
     )
-    def test_date2(self):
-        schema = date
+    def test_date_time(self):
+        schema = date_time
         object = "2000-30-30"
         valid = _validate(schema, object)
         print(valid)
@@ -169,8 +169,7 @@ class TestValidation(unittest.TestCase):
         valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
-    def test_date(self):
-        schema = date("%Y^%m^%d")
+        schema = date_time("%Y^%m^%d")
         object = "2000^12^300"
         valid = _validate(schema, object)
         print(valid)

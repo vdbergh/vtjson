@@ -215,7 +215,7 @@ corresponding inequality is not checked.
 - `email`. Checks if the object is a valid email address. This uses the package `email_validator`. The `email` schema accepts the same options as `validate_email` in loc. cit.
 - `ip_address` and `url`. These are similar to `email`.
 - `domain_name(ascii_only=True, resolve=False)`. Checks if the object is a valid domain name. If `ascii_only=False` then allow IDNA domain names. If `resolve=True` check if the domain name resolves.
-- `date`. Without argument this represents an ISO 8601 date. An argument corresponds to a format string for `strftime`.
+- `date_time(format=None)`. Without argument this represents an ISO 8601 date-time. The `format` argument represents a format string for `strftime`.
 ## Format
 A schema can be, in order of precedence:
 - An object having a `__validate__` attribute with signature
