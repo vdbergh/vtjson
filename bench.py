@@ -6,7 +6,7 @@ from timeit import timeit
 from bson.objectid import ObjectId
 
 from vtjson import _validate  # noqa: F401
-from vtjson import ip_address, number, regex, url, validate
+from vtjson import _dict, ip_address, number, regex, url, validate
 
 # This schema only matches new runs.
 
@@ -148,7 +148,7 @@ runs_schema = {
             ],
         },
     },
-    "tasks": [
+    "tasks": [ _dict(
         {
             "num_games": int,
             "active": bool,
@@ -159,7 +159,7 @@ runs_schema = {
             "bad?": True,
             "stats": results_schema,
             "worker_info": worker_info_schema,
-        },
+        }),
         ...,
     ],
     "bad_tasks?": [

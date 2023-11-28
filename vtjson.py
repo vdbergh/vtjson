@@ -291,7 +291,7 @@ def _validate_set(schema, object, name, strict):
 
 
 def _validate_dict(schema, object, name, strict):
-    if type(schema) is not type(object):
+    if type(object) is not dict:
         return _wrong_type_message(object, name, type(schema).__name__)
     if strict:
         _k = _keys(schema)
@@ -548,3 +548,12 @@ class domain_name:
 
 
 _domain_name = domain_name()
+
+
+class _dict:
+    def __init__(self,d):
+        self.dict=d
+
+    def __validate__(self,object,name,strict):
+        return _validate_dict(self.dict,object,name,strict)
+    
