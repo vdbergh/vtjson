@@ -335,10 +335,14 @@ def _validate_object(schema, object, name, strict):
 
 
 def _validate(schema, object, name="object", strict=True):
-    if hasattr(schema, "__validate__"):  # duck typing
+    try:
         return schema.__validate__(object, name, strict)
+    except:
+        print("Unrecognized schema")
+        pass
+
     # In Python 3.11 instances of GenericAlias are not types
-    elif isinstance(schema, type) or isinstance(schema, _GenericAlias):
+    if isinstance(schema, type) or isinstance(schema, _GenericAlias):
         return _validate_type(schema, object, name)
     elif callable(schema):
         return _validate_callable(schema, object, name)
@@ -557,3 +561,32 @@ class _dict:
     def __validate__(self,object,name,strict):
         return _validate_dict(self.dict,object,name,strict)
     
+class _type:
+    def __init__(self,t):
+        self.type=t
+
+    def __validate__(self,object,name,strict):
+        return _validate_type(self.type,object,name)
+    
+class _sequence:
+    def __init__(self,s):
+        self.sequence=s
+
+    def __validate__(self,object,name,strict):
+        return _validate_sequence(self.sequence,object,name,strict)
+    
+class _set:
+    def __init__(self,s):
+        self.set=s
+
+    def __validate__(self,object,name,strict):
+        return _validate_set(self.set,object,name,strict)
+    
+class _object:
+    def __init__(self,o):
+        self.object=o
+
+    def __validate__(self,object,name,strict):
+        return _validate_object(self.object,object,name,strict)
+    
+
