@@ -346,7 +346,7 @@ def _compile(schema):
     elif isinstance(schema, lax):
         return  lax(_compile(schema.schema))
     elif isinstance(schema, quote):
-        return  quote(_compile(schema.schema))
+        return  _object(schema.schema)
     elif isinstance(schema, set_name):
         return set_name(_compile(schema.schema), schema.__name__)
     elif hasattr(schema, "__validate__"):
@@ -577,66 +577,136 @@ _domain_name = domain_name()
 
 
 class _dict:
-    def __init__(self, d):
-        self.dict = d
+    def __init__(self, schema):
+        self.schema = schema
+        self.keys = _keys(self.schema)
 
     def __validate__(self, object, name, strict):
-        return _validate_dict(self.dict, object, name, strict)
+        if type(object) is not dict:
+            return _wrong_type_message(object, name, type(self.schema).__name__)
+        if strict:
+            _k = self.keys
+            for x in object:
+                if x not in _k:
+                    return f"{name}['{x}'] is not in the schema"
+        for k in self.schema:
+            k_ = k
+            if isinstance(k, optional_key):
+                k_ = k.key
+                if k_ not in object:
+                    continue
+            if isinstance(k, str) and len(k) > 0 and k[-1] == "?":
+                k_ = k[:-1]
+                if k_ not in object:
+                    continue
+            name_ = f"{name}['{k_}']"
+            if k_ not in object:
+                return f"{name_} is missing"
+            else:
+                ret = _validate(self.schema[k], object[k_], name=name_, strict=strict)
+                if ret != "":
+                    return ret
+        return ""
+
 
     def __str__(self):
-        return str(self.dict)
+        return str(self.schema)
 
 
 class _type:
-    def __init__(self, t):
-        self.type = t
+    def __init__(self, schema):
+        self.schema = schema
 
     def __validate__(self, object, name, strict):
-        return _validate_type(self.type, object, name)
+        try:
+            if not isinstance(object, self.schema):
+                return _wrong_type_message(object, name, schema.__name__)
+            else:
+                return ""
+        except Exception as e:
+            return f"{self.schema} is not a valid type: {str(e)}"
 
     def __str__(self):
         return self.type.__name__
 
 
 class _sequence:
-    def __init__(self, s):
-        self.sequence = s
+    def __init__(self, schema):
+        self.schema = schema
 
     def __validate__(self, object, name, strict):
-        return _validate_sequence(self.sequence, object, name, strict)
+        if type(self.schema) is not type(object):
+            return _wrong_type_message(object, name, type(self.schema).__name__)
+        L = len(object)
+        schema = _ellipsis_list(self.schema, length=L)
+        if strict and L > len(schema):
+            name_ = f"{name}[{len(schema)}]"
+            return f"{name_} is not in the schema"
+        for i in range(len(schema)):
+            name_ = f"{name}[{i}]"
+            if i >= L:
+                return f"{name_} is missing"
+            else:
+                ret = _validate(schema[i], object[i], name=name_, strict=strict)
+                if ret != "":
+                    return ret
+        return ""
 
     def __str__(self):
-        return str(self.sequence)
+        return str(self.schema)
 
 
 class _set:
-    def __init__(self, s):
-        self.set = s
+    def __init__(self, schema):
+        self.schema = schema
 
     def __validate__(self, object, name, strict):
-        return _validate_set(self.set, object, name, strict)
+        return union(*self.schema).__validate__(object, name, strict)
 
     def __str__(self):
-        return str(self.set)
+        return str(self.schema)
 
 
 class _object:
-    def __init__(self, o):
-        self.object = o
+    def __init__(self, schema):
+        self.schema = schema
 
     def __validate__(self, object, name, strict):
-        return _validate_object(self.object, object, name, strict)
+        message = f"{name} (value:{_c(object)}) is not equal to {repr(self.schema)}"
+        # special case
+        if isinstance(self.schema, float):
+            try:
+                if math.isclose(self.schema, object):
+                    return ""
+                else:
+                    return message
+            except Exception:
+                return message
+        elif object != self.schema:
+            return message
+        return ""
 
     def __str__(self):
-        return str(self.object)
+        return str(self.schema)
 
 
 class _callable:
-    def __init__(self, c):
-        self.callable = c
+    def __init__(self, schema):
+        self.schema = schema
 
     def __validate__(self, object, name, strict):
-        return _validate_callable(self.callable, object, name)
+        try:
+            __name__ = self.schema.__name__
+        except Exception:
+            __name__ = self.schema
+        try:
+            if self.schema(object):
+                return ""
+            else:
+                return _wrong_type_message(object, name, __name__)
+        except Exception as e:
+            return _wrong_type_message(object, name, __name__, str(e))
+
 
     def __str__(self):
-        return str(self.callable)
+        return str(self.schema)
