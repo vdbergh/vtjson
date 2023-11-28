@@ -176,7 +176,7 @@ class quote:
         self.schema = schema
 
     def __validate__(self, object, name, strict):
-        return _validate_object(self.schema, object, name, strict)
+        return _object(self.schema).__validate__(object, name, strict)
 
 
 class set_name:
@@ -243,110 +243,19 @@ class interval:
             return f"{message}: {str(e)}"
 
 
-def _validate_type(schema, object, name):
-    try:
-        if not isinstance(object, schema):
-            return _wrong_type_message(object, name, schema.__name__)
-        else:
-            return ""
-    except Exception as e:
-        return f"{schema} is not a valid type: {str(e)}"
-
-
-def _validate_callable(schema, object, name):
-    try:
-        __name__ = schema.__name__
-    except Exception:
-        __name__ = schema
-    try:
-        if schema(object):
-            return ""
-        else:
-            return _wrong_type_message(object, name, __name__)
-    except Exception as e:
-        return _wrong_type_message(object, name, __name__, str(e))
-
-
-def _validate_sequence(schema, object, name, strict):
-    if type(schema) is not type(object):
-        return _wrong_type_message(object, name, type(schema).__name__)
-    L = len(object)
-    schema = _ellipsis_list(schema, length=L)
-    if strict and L > len(schema):
-        name_ = f"{name}[{len(schema)}]"
-        return f"{name_} is not in the schema"
-    for i in range(len(schema)):
-        name_ = f"{name}[{i}]"
-        if i >= L:
-            return f"{name_} is missing"
-        else:
-            ret = _validate(schema[i], object[i], name=name_, strict=strict)
-            if ret != "":
-                return ret
-    return ""
-
-
-def _validate_set(schema, object, name, strict):
-    return union(*schema).__validate__(object, name, strict)
-
-
-def _validate_dict(schema, object, name, strict):
-    if type(object) is not dict:
-        return _wrong_type_message(object, name, type(schema).__name__)
-    if strict:
-        _k = _keys(schema)
-        for x in object:
-            if x not in _k:
-                return f"{name}['{x}'] is not in the schema"
-    for k in schema:
-        k_ = k
-        if isinstance(k, optional_key):
-            k_ = k.key
-            if k_ not in object:
-                continue
-        if isinstance(k, str) and len(k) > 0 and k[-1] == "?":
-            k_ = k[:-1]
-            if k_ not in object:
-                continue
-        name_ = f"{name}['{k_}']"
-        if k_ not in object:
-            return f"{name_} is missing"
-        else:
-            ret = _validate(schema[k], object[k_], name=name_, strict=strict)
-            if ret != "":
-                return ret
-    return ""
-
-
-def _validate_object(schema, object, name, strict):
-    message = f"{name} (value:{_c(object)}) is not equal to {repr(schema)}"
-    # special case
-    if isinstance(schema, float):
-        try:
-            if math.isclose(schema, object):
-                return ""
-            else:
-                return message
-        except Exception:
-            return message
-    elif object != schema:
-        return message
-    return ""
-
-
 def _compile(schema):
     if isinstance(schema, intersect):
-        return  intersect(*[_compile(k) for k in schema.schemas])
+        return intersect(*[_compile(k) for k in schema.schemas])
     elif isinstance(schema, union):
-        return  union(*[_compile(k) for k in schema.schemas])
+        return union(*[_compile(k) for k in schema.schemas])
     elif isinstance(schema, complement):
-        return  complement(_compile(schema.schema))
+        return complement(_compile(schema.schema))
     elif isinstance(schema, strict):
-        return  strict(_compile(schema.schema))
+        return strict(_compile(schema.schema))
     elif isinstance(schema, lax):
-        return  lax(_compile(schema.schema))
+        return lax(_compile(schema.schema))
     elif isinstance(schema, quote):
-        return  _object(schema.schema)
+        return _object(schema.schema)
     elif isinstance(schema, set_name):
         return set_name(_compile(schema.schema), schema.__name__)
     elif hasattr(schema, "__validate__"):
@@ -608,7 +517,6 @@ class _dict:
                     return ret
         return ""
 
-
     def __str__(self):
         return str(self.schema)
 
@@ -620,7 +528,7 @@ class _type:
     def __validate__(self, object, name, strict):
         try:
             if not isinstance(object, self.schema):
-                return _wrong_type_message(object, name, schema.__name__)
+                return _wrong_type_message(object, name, self.schema.__name__)
             else:
                 return ""
         except Exception as e:
@@ -706,7 +614,6 @@ class _callable:
                 return _wrong_type_message(object, name, __name__)
         except Exception as e:
             return _wrong_type_message(object, name, __name__, str(e))
-
 
     def __str__(self):
         return str(self.schema)
