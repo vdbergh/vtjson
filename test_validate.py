@@ -6,6 +6,7 @@ from vtjson import (
     _keys,
     _validate,
     complement,
+    date,
     date_time,
     domain_name,
     email,
@@ -19,6 +20,7 @@ from vtjson import (
     regex,
     set_name,
     strict,
+    time,
     union,
     url,
 )
@@ -183,6 +185,28 @@ class TestValidation(unittest.TestCase):
         object = "2000^12^30"
         valid = _validate(schema, object)
         self.assertTrue(valid == "")
+
+    def test_date(self):
+        schema = date
+        object = "2023-10-10"
+        valid = _validate(schema, object)
+        self.assertTrue(valid == "")
+
+        object = "2023-10-10T01:01:01"
+        valid = _validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
+
+    def test_time(self):
+        schema = time
+        object = "01:01:01"
+        valid = _validate(schema, object)
+        self.assertTrue(valid == "")
+
+        object = "2023-10-10T01:01:01"
+        valid = _validate(schema, object)
+        print(valid)
+        self.assertFalse(valid == "")
 
     def test_set(self):
         schema = {2, 3}

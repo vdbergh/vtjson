@@ -22,7 +22,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.1.23"
+__version__ = "1.2.0"
 
 
 def _c(s):
@@ -466,6 +466,46 @@ class date_time:
 
 
 _date_time = date_time()
+
+
+class date:
+    @staticmethod
+    def __validate__(object, name, strict):
+        return _date.__validate__(object, name, strict)
+
+    def __init__(self):
+        self.__validate__ = self.__validate2__
+        self.__name__ = "date"
+
+    def __validate2__(self, object, name, strict):
+        try:
+            datetime.date.fromisoformat(object)
+        except Exception as e:
+            return _wrong_type_message(object, name, self.__name__, str(e))
+        return ""
+
+
+_date = date()
+
+
+class time:
+    @staticmethod
+    def __validate__(object, name, strict):
+        return _time.__validate__(object, name, strict)
+
+    def __init__(self):
+        self.__validate__ = self.__validate2__
+        self.__name__ = "time"
+
+    def __validate2__(self, object, name, strict):
+        try:
+            datetime.time.fromisoformat(object)
+        except Exception as e:
+            return _wrong_type_message(object, name, self.__name__, str(e))
+        return ""
+
+
+_time = time()
 
 
 class domain_name:

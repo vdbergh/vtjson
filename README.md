@@ -216,6 +216,7 @@ corresponding inequality is not checked.
 - `ip_address` and `url`. These are similar to `email`.
 - `domain_name(ascii_only=True, resolve=False)`. Checks if the object is a valid domain name. If `ascii_only=False` then allow IDNA domain names. If `resolve=True` check if the domain name resolves.
 - `date_time(format=None)`. Without argument this represents an ISO 8601 date-time. The `format` argument represents a format string for `strftime`.
+- `date` and `time`. These represents a ISO 8601 date and a ISO 8601 time.
 ## Format
 A schema can be, in order of precedence:
 - An object having a `__validate__` attribute with signature
