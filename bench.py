@@ -6,7 +6,7 @@ from timeit import timeit
 from bson.objectid import ObjectId
 
 from vtjson import _validate  # noqa: F401
-from vtjson import _dict, _sequence, _set, _type, _object, ip_address, number, regex, url, validate
+from vtjson import ip_address, number, regex, url, validate
 
 # This schema only matches new runs.
 
@@ -18,118 +18,118 @@ country_code = regex(r"[A-Z][A-Z]", name="country_code")
 run_id = regex(r"[a-f0-9]{24}", name="run_id")
 uuid = regex(r"[0-9a-zA-z]{2,}(-[0-9a-f]{4}){3}-[0-9a-f]{12}")
 
-worker_info_schema = _dict({
-    "uname": _type(str),
-    "architecture": _sequence([_type(str), _type(str)]),
-    "concurrency": _type(int),
-    "max_memory": _type(int),
-    "min_threads": _type(int),
-    "username": _type(str),
-    "version": _type(int),
-    "python_version": _sequence([_type(int), _type(int), _type(int)]),
-    "gcc_version": _sequence([_type(int), _type(int), _type(int)]),
-    "compiler": _set({_object("clang++"), _object("g++")}),
+worker_info_schema = {
+    "uname": str,
+    "architecture": [str, str],
+    "concurrency": int,
+    "max_memory": int,
+    "min_threads": int,
+    "username": str,
+    "version": int,
+    "python_version": [int, int, int],
+    "gcc_version": [int, int, int],
+    "compiler": {"clang++", "g++"},
     "unique_key": uuid,
-    "modified": _type(bool),
-    "ARCH": _type(str),
+    "modified": bool,
+    "ARCH": str,
     "nps": number,
-    "near_github_api_limit": _type(bool),
+    "near_github_api_limit": bool,
     "remote_addr": ip_address,
-    "country_code": _set({country_code, _object("?")}),
-})
+    "country_code": {country_code, "?"},
+}
 
-results_schema = _dict({
-    "wins": _type(int),
-    "losses": _type(int),
-    "draws": _type(int),
-    "crashes": _type(int),
-    "time_losses": _type(int),
-    "pentanomial": _sequence([_type(int), _type(int), _type(int), _type(int), _type(int)]),
-})
+results_schema = {
+    "wins": int,
+    "losses": int,
+    "draws": int,
+    "crashes": int,
+    "time_losses": int,
+    "pentanomial": [int, int, int, int, int],
+}
 
-runs_schema = _dict({
-    "_id?": _type(ObjectId),
-    "start_time": _type(datetime),
-    "last_updated": _type(datetime),
+runs_schema = {
+    "_id?": ObjectId,
+    "start_time": datetime,
+    "last_updated": datetime,
     "tc_base": number,
-    "base_same_as_master": _type(bool),
-    "results_stale?": _type(bool),  # Will go away soon
+    "base_same_as_master": bool,
+    "results_stale?": bool,  # Will go away soon
     "rescheduled_from?": run_id,
-    "approved": _type(bool),
-    "approver": _type(str),
-    "finished": _type(bool),
-    "deleted": _type(bool),
-    "failed": _type(bool),
-    "is_green": _type(bool),
-    "is_yellow": _type(bool),
-    "workers?": _type(int),  # Will become non-optional
-    "cores?": _type(int),  # Will become non-optional
+    "approved": bool,
+    "approver": str,
+    "finished": bool,
+    "deleted": bool,
+    "failed": bool,
+    "is_green": bool,
+    "is_yellow": bool,
+    "workers?": int,  # Will become non-optional
+    "cores?": int,  # Will become non-optional
     "results": results_schema,
-    "results_info?": _dict({
-        "style": _type(str),
-        "info": _sequence([_type(str), ...]),
-    }),
-    "args": _dict({
-        "base_tag": _type(str),
-        "new_tag": _type(str),
+    "results_info?": {
+        "style": str,
+        "info": [str, ...],
+    },
+    "args": {
+        "base_tag": str,
+        "new_tag": str,
         "base_net": net_name,
         "new_net": net_name,
-        "num_games": _type(int),
+        "num_games": int,
         "tc": tc,
         "new_tc": tc,
-        "book": _type(str),
+        "book": str,
         "book_depth": str_int,
-        "threads": _type(int),
+        "threads": int,
         "resolved_base": sha,
         "resolved_new": sha,
-        "msg_base": _type(str),
-        "msg_new": _type(str),
-        "base_options": _type(str),
-        "new_options": _type(str),
-        "info": _type(str),
+        "msg_base": str,
+        "msg_new": str,
+        "base_options": str,
+        "new_options": str,
+        "info": str,
         "base_signature": str_int,
         "new_signature": str_int,
-        "username": _type(str),
+        "username": str,
         "tests_repo": url,
-        "auto_purge": _type(bool),
+        "auto_purge": bool,
         "throughput": number,
         "itp": number,
         "priority": number,
-        "adjudication": _type(bool),
-        "sprt?": _dict({
-            "alpha": _object(0.05),
-            "beta": _object(0.05),
+        "adjudication": bool,
+        "sprt?": {
+            "alpha": 0.05,
+            "beta": 0.05,
             "elo0": number,
             "elo1": number,
-            "elo_model": _object("normalized"),
-            "state": _set({_object(""), _object("accepted"), _object("rejected")}),
+            "elo_model": "normalized",
+            "state": {"", "accepted", "rejected"},
             "llr": number,
-            "batch_size": _type(int),
-            "lower_bound": _object(-math.log(19)),
-            "upper_bound": _object(math.log(19)),
-            "lost_samples?": _type(int),
-            "illegal_update?": _type(int),
-            "overshoot?": _dict({
-                "last_update": _type(int),
-                "skipped_updates": _type(int),
+            "batch_size": int,
+            "lower_bound": -math.log(19),
+            "upper_bound": math.log(19),
+            "lost_samples?": int,
+            "illegal_update?": int,
+            "overshoot?": {
+                "last_update": int,
+                "skipped_updates": int,
                 "ref0": number,
                 "m0": number,
                 "sq0": number,
                 "ref1": number,
                 "m1": number,
                 "sq1": number,
-            }),
-        }),
-        "spsa?": _dict({
+            },
+        },
+        "spsa?": {
             "A": number,
             "alpha": number,
             "gamma": number,
-            "raw_params": _type(str),
-            "iter": _type(int),
-            "num_iter": _type(int),
-            "params": _sequence([
-                _dict({
-                    "name": _type(str),
+            "raw_params": str,
+            "iter": int,
+            "num_iter": int,
+            "params": [
+                {
+                    "name": str,
                     "start": number,
                     "min": number,
                     "max": number,
@@ -139,45 +139,45 @@ runs_schema = _dict({
                     "a_end": number,
                     "a": number,
                     "theta": number,
-                }),
+                },
                 ...,
-            ]),
-            "param_history?": _sequence([
-                _sequence([{"theta": number, "R": number, "c": number}, ...]),
+            ],
+            "param_history?": [
+                [{"theta": number, "R": number, "c": number}, ...],
                 ...,
-            ]),
-        }),
-    }),
-    "tasks": _sequence([ _dict(
+            ],
+        },
+    },
+    "tasks": [
         {
-            "num_games": _type(int),
-            "active": _type(bool),
-            "last_updated": _type(datetime),
-            "start": _type(int),
-            "residual?": number,
-            "residual_color?": _type(str),
-            "bad?": _object(True),
-            "stats": results_schema,
-            "worker_info": worker_info_schema,
-        }),
-        ...,
-    ]),
-    "bad_tasks?": _sequence([
-        _dict({
-            "num_games": _type(int),
-            "active": _object(False),
+            "num_games": int,
+            "active": bool,
             "last_updated": datetime,
-            "start": _type(int),
-            "residual": number,
-            "residual_color": _type(str),
-            "bad": _object(True),
-            "task_id": _type(int),
+            "start": int,
+            "residual?": number,
+            "residual_color?": str,
+            "bad?": True,
             "stats": results_schema,
             "worker_info": worker_info_schema,
-        }),
+        },
         ...,
-    ]),
-})
+    ],
+    "bad_tasks?": [
+        {
+            "num_games": int,
+            "active": False,
+            "last_updated": datetime,
+            "start": int,
+            "residual": number,
+            "residual_color": str,
+            "bad": True,
+            "task_id": int,
+            "stats": results_schema,
+            "worker_info": worker_info_schema,
+        },
+        ...,
+    ],
+}
 
 task_object = {
     "num_games": 1632,

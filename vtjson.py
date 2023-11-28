@@ -334,27 +334,35 @@ def _validate_object(schema, object, name, strict):
     return ""
 
 
+def _compile(schema):
+    if hasattr(schema, "__validate__"):
+        return schema
+    elif isinstance(schema, type) or isinstance(schema, _GenericAlias):
+        return _type(schema)
+    elif callable(schema):
+        return _callable(schema)
+    elif isinstance(schema, list):
+        return _sequence([_compile(o) if o is not ... else ... for o in schema])
+    elif isinstance(schema, tuple):
+        return _sequence(tuple([_compile(o) if o is not ... else ... for o in schema]))
+    elif isinstance(schema, dict):
+        ret = {}
+        for k, v in schema.items():
+            ret[k] = _compile(v)
+        return _dict(ret)
+    elif isinstance(schema, set):
+        return _set(set([_compile(o) for o in schema]))
+    else:
+        return _object(schema)
+    assert False
+
+
 def _validate(schema, object, name="object", strict=True):
     try:
         return schema.__validate__(object, name, strict)
-    except:
-        print("Unrecognized schema")
-        pass
-
-    # In Python 3.11 instances of GenericAlias are not types
-    if isinstance(schema, type) or isinstance(schema, _GenericAlias):
-        return _validate_type(schema, object, name)
-    elif callable(schema):
-        return _validate_callable(schema, object, name)
-    elif isinstance(schema, list) or isinstance(schema, tuple):
-        return _validate_sequence(schema, object, name, strict)
-    elif isinstance(schema, dict):
-        return _validate_dict(schema, object, name, strict)
-    elif isinstance(schema, set):
-        return _validate_set(schema, object, name, strict)
-    else:
-        return _validate_object(schema, object, name, strict)
-    assert False
+    except Exception:
+        schema = _compile(schema)
+        return schema.__validate__(object, name, strict)
 
 
 def validate(schema, object, name="object", strict=True):
@@ -555,38 +563,66 @@ _domain_name = domain_name()
 
 
 class _dict:
-    def __init__(self,d):
-        self.dict=d
+    def __init__(self, d):
+        self.dict = d
 
-    def __validate__(self,object,name,strict):
-        return _validate_dict(self.dict,object,name,strict)
-    
+    def __validate__(self, object, name, strict):
+        return _validate_dict(self.dict, object, name, strict)
+
+    def __str__(self):
+        return str(self.dict)
+
+
 class _type:
-    def __init__(self,t):
-        self.type=t
+    def __init__(self, t):
+        self.type = t
 
-    def __validate__(self,object,name,strict):
-        return _validate_type(self.type,object,name)
-    
+    def __validate__(self, object, name, strict):
+        return _validate_type(self.type, object, name)
+
+    def __str__(self):
+        return self.type.__name__
+
+
 class _sequence:
-    def __init__(self,s):
-        self.sequence=s
+    def __init__(self, s):
+        self.sequence = s
 
-    def __validate__(self,object,name,strict):
-        return _validate_sequence(self.sequence,object,name,strict)
-    
+    def __validate__(self, object, name, strict):
+        return _validate_sequence(self.sequence, object, name, strict)
+
+    def __str__(self):
+        return str(self.sequence)
+
+
 class _set:
-    def __init__(self,s):
-        self.set=s
+    def __init__(self, s):
+        self.set = s
 
-    def __validate__(self,object,name,strict):
-        return _validate_set(self.set,object,name,strict)
-    
+    def __validate__(self, object, name, strict):
+        return _validate_set(self.set, object, name, strict)
+
+    def __str__(self):
+        return str(self.set)
+
+
 class _object:
-    def __init__(self,o):
-        self.object=o
+    def __init__(self, o):
+        self.object = o
 
-    def __validate__(self,object,name,strict):
-        return _validate_object(self.object,object,name,strict)
-    
+    def __validate__(self, object, name, strict):
+        return _validate_object(self.object, object, name, strict)
 
+    def __str__(self):
+        return str(self.object)
+
+
+class _callable:
+    def __init__(self, c):
+        self.callable = c
+
+    def __validate__(self, object, name, strict):
+        return _validate_callable(self.callable, object, name)
+
+    def __str__(self):
+        return str(self.callable)
