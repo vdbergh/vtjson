@@ -335,7 +335,21 @@ def _validate_object(schema, object, name, strict):
 
 
 def _compile(schema):
-    if hasattr(schema, "__validate__"):
+    if isinstance(schema, intersect):
+        return  intersect(*[_compile(k) for k in schema.schemas])
+    elif isinstance(schema, union):
+        return  union(*[_compile(k) for k in schema.schemas])
+    elif isinstance(schema, complement):
+        return  complement(_compile(schema.schema))
+    elif isinstance(schema, strict):
+        return  strict(_compile(schema.schema))
+    elif isinstance(schema, lax):
+        return  lax(_compile(schema.schema))
+    elif isinstance(schema, quote):
+        return  quote(_compile(schema.schema))
+    elif isinstance(schema, set_name):
+        return set_name(_compile(schema.schema), schema.__name__)
+    elif hasattr(schema, "__validate__"):
         return schema
     elif isinstance(schema, type) or isinstance(schema, _GenericAlias):
         return _type(schema)
