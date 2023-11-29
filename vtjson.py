@@ -478,9 +478,8 @@ class _dict:
         if type(object) is not dict:
             return _wrong_type_message(object, name, type(self.schema).__name__)
         if strict:
-            _k = self.keys
             for x in object:
-                if x not in _k:
+                if x not in self.keys:
                     return f"{name}['{x}'] is not in the schema"
         for k_, k, o in self.keys2:
             name_ = f"{name}['{k_}']"
@@ -521,8 +520,27 @@ class _sequence:
         self.schema = type(schema)(
             [_compile(o) if o is not ... else ... for o in schema]
         )
+        if len(schema) > 0 and schema[-1] is ...:
+            self.__validate__ = self.__validate_ellipsis__
 
     def __validate__(self, object, name, strict):
+        if type(self.schema) is not type(object):
+            return _wrong_type_message(object, name, type(self.schema).__name__)
+        ls = len(self.schema)
+        lo = len(object)
+        if strict:
+            if lo > ls:
+                return f"{name}[{ls}] is not in the schema"
+        if ls > lo:
+            return f"{name}[{lo}] is missing"
+        for i in range(ls):
+            name_ = f"{name}[{i}]"
+            ret = self.schema[i].__validate__(object[i], name_, strict)
+            if ret != "":
+                return ret
+        return ""
+
+    def __validate_ellipsis__(self, object, name, strict):
         if type(self.schema) is not type(object):
             return _wrong_type_message(object, name, type(self.schema).__name__)
         L = len(object)
