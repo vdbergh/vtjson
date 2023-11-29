@@ -546,17 +546,6 @@ class _sequence:
         return str(self.schema)
 
 
-class _set:
-    def __init__(self, schema):
-        self.schema = schema
-
-    def __validate__(self, object, name, strict):
-        return union(*self.schema).__validate__(object, name, strict)
-
-    def __str__(self):
-        return str(self.schema)
-
-
 class _object:
     def __init__(self, schema):
         self.schema = schema
