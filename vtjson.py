@@ -80,16 +80,20 @@ class _ellipsis_list(Sequence):
             raise IndexError(index)
 
 
-def _keys(dict):
+def _keys2(dict):
     ret = set()
     for k in dict:
         if isinstance(k, optional_key):
-            ret.add(k.key)
+            ret.add((k.key, k, True))
         elif isinstance(k, str) and len(k) > 0 and k[-1] == "?":
-            ret.add(k[:-1])
+            ret.add((k[:-1], k, True))
         else:
-            ret.add(k)
+            ret.add((k, k, False))
     return ret
+
+
+def _keys(dict):
+    return {k[0] for k in _keys2(dict)}
 
 
 class _validate_meta(type):
@@ -468,6 +472,7 @@ class _dict:
         for k, v in schema.items():
             self.schema[k] = _compile(v)
         self.keys = _keys(self.schema)
+        self.keys2 = _keys2(self.schema)
 
     def __validate__(self, object, name, strict):
         if type(object) is not dict:
@@ -477,21 +482,15 @@ class _dict:
             for x in object:
                 if x not in _k:
                     return f"{name}['{x}'] is not in the schema"
-        for k in self.schema:
-            k_ = k
-            if isinstance(k, optional_key):
-                k_ = k.key
-                if k_ not in object:
-                    continue
-            if isinstance(k, str) and len(k) > 0 and k[-1] == "?":
-                k_ = k[:-1]
-                if k_ not in object:
-                    continue
+        for k_, k, o in self.keys2:
             name_ = f"{name}['{k_}']"
-            if k_ not in object:
-                return f"{name_} is missing"
+            if k not in object:
+                if o:
+                    continue
+                else:
+                    return f"{name_} is missing"
             else:
-                ret = self.schema[k].__validate__(object[k_], name=name_, strict=strict)
+                ret = self.schema[k_].__validate__(object[k], name=name_, strict=strict)
                 if ret != "":
                     return ret
         return ""
