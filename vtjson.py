@@ -250,7 +250,7 @@ def _compile(schema):
         return _type(schema)
     elif callable(schema):
         return _callable(schema)
-    elif isinstance(schema, Sequence) and not isinstance(schema, str):
+    elif isinstance(schema, tuple) or isinstance(schema, list):
         return _sequence(schema)
     elif isinstance(schema, dict):
         return _dict(schema)
