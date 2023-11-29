@@ -60,7 +60,7 @@ class _ellipsis_list(Sequence):
             if len(L) >= 2:
                 self.last = L[-2]
             else:
-                self.last = object
+                self.last = _type(object)
         if not self.has_ellipsis:
             self.len = len(self.L)
         elif self.length <= len(self.L) - 2:
@@ -123,7 +123,7 @@ class union:
     def __validate__(self, object, name, strict):
         messages = []
         for schema in self.schemas:
-            message = _validate(schema, object, name=name, strict=strict)
+            message = schema.__validate__(object, name=name, strict=strict)
             if message == "":
                 return ""
             else:
@@ -137,7 +137,7 @@ class intersect:
 
     def __validate__(self, object, name, strict):
         for schema in self.schemas:
-            message = _validate(schema, object, name=name, strict=strict)
+            message = schema.__validate__(object, name=name, strict=strict)
             if message != "":
                 return message
         return ""
@@ -148,7 +148,7 @@ class complement:
         self.schema = schema
 
     def __validate__(self, object, name, strict):
-        message = _validate(self.schema, object, name=name, strict=strict)
+        message = self.schema.__validate__(object, name=name, strict=strict)
         if message != "":
             return ""
         else:
@@ -160,7 +160,7 @@ class lax:
         self.schema = schema
 
     def __validate__(self, object, name, strict):
-        return _validate(self.schema, object, name=name, strict=False)
+        return self.schema.__validate__(object, name=name, strict=False)
 
 
 class strict:
@@ -168,7 +168,7 @@ class strict:
         self.schema = schema
 
     def __validate__(self, object, name, strict):
-        return _validate(self.schema, object, name=name, strict=True)
+        return self.schema.__validate__(object, name=name, strict=True)
 
 
 class quote:
@@ -185,7 +185,7 @@ class set_name:
         self.__name__ = name
 
     def __validate__(self, object, name, strict):
-        message = _validate(self.schema, object, name=name, strict=strict)
+        message = self.schema.__validate__(object, name=name, strict=strict)
         if message != "":
             return _wrong_type_message(object, name, self.__name__)
         return ""
@@ -280,12 +280,12 @@ def _compile(schema):
     assert False
 
 
+def __validate(schema, object, name="object", strict=True):
+    return schema.__validate__(object, name, strict)
+    
 def _validate(schema, object, name="object", strict=True):
-    try:
-        return schema.__validate__(object, name, strict)
-    except Exception:
-        schema = _compile(schema)
-        return schema.__validate__(object, name, strict)
+    schema = _compile(schema)
+    return __validate(schema, object, name=name, strict=strict)
 
 
 def validate(schema, object, name="object", strict=True):
@@ -512,7 +512,7 @@ class _dict:
             if k_ not in object:
                 return f"{name_} is missing"
             else:
-                ret = _validate(self.schema[k], object[k_], name=name_, strict=strict)
+                ret = self.schema[k].__validate__(object[k_], name=name_, strict=strict)
                 if ret != "":
                     return ret
         return ""
@@ -555,7 +555,7 @@ class _sequence:
             if i >= L:
                 return f"{name_} is missing"
             else:
-                ret = _validate(schema[i], object[i], name=name_, strict=strict)
+                ret =schema[i].__validate__(object[i], name=name_, strict=strict)
                 if ret != "":
                     return ret
         return ""
