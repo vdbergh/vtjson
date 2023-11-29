@@ -257,8 +257,7 @@ def _compile(schema):
     elif isinstance(schema, set):
         return union(*schema)
     else:
-        ret = _object(schema)
-    return ret
+        return _object(schema)
 
 
 def _validate(schema, object, name="object", strict=True):
