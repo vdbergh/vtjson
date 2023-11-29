@@ -520,7 +520,9 @@ class _type:
 
 class _sequence:
     def __init__(self, schema):
-        self.schema = type(schema)([_compile(o) if o is not ... else ... for o in schema])
+        self.schema = type(schema)(
+            [_compile(o) if o is not ... else ... for o in schema]
+        )
 
     def __validate__(self, object, name, strict):
         if type(self.schema) is not type(object):
@@ -547,21 +549,24 @@ class _sequence:
 class _object:
     def __init__(self, schema):
         self.schema = schema
+        if isinstance(schema, float):
+            self.__validate__ = self.__validate_float__
 
     def __validate__(self, object, name, strict):
         message = f"{name} (value:{_c(object)}) is not equal to {repr(self.schema)}"
-        # special case
-        if isinstance(self.schema, float):
-            try:
-                if math.isclose(self.schema, object):
-                    return ""
-                else:
-                    return message
-            except Exception:
-                return message
-        elif object != self.schema:
+        if object != self.schema:
             return message
         return ""
+
+    def __validate_float__(self, object, name, strict):
+        message = f"{name} (value:{_c(object)}) is not close to {repr(self.schema)}"
+        try:
+            if math.isclose(self.schema, object):
+                return ""
+            else:
+                return message
+        except Exception:
+            return message
 
     def __str__(self):
         return str(self.schema)
