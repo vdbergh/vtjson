@@ -118,7 +118,7 @@ class optional_key:
 
 class union:
     def __init__(self, *schemas):
-        self.schemas = schemas
+        self.schemas = [_compile(s) for s in schemas]
 
     def __validate__(self, object, name, strict):
         messages = []
@@ -133,7 +133,7 @@ class union:
 
 class intersect:
     def __init__(self, *schemas):
-        self.schemas = schemas
+        self.schemas = [_compile(s) for s in schemas]
 
     def __validate__(self, object, name, strict):
         for schema in self.schemas:
@@ -145,7 +145,7 @@ class intersect:
 
 class complement:
     def __init__(self, schema):
-        self.schema = schema
+        self.schema = _compile(schema)
 
     def __validate__(self, object, name, strict):
         message = self.schema.__validate__(object, name=name, strict=strict)
@@ -157,7 +157,7 @@ class complement:
 
 class lax:
     def __init__(self, schema):
-        self.schema = schema
+        self.schema = _compile(schema)
 
     def __validate__(self, object, name, strict):
         return self.schema.__validate__(object, name=name, strict=False)
@@ -165,7 +165,7 @@ class lax:
 
 class strict:
     def __init__(self, schema):
-        self.schema = schema
+        self.schema = _compile(schema)
 
     def __validate__(self, object, name, strict):
         return self.schema.__validate__(object, name=name, strict=True)
@@ -173,15 +173,15 @@ class strict:
 
 class quote:
     def __init__(self, schema):
-        self.schema = schema
+        self.schema = _object(schema)
 
     def __validate__(self, object, name, strict):
-        return _object(self.schema).__validate__(object, name, strict)
+        return self.schema.__validate__(object, name, strict)
 
 
 class set_name:
     def __init__(self, schema, name):
-        self.schema = schema
+        self.schema = _compile(schema)
         self.__name__ = name
 
     def __validate__(self, object, name, strict):
@@ -244,21 +244,7 @@ class interval:
 
 
 def _compile(schema):
-    if isinstance(schema, intersect):
-        return intersect(*[_compile(k) for k in schema.schemas])
-    elif isinstance(schema, union):
-        return union(*[_compile(k) for k in schema.schemas])
-    elif isinstance(schema, complement):
-        return complement(_compile(schema.schema))
-    elif isinstance(schema, strict):
-        return strict(_compile(schema.schema))
-    elif isinstance(schema, lax):
-        return lax(_compile(schema.schema))
-    elif isinstance(schema, quote):
-        return _object(schema.schema)
-    elif isinstance(schema, set_name):
-        return set_name(_compile(schema.schema), schema.__name__)
-    elif hasattr(schema, "__validate__"):
+    if hasattr(schema, "__validate__"):
         return schema
     elif isinstance(schema, type) or isinstance(schema, _GenericAlias):
         return _type(schema)
@@ -280,12 +266,9 @@ def _compile(schema):
     assert False
 
 
-def __validate(schema, object, name="object", strict=True):
-    return schema.__validate__(object, name, strict)
-    
 def _validate(schema, object, name="object", strict=True):
     schema = _compile(schema)
-    return __validate(schema, object, name=name, strict=strict)
+    return schema.__validate__(object, name=name, strict=strict)
 
 
 def validate(schema, object, name="object", strict=True):
@@ -555,7 +538,7 @@ class _sequence:
             if i >= L:
                 return f"{name_} is missing"
             else:
-                ret =schema[i].__validate__(object[i], name=name_, strict=strict)
+                ret = schema[i].__validate__(object[i], name=name_, strict=strict)
                 if ret != "":
                     return ret
         return ""
