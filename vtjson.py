@@ -251,19 +251,16 @@ def _compile(schema):
     elif callable(schema):
         return _callable(schema)
     elif isinstance(schema, list):
-        return _sequence([_compile(o) if o is not ... else ... for o in schema])
+        return _sequence(schema, list)
     elif isinstance(schema, tuple):
-        return _sequence(tuple([_compile(o) if o is not ... else ... for o in schema]))
+        return _sequence(schema, tuple)
     elif isinstance(schema, dict):
-        ret = {}
-        for k, v in schema.items():
-            ret[k] = _compile(v)
-        return _dict(ret)
+        return _dict(schema)
     elif isinstance(schema, set):
-        return _set(set([_compile(o) for o in schema]))
+        return union(*schema)
     else:
-        return _object(schema)
-    assert False
+        ret = _object(schema)
+    return ret
 
 
 def _validate(schema, object, name="object", strict=True):
@@ -470,7 +467,9 @@ _domain_name = domain_name()
 
 class _dict:
     def __init__(self, schema):
-        self.schema = schema
+        self.schema = {}
+        for k, v in schema.items():
+            self.schema[k] = _compile(v)
         self.keys = _keys(self.schema)
 
     def __validate__(self, object, name, strict):
@@ -522,8 +521,8 @@ class _type:
 
 
 class _sequence:
-    def __init__(self, schema):
-        self.schema = schema
+    def __init__(self, schema, type):
+        self.schema = type([_compile(o) if o is not ... else ... for o in schema])
 
     def __validate__(self, object, name, strict):
         if type(self.schema) is not type(object):
