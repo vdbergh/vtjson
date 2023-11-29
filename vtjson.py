@@ -250,10 +250,8 @@ def _compile(schema):
         return _type(schema)
     elif callable(schema):
         return _callable(schema)
-    elif isinstance(schema, list):
-        return _sequence(schema, list)
-    elif isinstance(schema, tuple):
-        return _sequence(schema, tuple)
+    elif isinstance(schema, Sequence) and not isinstance(schema, str):
+        return _sequence(schema)
     elif isinstance(schema, dict):
         return _dict(schema)
     elif isinstance(schema, set):
@@ -521,8 +519,8 @@ class _type:
 
 
 class _sequence:
-    def __init__(self, schema, type):
-        self.schema = type([_compile(o) if o is not ... else ... for o in schema])
+    def __init__(self, schema):
+        self.schema = type(schema)([_compile(o) if o is not ... else ... for o in schema])
 
     def __validate__(self, object, name, strict):
         if type(self.schema) is not type(object):
