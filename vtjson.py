@@ -510,6 +510,8 @@ class _dict:
 class _type:
     def __init__(self, schema):
         self.schema = schema
+        if isinstance(schema, _GenericAlias):
+            raise SchemaError("Parametrized generics are not supported!")
 
     def __validate__(self, object, name, strict):
         try:

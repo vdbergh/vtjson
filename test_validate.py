@@ -753,11 +753,10 @@ class TestValidation(unittest.TestCase):
         "Parametrized types were introduced in Python 3.9",
     )
     def test_type(self):
-        schema = list[str]
-        object = ["a", "b"]
-        valid = _validate(schema, object)
-        print(valid)
-        self.assertFalse(valid == "")
+        with self.assertRaises(SchemaError):
+            schema = list[str]
+            object = ["a", "b"]
+            _validate(schema, object)
 
     def test_callable(self):
         def even(x):
