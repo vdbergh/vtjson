@@ -3,7 +3,6 @@ import ipaddress
 import math
 import re
 import urllib.parse
-from collections.abc import Sequence
 
 import dns.resolver
 import email_validator
@@ -21,7 +20,8 @@ except ImportError:
     class _GenericAlias(type):
         pass
 
-    __version__ = "1.3.1"
+
+__version__ = "1.3.1"
 
 
 def _c(s):
@@ -47,36 +47,6 @@ def _wrong_type_message(object, name, type_name, explanation=None):
     if explanation is not None:
         message += f": {explanation}"
     return message
-
-
-class _ellipsis_list(Sequence):
-    def __init__(self, L, length=0):
-        self.L = L
-        self.length = length
-        self.has_ellipsis = False
-        if len(L) > 0 and L[-1] == ...:
-            self.has_ellipsis = True
-            if len(L) >= 2:
-                self.last = L[-2]
-            else:
-                self.last = _type(object)
-        if not self.has_ellipsis:
-            self.len = len(self.L)
-        elif self.length <= len(self.L) - 2:
-            self.len = len(self.L) - 2
-        else:
-            self.len = self.length
-
-    def __len__(self):
-        return self.len
-
-    def __getitem__(self, index):
-        if not self.has_ellipsis or index < len(self.L) - 2:
-            return self.L[index]
-        elif index < self.length:
-            return self.last
-        else:
-            raise IndexError(index)
 
 
 def _keys2(dict):
@@ -545,9 +515,15 @@ class _type:
 
 class _sequence:
     def __init__(self, schema):
-        self.type_schema=type(schema)
+        self.type_schema = type(schema)
         self.schema = [_compile(o) if o is not ... else ... for o in schema]
         if len(schema) > 0 and schema[-1] is ...:
+            if len(schema) >= 2:
+                self.fill = self.schema[-2]
+                self.schema = self.schema[:-2]
+            else:
+                self.fill = _type(object)
+                self.schema = []
             self.__validate__ = self.__validate_ellipsis__
 
     def __validate__(self, object, name, strict):
@@ -570,19 +546,20 @@ class _sequence:
     def __validate_ellipsis__(self, object, name, strict):
         if self.type_schema is not type(object):
             return _wrong_type_message(object, name, type(self.schema).__name__)
-        L = len(object)
-        schema = _ellipsis_list(self.schema, length=L)
-        if strict and L > len(schema):
-            name_ = f"{name}[{len(schema)}]"
-            return f"{name_} is not in the schema"
-        for i in range(len(schema)):
+        ls = len(self.schema)
+        lo = len(object)
+        if ls > lo:
+            return f"{name}[{lo}] is missing"
+        for i in range(ls):
             name_ = f"{name}[{i}]"
-            if i >= L:
-                return f"{name_} is missing"
-            else:
-                ret = schema[i].__validate__(object[i], name=name_, strict=strict)
-                if ret != "":
-                    return ret
+            ret = self.schema[i].__validate__(object[i], name_, strict)
+            if ret != "":
+                return ret
+        for i in range(ls + 1, lo):
+            name_ = f"{name}[{i}]"
+            ret = self.fill.__validate__(object[i], name_, strict)
+            if ret != "":
+                return ret
         return ""
 
     def __str__(self):
