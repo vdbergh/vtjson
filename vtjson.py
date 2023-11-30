@@ -178,12 +178,17 @@ class regex:
             _flags = "" if flags == 0 else f", flags={flags}"
             _fullmatch = "" if fullmatch else ", fullmatch=False"
             self.__name__ = f"regex({repr(regex)}{_fullmatch}{_flags})"
+
+        schema_error=False
         try:
             self.pattern = re.compile(regex, flags)
         except Exception as e:
+            schema_error=True
+            message=str(e)
+        if schema_error:
             _name = f" (name: {repr(name)})" if name is not None else ""
             raise SchemaError(
-                f"{regex}{_name} is an invalid regular expression: {str(e)}"
+                f"{regex}{_name} is an invalid regular expression: {message}"
             )
 
     def __validate__(self, object, name, strict):
@@ -211,9 +216,12 @@ class interval:
         elif ub is ...:
             self.__validate__ = self.__validate_lb__
         else:
+            schema_error=False
             try:
                 lb <= ub
             except Exception:
+                schema_error=True
+            if schema_error:
                 raise SchemaError(
                     f"The upper and lower bound in the interval"
                     f" [{self.lb_s},{self.ub_s}] are incomparable"
