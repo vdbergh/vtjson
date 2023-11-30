@@ -4,8 +4,8 @@ import unittest
 
 from vtjson import (
     SchemaError,
+    ValidationError,
     _keys,
-    _validate,
     complement,
     date,
     date_time,
@@ -24,6 +24,7 @@ from vtjson import (
     time,
     union,
     url,
+    validate,
 )
 
 
@@ -34,158 +35,154 @@ class TestValidation(unittest.TestCase):
         self.assertEqual(keys, {"a", "b", "c"})
 
     def test_strict(self):
-        schema = {"a?": 1, "b": 2}
-        object = {"b": 2, "c": 3}
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = {"a?": 1, "b": 2}
+            object = {"b": 2, "c": 3}
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        object = {"a": 1, "c": 3}
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"a": 1, "c": 3}
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         object = {"a": 1, "b": 2}
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
         object = {"b": 2}
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
     def test_missing_keys(self):
         schema = {"a?": 1, "b": 2}
         object = {"b": 2, "c": 3}
-        valid = _validate(schema, object, strict=False)
-        self.assertTrue(valid == "")
+        validate(schema, object, strict=False)
 
-        object = {"a": 1, "c": 3}
-        valid = _validate(schema, object, strict=False)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"a": 1, "c": 3}
+            validate(schema, object, strict=False)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         object = {"a": 1, "b": 2}
-        valid = _validate(schema, object, strict=False)
-        self.assertTrue(valid == "")
+        validate(schema, object, strict=False)
 
         object = {"b": 2}
-        valid = _validate(schema, object, strict=False)
-        self.assertTrue(valid == "")
+        validate(schema, object, strict=False)
 
         schema = {"a?": 1, "b": 2}
         object = {"b": 2, "c": 3}
-        valid = _validate(schema, object, strict=False)
-        self.assertTrue(valid == "")
+        validate(schema, object, strict=False)
 
-        object = {"a": 1, "c": 3}
-        valid = _validate(schema, object, strict=False)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"a": 1, "c": 3}
+            validate(schema, object, strict=False)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         object = {"a": 1, "b": 2}
-        valid = _validate(schema, object, strict=False)
-        self.assertTrue(valid == "")
+        validate(schema, object, strict=False)
 
         object = {"b": 2}
-        valid = _validate(schema, object, strict=False)
-        self.assertTrue(valid == "")
+        validate(schema, object, strict=False)
 
-        schema = ["a", "b"]
-        object = ["a"]
-        valid = _validate(schema, object, strict=False)
-        print(valid)
-        self.assertFalse(valid == "")
+        with self.assertRaises(ValidationError) as mc:
+            schema = ["a", "b"]
+            object = ["a"]
+            validate(schema, object, strict=False)
 
         object = ["a", "b"]
-        valid = _validate(schema, object, strict=False)
-        self.assertTrue(valid == "")
+        validate(schema, object, strict=False)
 
         object = ["a", "b", "c"]
-        valid = _validate(schema, object, strict=False)
-        self.assertTrue(valid == "")
+        validate(schema, object, strict=False)
 
-        object = ["a", "b", "c"]
-        valid = _validate(schema, object, strict=True)
+        with self.assertRaises(ValidationError) as mc:
+            object = ["a", "b", "c"]
+            validate(schema, object, strict=True)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
     def test_union(self):
         schema = {"a?": 1, "b": union(2, 3)}
         object = {"b": 2, "c": 3}
-        valid = _validate(schema, object, strict=False)
-        self.assertTrue(valid == "")
+        validate(schema, object, strict=False)
 
-        object = {"b": 4, "c": 3}
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"b": 4, "c": 3}
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
     def test_quote(self):
-        schema = str
-        object = str
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = str
+            object = str
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         schema = quote(str)
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
         schema = {1, 2}
         object = 1
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
+
+        with self.assertRaises(ValidationError) as mc:
+            schema = quote({1, 2})
+            object = 1
+            validate(schema, object)
+        valid = str(mc.exception)
+        print(valid)
+
+        with self.assertRaises(ValidationError) as mc:
+            schema = {1, 2}
+            object = {1, 2}
+            validate(schema, object)
+        valid = str(mc.exception)
+        print(valid)
 
         schema = quote({1, 2})
-        object = 1
-        valid = _validate(schema, object)
-        print(valid)
-        self.assertFalse(valid == "")
-
-        schema = {1, 2}
-        object = {1, 2}
-        valid = _validate(schema, object)
-        print(valid)
-        self.assertFalse(valid == "")
-
-        schema = quote({1, 2})
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
     @unittest.skipUnless(
         sys.version_info.major == 3 and sys.version_info.minor >= 7,
         "datetime.datetime.fromisoformat was introduced in Python 3.7",
     )
     def test_date_time(self):
-        schema = date_time
-        object = "2000-30-30"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = date_time
+            object = "2000-30-30"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        object = "2000-12-300"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = "2000-12-300"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         object = "2000-12-30"
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        schema = date_time("%Y^%m^%d")
-        object = "2000^12^300"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = date_time("%Y^%m^%d")
+            object = "2000^12^300"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        object = "2000^12-30"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = "2000^12-30"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         object = "2000^12^30"
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
     @unittest.skipUnless(
         sys.version_info.major == 3 and sys.version_info.minor >= 7,
@@ -194,13 +191,13 @@ class TestValidation(unittest.TestCase):
     def test_date(self):
         schema = date
         object = "2023-10-10"
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        object = "2023-10-10T01:01:01"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = "2023-10-10T01:01:01"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
     @unittest.skipUnless(
         sys.version_info.major == 3 and sys.version_info.minor >= 7,
@@ -209,103 +206,110 @@ class TestValidation(unittest.TestCase):
     def test_time(self):
         schema = time
         object = "01:01:01"
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        object = "2023-10-10T01:01:01"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = "2023-10-10T01:01:01"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
     def test_set(self):
-        schema = {2, 3}
-        object = 5
-        valid = _validate(schema, object, strict=False)
+        with self.assertRaises(ValidationError) as mc:
+            schema = {2, 3}
+            object = 5
+            validate(schema, object, strict=False)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        schema = {int, str}
-        object = 1.0
-        valid = _validate(schema, object, strict=False)
+        with self.assertRaises(ValidationError) as mc:
+            schema = {int, str}
+            object = 1.0
+            validate(schema, object, strict=False)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
     def test_intersect(self):
-        schema = intersect(url, regex(r"^https", fullmatch=False))
-        object = "ftp://example.com"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = intersect(url, regex(r"^https", fullmatch=False))
+            object = "ftp://example.com"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         object = "https://example.com"
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
         def ordered_pair(o):
             return o[0] <= o[1]
 
-        schema = intersect((int, int), ordered_pair)
-        object = (3, 2)
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = intersect((int, int), ordered_pair)
+            object = (3, 2)
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        object = (1, 3, 2)
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = (1, 3, 2)
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        object = ("a", "b")
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = ("a", "b")
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         object = (1, 2)
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        schema = intersect((int, int), set_name(lambda o: o[0] <= o[1], "ordered_pair"))
-        object = (3, 2)
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = intersect(
+                (int, int), set_name(lambda o: o[0] <= o[1], "ordered_pair")
+            )
+            object = (3, 2)
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
     def test_complement(self):
         schema = intersect(url, complement(regex(r"^https", fullmatch=False)))
         object = "ftp://example.com"
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        object = "https://example.com"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = "https://example.com"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
     def test_set_name(self):
         schema = set_name("a", "dummy")
         self.assertTrue(schema.__name__ == "dummy")
 
-        object = "b"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = "b"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         object = "a"
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
     def test_lax(self):
         schema = lax(["a", "b", "c"])
         object = ["a", "b", "c", "d"]
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
     def test_strict_wrapper(self):
-        schema = strict(["a", "b", "c"])
-        object = ["a", "b", "c", "d"]
-        valid = _validate(schema, object, strict=False)
+        with self.assertRaises(ValidationError) as mc:
+            schema = strict(["a", "b", "c"])
+            object = ["a", "b", "c", "d"]
+            validate(schema, object, strict=False)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
     def test_make_type(self):
         global url
@@ -333,113 +337,113 @@ class TestValidation(unittest.TestCase):
         self.assertTrue(t.__name__ == "schema")
 
     def test_generics(self):
-        schema = [str, ...]
-        object = ("a", "b")
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = [str, ...]
+            object = ("a", "b")
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         object = ["a", "b"]
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        object = ["a", 10]
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = ["a", 10]
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        object = ["a", ["b", "c"]]
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = ["a", ["b", "c"]]
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         schema = [...]
         object = ["a", "b", 1, 2]
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        schema = ["a", ...]
-        object = ["a", "b"]
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = ["a", ...]
+            object = ["a", "b"]
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         object = []
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
         object = ["a", "a"]
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
         object = ["a", "a", "a", "a", "a"]
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
         schema = ["a", "b", ...]
         object = ["a", "b"]
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
         schema = ["a", "b", "c", ...]
         object = ["a", "b"]
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        schema = ["a", "b", "c", "d", ...]
-        object = ["a", "b"]
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = ["a", "b", "c", "d", ...]
+            object = ["a", "b"]
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         schema = [(str, int), ...]
         object = [("a", 1), ("b", 2)]
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        schema = [(str, int), ...]
-        object = [("a", 1), ("b", "c")]
-        valid = _validate(schema, object)
-        print(valid)
-        self.assertFalse(valid == "")
+        with self.assertRaises(ValidationError) as mc:
+            schema = [(str, int), ...]
+            object = [("a", 1), ("b", "c")]
+            validate(schema, object)
 
         schema = [email, ...]
         object = ["user1@example.com", "user2@example.com"]
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        schema = [email, ...]
-        object = ["user1@example.com", "user00@user00.user00"]
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = [email, ...]
+            object = ["user1@example.com", "user00@user00.user00"]
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
     def test_sequence(self):
-        schema = {"a": 1}
-        object = []
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = {"a": 1}
+            object = []
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        schema = []
-        object = (1, 2)
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = []
+            object = (1, 2)
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        schema = ["a", "b", None, "c"]
-        object = ["a", "b"]
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = ["a", "b", None, "c"]
+            object = ["a", "b"]
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        schema = ["a", "b"]
-        object = ["a", "b", None, "c"]
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = ["a", "b"]
+            object = ["a", "b", None, "c"]
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-    def test__validate(self):
+    def test_validate(self):
         class lower_case_string:
             @staticmethod
             def __validate__(object, name, strict):
@@ -453,30 +457,31 @@ class TestValidation(unittest.TestCase):
                         )
                 return ""
 
-        schema = lower_case_string
-        object = 1
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = lower_case_string
+            object = 1
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        object = "aA"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = "aA"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        object = "aA"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = "aA"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         object = "ab"
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
         schema = {"a": lower_case_string}
         object = {"a": "ab"}
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
     def test_regex(self):
         with self.assertRaises(SchemaError) as cm:
@@ -490,106 +495,112 @@ class TestValidation(unittest.TestCase):
         ip_address = regex(r"(?:[\d]+\.){3}(?:[\d]+)", name="ip_address")
         schema = {"ip": ip_address}
         object = {"ip": "123.123.123.123"}
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        object = {"ip": "123.123.123"}
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"ip": "123.123.123"}
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        object = {"ip": "123.123.123.abc"}
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"ip": "123.123.123.abc"}
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        object = {"ip": "123.123..123"}
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"ip": "123.123..123"}
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        object = {"ip": "123.123.123.123.123"}
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"ip": "123.123.123.123.123"}
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         object = {"ip": "123.123.123.1000000"}
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        object = {"ip": ""}
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"ip": ""}
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        schema = regex(".")
-        object = "\n"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = regex(".")
+            object = "\n"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         schema = regex(".", flags=re.DOTALL)
         object = "\n"
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        schema = regex(".", flags=re.ASCII | re.MULTILINE)
-        object = "\n"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = regex(".", flags=re.ASCII | re.MULTILINE)
+            object = "\n"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
     def test_interval(self):
-        schema = interval(1, 10)
-        object = "a"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = interval(1, 10)
+            object = "a"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        schema = interval(1, 9)
-        object = "a"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = interval(1, 9)
+            object = "a"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        object = -1
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = -1
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        object = 10
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = 10
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         object = 5
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
         schema = interval(0, ...)
         object = 5
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        object = -1
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = -1
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         schema = interval(..., 0)
         object = -5
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        object = 1
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = 1
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         schema = interval(..., ...)
         object = "0"
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
         with self.assertRaises(SchemaError) as cm:
             interval(0, "z")
@@ -598,158 +609,166 @@ class TestValidation(unittest.TestCase):
     def test_email(self):
         schema = email
         object = "user00@user00.com"
-        valid = _validate(schema, object)
-        print(valid)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        object = "user00@user00.user00"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = "user00@user00.user00"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        object = "@user00.user00"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = "@user00.user00"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        schema = email(check_deliverability=True)
-        object = "user@example.com"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = email(check_deliverability=True)
+            object = "user@example.com"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         object = "user@google.com"
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        object = "user@ffdfsdfsdfsasddasdadasad.com"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = "user@ffdfsdfsdfsasddasdadasad.com"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
     def test_ip_address(self):
         schema = {"ip": ip_address}
         object = {"ip": "123.123.123.123"}
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        object = {"ip": "123.123.123"}
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"ip": "123.123.123"}
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        object = {"ip": "123.123.123.256"}
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"ip": "123.123.123.256"}
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
     def test_url(self):
         schema = {"url": url}
         object = {"url": "https://google.com"}
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
         object = {"url": "https://google.com?search=chatgpt"}
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
         object = {"url": "https://user:pass@google.com?search=chatgpt"}
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        object = {"url": "google.com"}
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"url": "google.com"}
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
     def test_domain_name(self):
         schema = domain_name
         object = "www.example.com"
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        object = "www.éxample.com"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = "www.éxample.com"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         schema = domain_name(ascii_only=False)
-        valid = _validate(schema, object)
-        print(valid)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        object = "-www.éxample.com"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = "-www.éxample.com"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        object = "www.é_xample.com"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = "www.é_xample.com"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
-        schema = domain_name(resolve=True)
-        object = "www.exaaaaaaaaaaaaaaaaaaaaaaaaample.com"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = domain_name(resolve=True)
+            object = "www.exaaaaaaaaaaaaaaaaaaaaaaaaample.com"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
     def test_number(self):
         schema = {"number": number}
         object = {"number": 1}
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
         object = {"number": 1.0}
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
-        object = {"number": "a"}
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"number": "a"}
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
     def test_truncation(self):
-        schema = "a"
-        object = 1000 * "abc"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = "a"
+            object = 1000 * "abc"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
         self.assertTrue(r"...'" in valid)
         self.assertTrue("TRUNCATED" in valid)
         self.assertTrue(r"value:'" in valid)
 
-        object = 50 * "a"
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = 50 * "a"
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
         self.assertTrue(r"value:'" in valid)
         self.assertFalse("TRUNCATED" in valid)
 
-        object = 1000 * ["abcdefgh"]
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = 1000 * ["abcdefgh"]
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
         self.assertTrue(r"value:[" in valid)
         self.assertTrue(r"...]" in valid)
         self.assertTrue("TRUNCATED" in valid)
 
-        object = {}
-        for i in range(1000):
-            object[i] = 7 * i
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {}
+            for i in range(1000):
+                object[i] = 7 * i
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
         self.assertTrue(r"value:{" in valid)
         self.assertTrue("...}" in valid)
         self.assertTrue("TRUNCATED" in valid)
 
     def test_float_equal(self):
-        schema = 2.94
-        object = 2.95
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = 2.94
+            object = 2.95
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         object = schema + 1e-10
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
     @unittest.skipUnless(
         sys.version_info.major == 3 and sys.version_info.minor >= 9,
@@ -759,31 +778,32 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(SchemaError) as cm:
             schema = list[str]
             object = ["a", "b"]
-            _validate(schema, object)
+            validate(schema, object)
         print(cm.exception)
 
     def test_callable(self):
         def even(x):
             return x % 2 == 0
 
-        schema = even
-        object = 1
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = even
+            object = 1
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
         object = 2
-        valid = _validate(schema, object)
-        self.assertTrue(valid == "")
+        validate(schema, object)
 
         def fails(x):
             return 1 / x == 0
 
-        schema = fails
-        object = 0
-        valid = _validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = fails
+            object = 0
+            validate(schema, object)
+        valid = str(mc.exception)
         print(valid)
-        self.assertFalse(valid == "")
 
 
 if __name__ == "__main__":
