@@ -21,8 +21,7 @@ except ImportError:
     class _GenericAlias(type):
         pass
 
-
-__version__ = "1.3.1"
+    __version__ = "1.3.1"
 
 
 def _c(s):
@@ -232,19 +231,48 @@ class interval:
         self.lb_s = "..." if lb == ... else repr(lb)
         self.ub_s = "..." if ub == ... else repr(ub)
 
-    def __validate__(self, object, name, strict):
-        message = (
+        if lb is ... and ub is ...:
+            self.__validate__ = self.__validate_none__
+        elif lb is ...:
+            self.__validate__ = self.__validate_ub__
+        elif ub is ...:
+            self.__validate__ = self.__validate_lb__
+
+    def message(self, name, object):
+        return (
             f"{name} (value:{_c(object)}) is not in the interval "
             f"[{self.lb_s},{self.ub_s}]"
         )
+
+    def __validate__(self, object, name, strict):
         try:
-            if self.lb != ... and object < self.lb:
-                return message
-            if self.ub != ... and object > self.ub:
-                return message
-            return ""
+            if self.lb <= object <= self.ub:
+                return ""
+            else:
+                return self.message(name, object)
         except Exception as e:
-            return f"{message}: {str(e)}"
+            return f"{self.message(name, object)}: {str(e)}"
+
+    def __validate_ub__(self, object, name, strict):
+        try:
+            if object <= self.ub:
+                return ""
+            else:
+                return self.message(name, object)
+        except Exception as e:
+            return f"{self.message(name, object)}: {str(e)}"
+
+    def __validate_lb__(self, object, name, strict):
+        try:
+            if object >= self.lb:
+                return ""
+            else:
+                return self.message(name, object)
+        except Exception as e:
+            return f"{self.message(name, object)}: {str(e)}"
+
+    def __validate_none__(self, object, name, strict):
+        return ""
 
 
 def _compile(schema):
@@ -568,21 +596,25 @@ class _object:
         if isinstance(schema, float):
             self.__validate__ = self.__validate_float__
 
+    def message(self, name, object):
+        return f"{name} (value:{_c(object)}) is not equal to {repr(self.schema)}"
+
     def __validate__(self, object, name, strict):
-        message = f"{name} (value:{_c(object)}) is not equal to {repr(self.schema)}"
         if object != self.schema:
-            return message
+            return self.message(name, object)
         return ""
 
+    def message_float(self, name, object):
+        return f"{name} (value:{_c(object)}) is not close to {repr(self.schema)}"
+
     def __validate_float__(self, object, name, strict):
-        message = f"{name} (value:{_c(object)}) is not close to {repr(self.schema)}"
         try:
             if math.isclose(self.schema, object):
                 return ""
             else:
-                return message
+                return self.message_float(name, object)
         except Exception:
-            return message
+            return self.message_float(name, object)
 
     def __str__(self):
         return str(self.schema)
