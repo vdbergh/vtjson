@@ -13,6 +13,10 @@ class ValidationError(Exception):
     pass
 
 
+class SchemaError(Exception):
+    pass
+
+
 try:
     from types import GenericAlias as _GenericAlias
 except ImportError:
@@ -174,16 +178,15 @@ class regex:
             _flags = "" if flags == 0 else f", flags={flags}"
             _fullmatch = "" if fullmatch else ", fullmatch=False"
             self.__name__ = f"regex({repr(regex)}{_fullmatch}{_flags})"
-        self.message = ""
         try:
             self.pattern = re.compile(regex, flags)
         except Exception as e:
             _name = f" (name: {repr(name)})" if name is not None else ""
-            self.message = f"{regex}{_name} is an invalid regular expression: {str(e)}"
+            raise SchemaError(
+                f"{regex}{_name} is an invalid regular expression: {str(e)}"
+            )
 
     def __validate__(self, object, name, strict):
-        if self.message != "":
-            return self.message
         try:
             if self.fullmatch and self.pattern.fullmatch(object):
                 return ""
@@ -207,6 +210,14 @@ class interval:
             self.__validate__ = self.__validate_ub__
         elif ub is ...:
             self.__validate__ = self.__validate_lb__
+        else:
+            try:
+                lb <= ub
+            except Exception:
+                raise SchemaError(
+                    f"The upper and lower bound in the interval"
+                    f" [{self.lb_s},{self.ub_s}] are incomparable"
+                )
 
     def message(self, name, object):
         return (

@@ -3,6 +3,7 @@ import sys
 import unittest
 
 from vtjson import (
+    SchemaError,
     _keys,
     _validate,
     complement,
@@ -478,18 +479,11 @@ class TestValidation(unittest.TestCase):
         self.assertTrue(valid == "")
 
     def test_regex(self):
-        schema = regex({})
-        object = "dummy"
-        valid = _validate(schema, object)
-        print(valid)
-        self.assertFalse(valid == "")
+        with self.assertRaises(SchemaError):
+            regex({})
 
-        schema = regex({}, name="test")
-        object = "dummy"
-        self.assertTrue(schema.__name__ == "test")
-        valid = _validate(schema, object)
-        print(valid)
-        self.assertFalse(valid == "")
+        with self.assertRaises(SchemaError):
+            regex({}, name="test")
 
         ip_address = regex(r"(?:[\d]+\.){3}(?:[\d]+)", name="ip_address")
         schema = {"ip": ip_address}
@@ -595,11 +589,8 @@ class TestValidation(unittest.TestCase):
         valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
-        schema = interval(0, "z")
-        object = "0"
-        valid = _validate(schema, object)
-        print(valid)
-        self.assertFalse(valid == "")
+        with self.assertRaises(SchemaError):
+            interval(0, "z")
 
     def test_email(self):
         schema = email
