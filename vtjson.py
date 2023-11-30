@@ -545,14 +545,13 @@ class _type:
 
 class _sequence:
     def __init__(self, schema):
-        self.schema = type(schema)(
-            [_compile(o) if o is not ... else ... for o in schema]
-        )
+        self.type_schema=type(schema)
+        self.schema = [_compile(o) if o is not ... else ... for o in schema]
         if len(schema) > 0 and schema[-1] is ...:
             self.__validate__ = self.__validate_ellipsis__
 
     def __validate__(self, object, name, strict):
-        if type(self.schema) is not type(object):
+        if self.type_schema is not type(object):
             return _wrong_type_message(object, name, type(self.schema).__name__)
         ls = len(self.schema)
         lo = len(object)
@@ -569,7 +568,7 @@ class _sequence:
         return ""
 
     def __validate_ellipsis__(self, object, name, strict):
-        if type(self.schema) is not type(object):
+        if self.type_schema is not type(object):
             return _wrong_type_message(object, name, type(self.schema).__name__)
         L = len(object)
         schema = _ellipsis_list(self.schema, length=L)
