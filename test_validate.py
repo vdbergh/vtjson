@@ -479,11 +479,13 @@ class TestValidation(unittest.TestCase):
         self.assertTrue(valid == "")
 
     def test_regex(self):
-        with self.assertRaises(SchemaError):
+        with self.assertRaises(SchemaError) as cm:
             regex({})
+        print(cm.exception)
 
-        with self.assertRaises(SchemaError):
+        with self.assertRaises(SchemaError) as cm:
             regex({}, name="test")
+        print(cm.exception)
 
         ip_address = regex(r"(?:[\d]+\.){3}(?:[\d]+)", name="ip_address")
         schema = {"ip": ip_address}
@@ -589,8 +591,9 @@ class TestValidation(unittest.TestCase):
         valid = _validate(schema, object)
         self.assertTrue(valid == "")
 
-        with self.assertRaises(SchemaError):
+        with self.assertRaises(SchemaError) as cm:
             interval(0, "z")
+        print(cm.exception)
 
     def test_email(self):
         schema = email
@@ -753,10 +756,11 @@ class TestValidation(unittest.TestCase):
         "Parametrized types were introduced in Python 3.9",
     )
     def test_type(self):
-        with self.assertRaises(SchemaError):
+        with self.assertRaises(SchemaError) as cm:
             schema = list[str]
             object = ["a", "b"]
             _validate(schema, object)
+        print(cm.exception)
 
     def test_callable(self):
         def even(x):
