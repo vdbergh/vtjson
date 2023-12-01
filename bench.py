@@ -321,4 +321,4 @@ t = timeit(
 print(f"Validating an SPRT run with {total_tasks} tasks takes {1000*t/N:.0f} ms")
 
 t = timeit("_compile(runs_schema)", number=N, globals=globals())
-print(f"Compiling runs schema takes {1000000*t/N:.0f} ns")
+print(f"Compiling runs schema takes {1000*t/N:.2f} ms")
