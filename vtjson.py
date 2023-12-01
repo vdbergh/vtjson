@@ -314,6 +314,9 @@ _number = number()
 
 
 class email:
+
+    _resolver = email_validator.caching_resolver(timeout=10)
+
     @staticmethod
     def __validate__(object, name, strict):
         return _email.__validate__(object, name, strict)
@@ -321,6 +324,10 @@ class email:
     def __init__(self, *args, **kw):
         self.args = args
         self.kw = kw
+        if "dns_resolver" not in kw:
+            self.kw["dns_resolver"] = self._resolver
+        if "check_deliverability" not in kw:
+            self.kw["check_deliverability"] = False
         self.__validate__ = self.__validate2__
 
     def __validate2__(self, object, name, strict):
@@ -331,7 +338,7 @@ class email:
             return _wrong_type_message(object, name, "email", str(e))
 
 
-_email = email(check_deliverability=False)
+_email = email()
 
 
 class ip_address:
