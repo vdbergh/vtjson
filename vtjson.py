@@ -620,19 +620,19 @@ class _object:
 class _callable:
     def __init__(self, schema):
         self.schema = schema
+        try:
+            self.__name__ = self.schema.__name__
+        except Exception:
+            self.__name__ = self.schema
 
     def __validate__(self, object, name, strict):
-        try:
-            __name__ = self.schema.__name__
-        except Exception:
-            __name__ = self.schema
         try:
             if self.schema(object):
                 return ""
             else:
-                return _wrong_type_message(object, name, __name__)
+                return _wrong_type_message(object, name, self.__name__)
         except Exception as e:
-            return _wrong_type_message(object, name, __name__, str(e))
+            return _wrong_type_message(object, name, self.__name__, str(e))
 
     def __str__(self):
         return str(self.schema)
