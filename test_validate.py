@@ -28,6 +28,10 @@ from vtjson import (
 )
 
 
+def show(mc):
+    print(str(mc.exception))
+
+
 class TestValidation(unittest.TestCase):
     def test_keys(self):
         schema = {"a?": 1, "b": 2, "c?": 3}
@@ -39,14 +43,12 @@ class TestValidation(unittest.TestCase):
             schema = {"a?": 1, "b": 2}
             object = {"b": 2, "c": 3}
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             object = {"a": 1, "c": 3}
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         object = {"a": 1, "b": 2}
         validate(schema, object)
@@ -62,8 +64,7 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = {"a": 1, "c": 3}
             validate(schema, object, strict=False)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         object = {"a": 1, "b": 2}
         validate(schema, object, strict=False)
@@ -78,8 +79,7 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = {"a": 1, "c": 3}
             validate(schema, object, strict=False)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         object = {"a": 1, "b": 2}
         validate(schema, object, strict=False)
@@ -101,8 +101,7 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = ["a", "b", "c"]
             validate(schema, object, strict=True)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
     def test_union(self):
         schema = {"a?": 1, "b": union(2, 3)}
@@ -112,16 +111,14 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = {"b": 4, "c": 3}
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
     def test_quote(self):
         with self.assertRaises(ValidationError) as mc:
             schema = str
             object = str
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         schema = quote(str)
         validate(schema, object)
@@ -134,15 +131,13 @@ class TestValidation(unittest.TestCase):
             schema = quote({1, 2})
             object = 1
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             schema = {1, 2}
             object = {1, 2}
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         schema = quote({1, 2})
         validate(schema, object)
@@ -156,14 +151,12 @@ class TestValidation(unittest.TestCase):
             schema = date_time
             object = "2000-30-30"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             object = "2000-12-300"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         object = "2000-12-30"
         validate(schema, object)
@@ -172,14 +165,12 @@ class TestValidation(unittest.TestCase):
             schema = date_time("%Y^%m^%d")
             object = "2000^12^300"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             object = "2000^12-30"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         object = "2000^12^30"
         validate(schema, object)
@@ -196,8 +187,7 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = "2023-10-10T01:01:01"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
     @unittest.skipUnless(
         sys.version_info.major == 3 and sys.version_info.minor >= 7,
@@ -211,31 +201,27 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = "2023-10-10T01:01:01"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
     def test_set(self):
         with self.assertRaises(ValidationError) as mc:
             schema = {2, 3}
             object = 5
             validate(schema, object, strict=False)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             schema = {int, str}
             object = 1.0
             validate(schema, object, strict=False)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
     def test_intersect(self):
         with self.assertRaises(ValidationError) as mc:
             schema = intersect(url, regex(r"^https", fullmatch=False))
             object = "ftp://example.com"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         object = "https://example.com"
         validate(schema, object)
@@ -247,20 +233,17 @@ class TestValidation(unittest.TestCase):
             schema = intersect((int, int), ordered_pair)
             object = (3, 2)
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             object = (1, 3, 2)
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             object = ("a", "b")
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         object = (1, 2)
         validate(schema, object)
@@ -271,8 +254,7 @@ class TestValidation(unittest.TestCase):
             )
             object = (3, 2)
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
     def test_complement(self):
         schema = intersect(url, complement(regex(r"^https", fullmatch=False)))
@@ -282,8 +264,7 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = "https://example.com"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
     def test_set_name(self):
         schema = set_name("a", "dummy")
@@ -292,8 +273,7 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = "b"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         object = "a"
         validate(schema, object)
@@ -308,8 +288,7 @@ class TestValidation(unittest.TestCase):
             schema = strict(["a", "b", "c"])
             object = ["a", "b", "c", "d"]
             validate(schema, object, strict=False)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
     def test_make_type(self):
         global url
@@ -341,8 +320,7 @@ class TestValidation(unittest.TestCase):
             schema = [str, ...]
             object = ("a", "b")
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         object = ["a", "b"]
         validate(schema, object)
@@ -350,14 +328,12 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = ["a", 10]
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             object = ["a", ["b", "c"]]
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         schema = [...]
         object = ["a", "b", 1, 2]
@@ -367,8 +343,7 @@ class TestValidation(unittest.TestCase):
             schema = ["a", ...]
             object = ["a", "b"]
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         object = []
         validate(schema, object)
@@ -391,8 +366,7 @@ class TestValidation(unittest.TestCase):
             schema = ["a", "b", "c", "d", ...]
             object = ["a", "b"]
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         schema = [(str, int), ...]
         object = [("a", 1), ("b", 2)]
@@ -411,37 +385,32 @@ class TestValidation(unittest.TestCase):
             schema = [email, ...]
             object = ["user1@example.com", "user00@user00.user00"]
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
     def test_sequence(self):
         with self.assertRaises(ValidationError) as mc:
             schema = {"a": 1}
             object = []
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             schema = []
             object = (1, 2)
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             schema = ["a", "b", None, "c"]
             object = ["a", "b"]
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             schema = ["a", "b"]
             object = ["a", "b", None, "c"]
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
     def test_validate(self):
         class lower_case_string:
@@ -461,20 +430,17 @@ class TestValidation(unittest.TestCase):
             schema = lower_case_string
             object = 1
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             object = "aA"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             object = "aA"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         object = "ab"
         validate(schema, object)
@@ -500,26 +466,22 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = {"ip": "123.123.123"}
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             object = {"ip": "123.123.123.abc"}
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             object = {"ip": "123.123..123"}
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             object = {"ip": "123.123.123.123.123"}
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         object = {"ip": "123.123.123.1000000"}
         validate(schema, object)
@@ -527,15 +489,13 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = {"ip": ""}
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             schema = regex(".")
             object = "\n"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         schema = regex(".", flags=re.DOTALL)
         object = "\n"
@@ -545,35 +505,30 @@ class TestValidation(unittest.TestCase):
             schema = regex(".", flags=re.ASCII | re.MULTILINE)
             object = "\n"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
     def test_interval(self):
         with self.assertRaises(ValidationError) as mc:
             schema = interval(1, 10)
             object = "a"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             schema = interval(1, 9)
             object = "a"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             object = -1
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             object = 10
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         object = 5
         validate(schema, object)
@@ -585,8 +540,7 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = -1
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         schema = interval(..., 0)
         object = -5
@@ -595,8 +549,7 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = 1
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         schema = interval(..., ...)
         object = "0"
@@ -614,21 +567,18 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = "user00@user00.user00"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             object = "@user00.user00"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             schema = email(check_deliverability=True)
             object = "user@example.com"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         object = "user@google.com"
         validate(schema, object)
@@ -636,8 +586,7 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = "user@ffdfsdfsdfsasddasdadasad.com"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
     def test_ip_address(self):
         schema = {"ip": ip_address}
@@ -647,14 +596,20 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = {"ip": "123.123.123"}
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             object = {"ip": "123.123.123.256"}
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
+
+        object = {"ip": "2001:db8:3333:4444:5555:6666:7777:8888"}
+        validate(schema, object)
+
+        with self.assertRaises(ValidationError) as mc:
+            object = {"ip": "2001:db8:3333:4444:5555:6666:7777:"}
+            validate(schema, object)
+        show(mc)
 
     def test_url(self):
         schema = {"url": url}
@@ -670,8 +625,7 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = {"url": "google.com"}
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
     def test_domain_name(self):
         schema = domain_name
@@ -681,8 +635,7 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = "www.éxample.com"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         schema = domain_name(ascii_only=False)
         validate(schema, object)
@@ -690,21 +643,18 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = "-www.éxample.com"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             object = "www.é_xample.com"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         with self.assertRaises(ValidationError) as mc:
             schema = domain_name(resolve=True)
             object = "www.exaaaaaaaaaaaaaaaaaaaaaaaaample.com"
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         object = "www.example.com"
         validate(schema, object)
@@ -720,16 +670,17 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = {"number": "a"}
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
     def test_truncation(self):
         with self.assertRaises(ValidationError) as mc:
             schema = "a"
             object = 1000 * "abc"
             validate(schema, object)
+        show(mc)
+
         valid = str(mc.exception)
-        print(valid)
+
         self.assertTrue(r"...'" in valid)
         self.assertTrue("TRUNCATED" in valid)
         self.assertTrue(r"value:'" in valid)
@@ -737,16 +688,20 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = 50 * "a"
             validate(schema, object)
+        show(mc)
+
         valid = str(mc.exception)
-        print(valid)
+
         self.assertTrue(r"value:'" in valid)
         self.assertFalse("TRUNCATED" in valid)
 
         with self.assertRaises(ValidationError) as mc:
             object = 1000 * ["abcdefgh"]
             validate(schema, object)
+        show(mc)
+
         valid = str(mc.exception)
-        print(valid)
+
         self.assertTrue(r"value:[" in valid)
         self.assertTrue(r"...]" in valid)
         self.assertTrue("TRUNCATED" in valid)
@@ -756,8 +711,10 @@ class TestValidation(unittest.TestCase):
             for i in range(1000):
                 object[i] = 7 * i
             validate(schema, object)
+        show(mc)
+
         valid = str(mc.exception)
-        print(valid)
+
         self.assertTrue(r"value:{" in valid)
         self.assertTrue("...}" in valid)
         self.assertTrue("TRUNCATED" in valid)
@@ -767,8 +724,7 @@ class TestValidation(unittest.TestCase):
             schema = 2.94
             object = 2.95
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         object = schema + 1e-10
         validate(schema, object)
@@ -792,8 +748,7 @@ class TestValidation(unittest.TestCase):
             schema = even
             object = 1
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
         object = 2
         validate(schema, object)
@@ -805,8 +760,7 @@ class TestValidation(unittest.TestCase):
             schema = fails
             object = 0
             validate(schema, object)
-        valid = str(mc.exception)
-        print(valid)
+        show(mc)
 
 
 if __name__ == "__main__":
