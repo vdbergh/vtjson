@@ -314,7 +314,6 @@ _number = number()
 
 
 class email:
-
     _resolver = email_validator.caching_resolver(timeout=10)
 
     @staticmethod
