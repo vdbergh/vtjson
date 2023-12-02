@@ -466,6 +466,8 @@ class domain_name:
         self.__name__ = (
             "domain_name" if not arg_string else f"domain_name({arg_string})"
         )
+        self._resolver = dns.resolver.Resolver()
+        self._resolver.cache = dns.resolver.LRUCache()
 
     def __validate2__(self, object, name, strict):
         if self.ascii_only:
@@ -480,7 +482,7 @@ class domain_name:
 
         if self.resolve:
             try:
-                dns.resolver.resolve(object)
+                self._resolver.resolve(object)
             except Exception as e:
                 return _wrong_type_message(object, name, self.__name__, str(e))
         return ""

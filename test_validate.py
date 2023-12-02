@@ -706,6 +706,9 @@ class TestValidation(unittest.TestCase):
         valid = str(mc.exception)
         print(valid)
 
+        object = "www.example.com"
+        validate(schema, object)
+
     def test_number(self):
         schema = {"number": number}
         object = {"number": 1}
