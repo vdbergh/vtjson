@@ -318,7 +318,7 @@ class number:
         self.__validate__ = self.__validate2__
 
     def __validate2__(self, object, name, strict):
-        if isinstance(object, int) or isinstance(object, float):
+        if isinstance(object, (int, float)):
             return ""
         else:
             return _wrong_type_message(object, name, "number")
