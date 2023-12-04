@@ -314,11 +314,11 @@ for i in range(total_tasks):
 
 validate(runs_schema, run_sprt_object, "run")
 
-N = 20
+N = 100
 t = timeit(
     "_validate(runs_schema, run_sprt_object, 'run')", number=N, globals=globals()
 )
-print(f"Validating an SPRT run with {total_tasks} tasks takes {1000*t/N:.0f} ms")
+print(f"Validating an SPRT run with {total_tasks} tasks takes {1000*t/N:.2f} ms")
 
 t = timeit("_compile(runs_schema)", number=N, globals=globals())
 print(f"Compiling runs schema takes {1000*t/N:.2f} ms")
