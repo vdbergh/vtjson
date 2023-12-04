@@ -25,7 +25,21 @@ except ImportError:
         pass
 
 
-__version__ = "1.3.5"
+__version__ = "1.3.6"
+
+
+_dns_resolver = None
+
+
+def _get_dns_resolver():
+    global _dns_resolver
+    if _dns_resolver is not None:
+        return _dns_resolver
+    _dns_resolver = dns.resolver.Resolver()
+    _dns_resolver.cache = dns.resolver.LRUCache()
+    _dns_resolver.timeout = 10
+    _dns_resolver.lifetime = 10
+    return _dns_resolver
 
 
 def _c(s):
@@ -314,8 +328,6 @@ _number = number()
 
 
 class email:
-    _resolver = email_validator.caching_resolver(timeout=10)
-
     @staticmethod
     def __validate__(object, name, strict):
         return _email.__validate__(object, name, strict)
@@ -324,7 +336,7 @@ class email:
         self.args = args
         self.kw = kw
         if "dns_resolver" not in kw:
-            self.kw["dns_resolver"] = self._resolver
+            self.kw["dns_resolver"] = _get_dns_resolver()
         if "check_deliverability" not in kw:
             self.kw["check_deliverability"] = False
         self.__validate__ = self.__validate2__
@@ -466,8 +478,6 @@ class domain_name:
         self.__name__ = (
             "domain_name" if not arg_string else f"domain_name({arg_string})"
         )
-        self._resolver = dns.resolver.Resolver()
-        self._resolver.cache = dns.resolver.LRUCache()
 
     def __validate2__(self, object, name, strict):
         if self.ascii_only:
@@ -482,7 +492,7 @@ class domain_name:
 
         if self.resolve:
             try:
-                self._resolver.resolve(object)
+                _get_dns_resolver().resolve(object)
             except Exception as e:
                 return _wrong_type_message(object, name, self.__name__, str(e))
         return ""
