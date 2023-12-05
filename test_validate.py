@@ -474,6 +474,12 @@ class TestValidation(unittest.TestCase):
             regex({}, name="test")
         print(cm.exception)
 
+        with self.assertRaises(SchemaError) as cm:
+            schema = regex
+            object = "a"
+            validate(schema, object)
+        print(cm.exception)
+
         ip_address = regex(r"(?:[\d]+\.){3}(?:[\d]+)", name="ip_address")
         schema = {"ip": ip_address}
         object = {"ip": "123.123.123.123"}
@@ -524,6 +530,12 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_interval(self):
+        with self.assertRaises(SchemaError) as mc:
+            schema = interval
+            object = "a"
+            validate(schema, object)
+        show(mc)
+
         with self.assertRaises(ValidationError) as mc:
             schema = interval(1, 10)
             object = "a"

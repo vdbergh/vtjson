@@ -280,7 +280,15 @@ class interval:
 
 def _compile(schema):
     if isinstance(schema, type) and hasattr(schema, "__validate__"):
-        return schema()
+        schema_error = False
+        try:
+            return schema()
+        except Exception:
+            schema_error = True
+        if schema_error:
+            raise SchemaError(
+                f"{repr(schema.__name__)} does " f"not have a no-argument constructor"
+            )
     elif hasattr(schema, "__validate__"):
         return schema
     elif isinstance(schema, type) or isinstance(schema, _GenericAlias):
