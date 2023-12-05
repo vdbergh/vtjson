@@ -485,7 +485,7 @@ class _type:
             return f"{self.schema} is not a valid type: {str(e)}"
 
     def __str__(self):
-        return self.type.__name__
+        return self.schema.__name__
 
 
 class _sequence:
