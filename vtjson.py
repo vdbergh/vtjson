@@ -17,6 +17,10 @@ class SchemaError(Exception):
     pass
 
 
+class noargs:
+    pass
+
+
 try:
     from types import GenericAlias as _GenericAlias
 except ImportError:
@@ -279,7 +283,9 @@ class interval:
 
 
 def _compile(schema):
-    if hasattr(schema, "__validate__"):
+    if isinstance(schema, type) and issubclass(schema, noargs):
+        return schema()
+    elif hasattr(schema, "__validate__"):
         return schema
     elif isinstance(schema, type) or isinstance(schema, _GenericAlias):
         return _type(schema)
@@ -309,29 +315,15 @@ def validate(schema, object, name="object", strict=True):
 # Some predefined schemas
 
 
-class number:
-    @staticmethod
-    def __validate__(object, name, strict):
-        return _number.__validate__(object, name, strict)
-
-    def __init__(self):
-        self.__validate__ = self.__validate2__
-
-    def __validate2__(self, object, name, strict):
+class number(noargs):
+    def __validate__(self, object, name, strict):
         if isinstance(object, (int, float)):
             return ""
         else:
             return _wrong_type_message(object, name, "number")
 
 
-_number = number()
-
-
-class email:
-    @staticmethod
-    def __validate__(object, name, strict):
-        return _email.__validate__(object, name, strict)
-
+class email(noargs):
     def __init__(self, *args, **kw):
         self.args = args
         self.kw = kw
@@ -339,9 +331,8 @@ class email:
             self.kw["dns_resolver"] = _get_dns_resolver()
         if "check_deliverability" not in kw:
             self.kw["check_deliverability"] = False
-        self.__validate__ = self.__validate2__
 
-    def __validate2__(self, object, name, strict):
+    def __validate__(self, object, name, strict):
         try:
             email_validator.validate_email(object, *self.args, **self.kw)
             return ""
@@ -349,18 +340,8 @@ class email:
             return _wrong_type_message(object, name, "email", str(e))
 
 
-_email = email()
-
-
-class ip_address:
-    @staticmethod
-    def __validate__(object, name, strict):
-        return _ip_address.__validate__(object, name, strict)
-
-    def __init__(self):
-        self.__validate__ = self.__validate2__
-
-    def __validate2__(self, object, name, strict):
+class ip_address(noargs):
+    def __validate__(self, object, name, strict):
         try:
             ipaddress.ip_address(object)
             return ""
@@ -368,41 +349,23 @@ class ip_address:
             return _wrong_type_message(object, name, "ip_address")
 
 
-_ip_address = ip_address()
-
-
-class url:
-    @staticmethod
-    def __validate__(object, name, strict):
-        return _url.__validate__(object, name, strict)
-
-    def __init__(self):
-        self.__validate__ = self.__validate2__
-
-    def __validate2__(self, object, name, strict):
+class url(noargs):
+    def __validate__(self, object, name, strict):
         result = urllib.parse.urlparse(object)
         if all([result.scheme, result.netloc]):
             return ""
         return _wrong_type_message(object, name, "url")
 
 
-_url = url()
-
-
-class date_time:
-    @staticmethod
-    def __validate__(object, name, strict):
-        return _date_time.__validate__(object, name, strict)
-
+class date_time(noargs):
     def __init__(self, format=None):
         self.format = format
-        self.__validate__ = self.__validate2__
         if format is not None:
             self.__name__ = f"date_time({repr(format)})"
         else:
             self.__name__ = "date_time"
 
-    def __validate2__(self, object, name, strict):
+    def __validate__(self, object, name, strict):
         if self.format is not None:
             try:
                 datetime.datetime.strptime(object, self.format)
@@ -416,58 +379,29 @@ class date_time:
         return ""
 
 
-_date_time = date_time()
-
-
-class date:
-    @staticmethod
-    def __validate__(object, name, strict):
-        return _date.__validate__(object, name, strict)
-
-    def __init__(self):
-        self.__validate__ = self.__validate2__
-        self.__name__ = "date"
-
-    def __validate2__(self, object, name, strict):
+class date(noargs):
+    def __validate__(self, object, name, strict):
         try:
             datetime.date.fromisoformat(object)
         except Exception as e:
-            return _wrong_type_message(object, name, self.__name__, str(e))
+            return _wrong_type_message(object, name, "date", str(e))
         return ""
 
 
-_date = date()
-
-
-class time:
-    @staticmethod
-    def __validate__(object, name, strict):
-        return _time.__validate__(object, name, strict)
-
-    def __init__(self):
-        self.__validate__ = self.__validate2__
-        self.__name__ = "time"
-
-    def __validate2__(self, object, name, strict):
+class time(noargs):
+    def __validate__(self, object, name, strict):
         try:
             datetime.time.fromisoformat(object)
         except Exception as e:
-            return _wrong_type_message(object, name, self.__name__, str(e))
+            return _wrong_type_message(object, name, "time", str(e))
         return ""
 
 
-_time = time()
-
-
-class domain_name:
-    def __validate__(object, name, strict):
-        return _domain_name.__validate__(object, name, strict)
-
+class domain_name(noargs):
     def __init__(self, ascii_only=True, resolve=False):
         self.re_ascii = re.compile(r"[\x00-\x7F]*")
         self.ascii_only = ascii_only
         self.resolve = resolve
-        self.__validate__ = self.__validate2__
         arg_string = ""
         if not ascii_only:
             arg_string += ", ascii_only=False"
@@ -479,7 +413,7 @@ class domain_name:
             "domain_name" if not arg_string else f"domain_name({arg_string})"
         )
 
-    def __validate2__(self, object, name, strict):
+    def __validate__(self, object, name, strict):
         if self.ascii_only:
             if not self.re_ascii.fullmatch(object):
                 return _wrong_type_message(
@@ -496,9 +430,6 @@ class domain_name:
             except Exception as e:
                 return _wrong_type_message(object, name, self.__name__, str(e))
         return ""
-
-
-_domain_name = domain_name()
 
 
 class _dict:
