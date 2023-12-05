@@ -25,7 +25,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.3.6"
+__version__ = "1.3.7"
 
 
 _dns_resolver = None
