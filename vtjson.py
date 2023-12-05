@@ -452,14 +452,15 @@ class _dict:
                 if x not in self.keys:
                     return f"{name}['{x}'] is not in the schema"
         for k_, k, o in self.keys2:
+            # (k_,k,o)=(normalized key, key, optional)
             name_ = f"{name}['{k_}']"
-            if k not in object:
+            if k_ not in object:
                 if o:
                     continue
                 else:
                     return f"{name_} is missing"
             else:
-                ret = self.schema[k_].__validate__(object[k], name=name_, strict=strict)
+                ret = self.schema[k].__validate__(object[k_], name=name_, strict=strict)
                 if ret != "":
                     return ret
         return ""

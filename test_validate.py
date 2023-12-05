@@ -104,6 +104,16 @@ class TestValidation(unittest.TestCase):
             validate(schema, object, strict=True)
         show(mc)
 
+        with self.assertRaises(ValidationError) as mc:
+            schema = {
+                "s?": 1,
+            }
+            object = {
+                "s": 2,
+            }
+            validate(schema, object, strict=True)
+        show(mc)
+
     def test_union(self):
         schema = {"a?": 1, "b": union(2, 3)}
         object = {"b": 2, "c": 3}
