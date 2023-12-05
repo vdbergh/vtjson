@@ -219,11 +219,19 @@ corresponding inequality is not checked.
 - `date` and `time`. These represent an ISO 8601 date and an ISO 8601 time.
 ## Format
 A schema can be, in order of precedence:
+- A class with the following properties:
+  - it is a subclass of `noargs`;
+  - it has a no-argument constructor;
+  - the instances have a `__validate__` method with signature
+  ```python
+  __validate__(object, name, strict)
+  ```
+  - The parameters of `__validate__()` have the same semantics as those of `validate()`. The return value of `__validate__()` should be the empty string if validation succeeds, and otherwise it should be an explanation about what went wrong.
 - An object having a `__validate__` attribute with signature
   ```python
   __validate__(object, name, strict)
   ```
-  This is for example how the wrapper schemas are implemented internally. The parameters of `__validate__()` have the same semantics as those of `validate()`. The return value of `__validate__()` should be the empty string if validation succeeds, and otherwise it should be an explanation about what went wrong.
+  as above. This is for example how the wrapper schemas are implemented internally.
 - A Python type. In that case validation is done by checking membership.
 - A callable. Validation is done by applying the callable to the object. If applying the callable throws an exception then the corresponding message will be part of the non-validation message.
 - A `list` or a `tuple`. Validation is done by first checking membership of the corresponding types, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
