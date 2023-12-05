@@ -17,10 +17,6 @@ class SchemaError(Exception):
     pass
 
 
-class noargs:
-    pass
-
-
 try:
     from types import GenericAlias as _GenericAlias
 except ImportError:
@@ -283,7 +279,7 @@ class interval:
 
 
 def _compile(schema):
-    if isinstance(schema, type) and issubclass(schema, noargs):
+    if isinstance(schema, type) and hasattr(schema, "__validate__"):
         return schema()
     elif hasattr(schema, "__validate__"):
         return schema
@@ -315,7 +311,7 @@ def validate(schema, object, name="object", strict=True):
 # Some predefined schemas
 
 
-class number(noargs):
+class number:
     def __validate__(self, object, name, strict):
         if isinstance(object, (int, float)):
             return ""
@@ -323,7 +319,7 @@ class number(noargs):
             return _wrong_type_message(object, name, "number")
 
 
-class email(noargs):
+class email:
     def __init__(self, *args, **kw):
         self.args = args
         self.kw = kw
@@ -340,7 +336,7 @@ class email(noargs):
             return _wrong_type_message(object, name, "email", str(e))
 
 
-class ip_address(noargs):
+class ip_address:
     def __validate__(self, object, name, strict):
         try:
             ipaddress.ip_address(object)
@@ -349,7 +345,7 @@ class ip_address(noargs):
             return _wrong_type_message(object, name, "ip_address")
 
 
-class url(noargs):
+class url:
     def __validate__(self, object, name, strict):
         result = urllib.parse.urlparse(object)
         if all([result.scheme, result.netloc]):
@@ -357,7 +353,7 @@ class url(noargs):
         return _wrong_type_message(object, name, "url")
 
 
-class date_time(noargs):
+class date_time:
     def __init__(self, format=None):
         self.format = format
         if format is not None:
@@ -379,7 +375,7 @@ class date_time(noargs):
         return ""
 
 
-class date(noargs):
+class date:
     def __validate__(self, object, name, strict):
         try:
             datetime.date.fromisoformat(object)
@@ -388,7 +384,7 @@ class date(noargs):
         return ""
 
 
-class time(noargs):
+class time:
     def __validate__(self, object, name, strict):
         try:
             datetime.time.fromisoformat(object)
@@ -397,7 +393,7 @@ class time(noargs):
         return ""
 
 
-class domain_name(noargs):
+class domain_name:
     def __init__(self, ascii_only=True, resolve=False):
         self.re_ascii = re.compile(r"[\x00-\x7F]*")
         self.ascii_only = ascii_only

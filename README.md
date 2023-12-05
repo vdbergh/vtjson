@@ -220,7 +220,6 @@ corresponding inequality is not checked.
 ## Format
 A schema can be, in order of precedence:
 - A class with the following properties:
-  - it is a subclass of `noargs`;
   - it has a no-argument constructor;
   - the instances have a `__validate__` method with signature
   ```python

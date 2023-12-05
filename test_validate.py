@@ -449,6 +449,22 @@ class TestValidation(unittest.TestCase):
         object = {"a": "ab"}
         validate(schema, object)
 
+        class lower_case_string:
+            def __validate__(self, object, name, strict):
+                if not isinstance(object, str):
+                    return f"{name} (value:{object}) is not of type str"
+                for c in object:
+                    if not ("a" <= c <= "z"):
+                        return (
+                            f"{c}, contained in the string {name} "
+                            + f"(value: {repr(object)}) is not a lower case letter"
+                        )
+                return ""
+
+        schema = {"a": lower_case_string}
+        object = {"a": "ab"}
+        validate(schema, object)
+
     def test_regex(self):
         with self.assertRaises(SchemaError) as cm:
             regex({})
