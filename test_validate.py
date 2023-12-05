@@ -29,7 +29,8 @@ from vtjson import (
 
 
 def show(mc):
-    print(str(mc.exception))
+    exception = mc.exception
+    print(f"{exception.__class__.__name__}: {str(mc.exception)}")
 
 
 class TestValidation(unittest.TestCase):
@@ -468,17 +469,17 @@ class TestValidation(unittest.TestCase):
     def test_regex(self):
         with self.assertRaises(SchemaError) as cm:
             regex({})
-        print(cm.exception)
+        show(cm)
 
         with self.assertRaises(SchemaError) as cm:
             regex({}, name="test")
-        print(cm.exception)
+        show(cm)
 
         with self.assertRaises(SchemaError) as cm:
             schema = regex
             object = "a"
             validate(schema, object)
-        print(cm.exception)
+        show(cm)
 
         ip_address = regex(r"(?:[\d]+\.){3}(?:[\d]+)", name="ip_address")
         schema = {"ip": ip_address}
@@ -585,7 +586,7 @@ class TestValidation(unittest.TestCase):
 
         with self.assertRaises(SchemaError) as cm:
             interval(0, "z")
-        print(cm.exception)
+        show(cm)
 
     def test_email(self):
         schema = email
@@ -766,7 +767,7 @@ class TestValidation(unittest.TestCase):
             schema = list[str]
             object = ["a", "b"]
             validate(schema, object)
-        print(cm.exception)
+        show(cm)
 
     def test_callable(self):
         def even(x):
