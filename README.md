@@ -207,7 +207,7 @@ A wrapper takes one or more schemas as arguments and produces a new schema.
 - An object matches the schema `set_name(schema, name)` if it matches `schema`. But the `name` argument will be used in non-validation messages.
 - An object matches the schema `quote(schema)` if it is equal to `schema`. For example the schema `{"cats", "dogs"}` matches the strings `"cats"` and `"dogs"` but the schema `quote({"cats", "dogs"})` matches the set `{"cats", "dogs"}`. 
 ## Built-ins
-Some built-ins take arguments. If no arguments are given then the `()` can be omitted. So `email` is equivalent to `email()`.
+Some built-ins take arguments. If no arguments are given then the parentheses can be omitted. So `email` is equivalent to `email()`.
 - `regex(pattern, name=None, fullmatch=True, flags=0)`. This matches the strings which match the given pattern. The optional `name` argument may be used to give the regular expression a descriptive name. By default the entire string is matched, but this can be overruled via the `fullmatch` argument. The `flags` argument has the usual meaning.
 - `interval(lowerbound, upperbound)`. This checks if `lowerbound <= object <= upperbound`, provided the comparisons make sense. An upper/lowerbound `...` (ellipsis) means that the
 corresponding inequality is not checked.
@@ -223,7 +223,7 @@ A schema can be, in order of precedence:
   - it has a no-argument constructor;
   - the instances have a `__validate__` method with signature
   ```python
-  __validate__(object, name, strict)
+  __validate__(self, object, name, strict)
   ```
   - The parameters of `__validate__()` have the same semantics as those of `validate()`. The return value of `__validate__()` should be the empty string if validation succeeds, and otherwise it should be an explanation about what went wrong.
 - An object having a `__validate__` attribute with signature
