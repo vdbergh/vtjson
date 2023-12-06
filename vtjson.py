@@ -1,3 +1,4 @@
+import collections
 import datetime
 import ipaddress
 import math
@@ -27,6 +28,8 @@ except ImportError:
 
 __version__ = "1.4.0"
 
+
+_compile_cache = collections.OrderedDict()
 
 _dns_resolver = None
 
@@ -58,6 +61,11 @@ def _c(s):
         return repr(ret)
     else:
         return ret
+
+
+class wrapper_schema:
+    def __init__(self, schema):
+        self.schema = schema
 
 
 def _wrong_type_message(object, name, type_name, explanation=None):
@@ -279,10 +287,17 @@ class interval:
 
 
 def compile(schema):
+    if len(_compile_cache) > 40:
+        _compile_cache.popitem(0)
+    id_schema = id(schema)
+    if id_schema in _compile_cache:
+        _compile_cache.move_to_end(id_schema)
+        return _compile_cache[id_schema][1]
+
     if isinstance(schema, type) and hasattr(schema, "__validate__"):
         schema_error = False
         try:
-            return schema()
+            ret = schema()
         except Exception:
             schema_error = True
         if schema_error:
@@ -290,19 +305,22 @@ def compile(schema):
                 f"{repr(schema.__name__)} does " f"not have a no-argument constructor"
             )
     elif hasattr(schema, "__validate__"):
-        return schema
+        ret = schema
     elif isinstance(schema, type) or isinstance(schema, _GenericAlias):
-        return _type(schema)
+        ret = _type(schema)
     elif callable(schema):
-        return _callable(schema)
+        ret = _callable(schema)
     elif isinstance(schema, tuple) or isinstance(schema, list):
-        return _sequence(schema)
+        ret = _sequence(schema)
     elif isinstance(schema, dict):
-        return _dict(schema)
+        ret = _dict(schema)
     elif isinstance(schema, set):
-        return union(*schema)
+        ret = union(*schema)
     else:
-        return _object(schema)
+        ret = _object(schema)
+
+    _compile_cache[id_schema] = (schema, ret)
+    return ret
 
 
 def _validate(schema, object, name="object", strict=True):
