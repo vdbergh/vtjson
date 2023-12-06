@@ -205,6 +205,7 @@ A wrapper takes one or more schemas as arguments and produces a new schema.
 - An object matches the schema `lax(schema)` if it matches `schema` when validated with `strict=False`.
 - An object matches the schema `strict(schema)` if it matches `schema` when validated with `strict=True`.
 - An object matches the schema `set_name(schema, name)` if it matches `schema`. But the `name` argument will be used in non-validation messages.
+- An object matches the schema `compile(schema)` if it matches `schema`. `vtjson` compiles the schema on validation so pre-compiling is not necessary but, in some cases, it may gain a bit of performance.
 - An object matches the schema `quote(schema)` if it is equal to `schema`. For example the schema `{"cats", "dogs"}` matches the strings `"cats"` and `"dogs"` but the schema `quote({"cats", "dogs"})` matches the set `{"cats", "dogs"}`. 
 ## Built-ins
 Some built-ins take arguments. If no arguments are given then the parentheses can be omitted. So `email` is equivalent to `email()`.

@@ -6,6 +6,7 @@ from vtjson import (
     SchemaError,
     ValidationError,
     _keys,
+    compile,
     complement,
     date,
     date_time,
@@ -113,6 +114,14 @@ class TestValidation(unittest.TestCase):
             }
             validate(schema, object, strict=True)
         show(mc)
+
+    def test_compile(self):
+        schema = {"a?": 1}
+        object = {"a": 1}
+        validate(schema, object)
+
+        schema = compile(schema)
+        validate(schema, object)
 
     def test_union(self):
         schema = {"a?": 1, "b": union(2, 3)}

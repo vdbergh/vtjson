@@ -6,8 +6,8 @@ from timeit import timeit
 from bson.objectid import ObjectId
 
 from vtjson import (  # noqa: F401
-    _compile,
     _validate,
+    compile,
     ip_address,
     number,
     regex,
@@ -320,5 +320,5 @@ t = timeit(
 )
 print(f"Validating an SPRT run with {total_tasks} tasks takes {1000*t/N:.2f} ms")
 
-t = timeit("_compile(runs_schema)", number=N, globals=globals())
+t = timeit("compile(runs_schema)", number=N, globals=globals())
 print(f"Compiling runs schema takes {1000*t/N:.2f} ms")

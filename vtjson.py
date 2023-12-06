@@ -25,7 +25,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.3.8"
+__version__ = "1.4.0"
 
 
 _dns_resolver = None
@@ -109,7 +109,7 @@ class optional_key:
 
 class union:
     def __init__(self, *schemas):
-        self.schemas = [_compile(s) for s in schemas]
+        self.schemas = [compile(s) for s in schemas]
 
     def __validate__(self, object, name, strict):
         messages = []
@@ -124,7 +124,7 @@ class union:
 
 class intersect:
     def __init__(self, *schemas):
-        self.schemas = [_compile(s) for s in schemas]
+        self.schemas = [compile(s) for s in schemas]
 
     def __validate__(self, object, name, strict):
         for schema in self.schemas:
@@ -136,7 +136,7 @@ class intersect:
 
 class complement:
     def __init__(self, schema):
-        self.schema = _compile(schema)
+        self.schema = compile(schema)
 
     def __validate__(self, object, name, strict):
         message = self.schema.__validate__(object, name=name, strict=strict)
@@ -148,7 +148,7 @@ class complement:
 
 class lax:
     def __init__(self, schema):
-        self.schema = _compile(schema)
+        self.schema = compile(schema)
 
     def __validate__(self, object, name, strict):
         return self.schema.__validate__(object, name=name, strict=False)
@@ -156,7 +156,7 @@ class lax:
 
 class strict:
     def __init__(self, schema):
-        self.schema = _compile(schema)
+        self.schema = compile(schema)
 
     def __validate__(self, object, name, strict):
         return self.schema.__validate__(object, name=name, strict=True)
@@ -172,7 +172,7 @@ class quote:
 
 class set_name:
     def __init__(self, schema, name):
-        self.schema = _compile(schema)
+        self.schema = compile(schema)
         self.__name__ = name
 
     def __validate__(self, object, name, strict):
@@ -278,7 +278,7 @@ class interval:
         return ""
 
 
-def _compile(schema):
+def compile(schema):
     if isinstance(schema, type) and hasattr(schema, "__validate__"):
         schema_error = False
         try:
@@ -306,7 +306,7 @@ def _compile(schema):
 
 
 def _validate(schema, object, name="object", strict=True):
-    schema = _compile(schema)
+    schema = compile(schema)
     return schema.__validate__(object, name=name, strict=strict)
 
 
@@ -440,7 +440,7 @@ class _dict:
     def __init__(self, schema):
         self.schema = {}
         for k, v in schema.items():
-            self.schema[k] = _compile(v)
+            self.schema[k] = compile(v)
         self.keys = _keys(self.schema)
         self.keys2 = _keys2(self.schema)
 
@@ -491,7 +491,7 @@ class _type:
 class _sequence:
     def __init__(self, schema):
         self.type_schema = type(schema)
-        self.schema = [_compile(o) if o is not ... else ... for o in schema]
+        self.schema = [compile(o) if o is not ... else ... for o in schema]
         if len(schema) > 0 and schema[-1] is ...:
             if len(schema) >= 2:
                 self.fill = self.schema[-2]
