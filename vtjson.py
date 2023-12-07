@@ -1,9 +1,9 @@
 import collections
 import datetime
+import gc
 import ipaddress
 import math
 import re
-import sys
 import urllib.parse
 
 import dns.resolver
@@ -47,11 +47,19 @@ class compile_cache:
         self._compile_cache[id_schema] = (schema, compiled_schema)
         if len(self._compile_cache) > self.size:
             for k in self._compile_cache.keys():
-                # We compare with 3 since the compiled schema (by design)
-                # contains a reference to schema.
-                if sys.getrefcount(self._compile_cache[k][0]) <= 3:
-                    del self._compile_cache[k]
-                    break
+                c = gc.get_referrers(self._compile_cache[k][0])
+                if len(c) <= 2:
+                    good = True
+                    for i in range(0, len(c)):
+                        if (
+                            c[i] is not self._compile_cache[k]
+                            and c[i] is not self._compile_cache[k][1]
+                        ):
+                            # c[i] is an external ref
+                            good = False
+                    if good:
+                        del self._compile_cache[k]
+                        break
             else:
                 self._compile_cache.popitem(0)
 
@@ -329,7 +337,7 @@ def _compile(schema):
     if isinstance(schema, type) and hasattr(schema, "__validate__"):
         schema_error = False
         try:
-            ret = schema()
+            return schema()
         except Exception:
             schema_error = True
         if schema_error:
@@ -337,22 +345,19 @@ def _compile(schema):
                 f"{repr(schema.__name__)} does " f"not have a no-argument constructor"
             )
     elif hasattr(schema, "__validate__"):
-        ret = schema
+        return schema
     elif isinstance(schema, type) or isinstance(schema, _GenericAlias):
-        ret = _type(schema)
+        return _type(schema)
     elif callable(schema):
-        ret = _callable(schema)
+        return _callable(schema)
     elif isinstance(schema, tuple) or isinstance(schema, list):
-        ret = _sequence(schema)
+        return _sequence(schema)
     elif isinstance(schema, dict):
-        ret = _dict(schema)
+        return _dict(schema)
     elif isinstance(schema, set):
-        ret = union(*schema)
+        return union(*schema)
     else:
-        ret = _object(schema)
-    return ret
-
-    return ret
+        return _object(schema)
 
 
 def _validate(schema, object, name="object", strict=True):
@@ -488,7 +493,6 @@ class domain_name:
 
 class _dict:
     def __init__(self, schema):
-        self.schema_ = schema  # Keep ref for the caching to work well
         self.schema = {}
         for k, v in schema.items():
             self.schema[k] = _compile(v)
@@ -541,7 +545,6 @@ class _type:
 
 class _sequence:
     def __init__(self, schema):
-        self.schema_ = schema  # Keep ref for the caching to work well
         self.type_schema = type(schema)
         self.schema = [_compile(o) if o is not ... else ... for o in schema]
         if len(schema) > 0 and schema[-1] is ...:
