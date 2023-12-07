@@ -6,6 +6,7 @@ from vtjson import (
     SchemaError,
     ValidationError,
     _keys,
+    _keys2,
     compile,
     complement,
     date,
@@ -18,6 +19,7 @@ from vtjson import (
     lax,
     make_type,
     number,
+    optional_key,
     quote,
     regex,
     set_name,
@@ -36,9 +38,12 @@ def show(mc):
 
 class TestValidation(unittest.TestCase):
     def test_keys(self):
-        schema = {"a?": 1, "b": 2, "c?": 3}
+        schema = {"a?": 1, "b": 2, optional_key("c"): 3}
         keys = _keys(schema)
         self.assertEqual(keys, {"a", "b", "c"})
+
+        keys2= _keys2(schema)
+        self.assertEqual(keys2, {("a","a?",True),("b","b",False), ("c", optional_key("c"), True)})
 
     def test_strict(self):
         with self.assertRaises(ValidationError) as mc:

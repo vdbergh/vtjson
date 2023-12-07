@@ -106,6 +106,12 @@ class optional_key:
     def __init__(self, key):
         self.key = key
 
+    def __eq__(self, key):
+        return self.key == key.key
+
+    def __hash__(self):
+        return hash(self.key)
+
 
 class union:
     def __init__(self, *schemas):
