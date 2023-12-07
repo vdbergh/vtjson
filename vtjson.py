@@ -98,11 +98,6 @@ def _c(s):
         return ret
 
 
-class wrapper_schema:
-    def __init__(self, schema):
-        self.schema = schema
-
-
 def _wrong_type_message(object, name, type_name, explanation=None):
     message = f"{name} (value:{_c(object)}) is not of type '{type_name}'"
     if explanation is not None:
