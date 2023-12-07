@@ -3,6 +3,7 @@ import datetime
 import ipaddress
 import math
 import re
+import sys
 import urllib.parse
 
 import dns.resolver
@@ -29,7 +30,33 @@ except ImportError:
 __version__ = "1.4.0"
 
 
-_compile_cache = collections.OrderedDict()
+class compile_cache:
+    def __init__(self, size):
+        self._compile_cache = collections.OrderedDict()
+        self.size = size
+
+    def get(self, schema):
+        id_schema = id(schema)
+        if id_schema in self._compile_cache:
+            self._compile_cache.move_to_end(id_schema)
+            return self._compile_cache[id_schema][1]
+        return None
+
+    def put(self, schema, compiled_schema):
+        id_schema = id(schema)
+        self._compile_cache[id_schema] = (schema, compiled_schema)
+        if len(self._compile_cache) > self.size:
+            for k in self._compile_cache.keys():
+                # We compare with 3 since the compiled schema (by design)
+                # contains a reference to schema.
+                if sys.getrefcount(self._compile_cache[k][0]) <= 3:
+                    del self._compile_cache[k]
+                    break
+            else:
+                self._compile_cache.popitem(0)
+
+
+_compile_cache = compile_cache(size=20)
 
 _dns_resolver = None
 
@@ -117,7 +144,7 @@ class optional_key:
 
 class union:
     def __init__(self, *schemas):
-        self.schemas = [compile(s) for s in schemas]
+        self.schemas = [_compile(s) for s in schemas]
 
     def __validate__(self, object, name, strict):
         messages = []
@@ -132,7 +159,7 @@ class union:
 
 class intersect:
     def __init__(self, *schemas):
-        self.schemas = [compile(s) for s in schemas]
+        self.schemas = [_compile(s) for s in schemas]
 
     def __validate__(self, object, name, strict):
         for schema in self.schemas:
@@ -144,7 +171,7 @@ class intersect:
 
 class complement:
     def __init__(self, schema):
-        self.schema = compile(schema)
+        self.schema = _compile(schema)
 
     def __validate__(self, object, name, strict):
         message = self.schema.__validate__(object, name=name, strict=strict)
@@ -156,7 +183,7 @@ class complement:
 
 class lax:
     def __init__(self, schema):
-        self.schema = compile(schema)
+        self.schema = _compile(schema)
 
     def __validate__(self, object, name, strict):
         return self.schema.__validate__(object, name=name, strict=False)
@@ -164,7 +191,7 @@ class lax:
 
 class strict:
     def __init__(self, schema):
-        self.schema = compile(schema)
+        self.schema = _compile(schema)
 
     def __validate__(self, object, name, strict):
         return self.schema.__validate__(object, name=name, strict=True)
@@ -180,7 +207,7 @@ class quote:
 
 class set_name:
     def __init__(self, schema, name):
-        self.schema = compile(schema)
+        self.schema = _compile(schema)
         self.__name__ = name
 
     def __validate__(self, object, name, strict):
@@ -287,13 +314,18 @@ class interval:
 
 
 def compile(schema):
-    if len(_compile_cache) > 40:
-        _compile_cache.popitem(0)
-    id_schema = id(schema)
-    if id_schema in _compile_cache:
-        _compile_cache.move_to_end(id_schema)
-        return _compile_cache[id_schema][1]
+    # Cache toplevel compiles
 
+    c = _compile_cache.get(schema)
+    if c is not None:
+        return c
+
+    ret = _compile(schema)
+    _compile_cache.put(schema, ret)
+    return ret
+
+
+def _compile(schema):
     if isinstance(schema, type) and hasattr(schema, "__validate__"):
         schema_error = False
         try:
@@ -318,8 +350,8 @@ def compile(schema):
         ret = union(*schema)
     else:
         ret = _object(schema)
+    return ret
 
-    _compile_cache[id_schema] = (schema, ret)
     return ret
 
 
@@ -456,9 +488,10 @@ class domain_name:
 
 class _dict:
     def __init__(self, schema):
+        self.schema_ = schema  # Keep ref for the caching to work well
         self.schema = {}
         for k, v in schema.items():
-            self.schema[k] = compile(v)
+            self.schema[k] = _compile(v)
         self.keys = _keys(self.schema)
         self.keys2 = _keys2(self.schema)
 
@@ -508,8 +541,9 @@ class _type:
 
 class _sequence:
     def __init__(self, schema):
+        self.schema_ = schema  # Keep ref for the caching to work well
         self.type_schema = type(schema)
-        self.schema = [compile(o) if o is not ... else ... for o in schema]
+        self.schema = [_compile(o) if o is not ... else ... for o in schema]
         if len(schema) > 0 and schema[-1] is ...:
             if len(schema) >= 2:
                 self.fill = self.schema[-2]
