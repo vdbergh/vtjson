@@ -346,7 +346,7 @@ class email:
         try:
             email_validator.validate_email(object, *self.args, **self.kw)
             return ""
-        except email_validator.EmailNotValidError as e:
+        except Exception as e:
             return _wrong_type_message(object, name, "email", str(e))
 
 

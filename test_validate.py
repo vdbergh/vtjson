@@ -630,6 +630,11 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
         with self.assertRaises(ValidationError) as mc:
+            object = 1
+            validate(schema, object)
+        show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
             object = "@user00.user00"
             validate(schema, object)
         show(mc)
