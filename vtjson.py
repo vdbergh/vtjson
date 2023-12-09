@@ -48,7 +48,7 @@ def _c(s):
         c = ss[-1]
     else:
         c = ""
-    if len(ss) < 100:
+    if len(ss) < 120:
         ret = ss
     else:
         ret = f"{ss[:99]}...[TRUNCATED]..."
