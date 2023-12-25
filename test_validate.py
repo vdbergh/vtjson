@@ -42,8 +42,11 @@ class TestValidation(unittest.TestCase):
         keys = _keys(schema)
         self.assertEqual(keys, {"a", "b", "c"})
 
-        keys2= _keys2(schema)
-        self.assertEqual(keys2, {("a","a?",True),("b","b",False), ("c", optional_key("c"), True)})
+        keys2 = _keys2(schema)
+        self.assertEqual(
+            keys2,
+            {("a", "a?", True), ("b", "b", False), ("c", optional_key("c"), True)},
+        )
 
     def test_strict(self):
         with self.assertRaises(ValidationError) as mc:
