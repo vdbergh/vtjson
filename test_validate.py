@@ -622,6 +622,14 @@ class TestValidation(unittest.TestCase):
             interval(0, "z")
         show(cm)
 
+        with self.assertRaises(SchemaError) as cm:
+            interval(..., {})
+        show(cm)
+
+        with self.assertRaises(SchemaError) as cm:
+            interval({}, ...)
+        show(cm)
+
     def test_email(self):
         schema = email
         object = "user00@user00.com"

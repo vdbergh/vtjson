@@ -229,14 +229,32 @@ class interval:
         self.lb_s = "..." if lb == ... else repr(lb)
         self.ub_s = "..." if ub == ... else repr(ub)
 
+        schema_error = False
         if lb is ... and ub is ...:
             self.__validate__ = self.__validate_none__
         elif lb is ...:
+            try:
+                ub <= ub
+            except Exception:
+                schema_error = True
+            if schema_error:
+                raise SchemaError(
+                    f"The upper bound in the interval"
+                    f" [{self.lb_s},{self.ub_s}] does not support comparison"
+                )
             self.__validate__ = self.__validate_ub__
         elif ub is ...:
+            try:
+                lb <= lb
+            except Exception:
+                schema_error = True
+            if schema_error:
+                raise SchemaError(
+                    f"The lower bound in the interval"
+                    f" [{self.lb_s},{self.ub_s}] does not support comparison"
+                )
             self.__validate__ = self.__validate_lb__
         else:
-            schema_error = False
             try:
                 lb <= ub
             except Exception:
