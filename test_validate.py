@@ -313,6 +313,10 @@ class TestValidation(unittest.TestCase):
         object = "a"
         validate(schema, object)
 
+        with self.assertRaises(SchemaError) as mc:
+            schema = set_name("a", {})
+        show(mc)
+
     def test_lax(self):
         schema = lax(["a", "b", "c"])
         object = ["a", "b", "c", "d"]
@@ -507,6 +511,10 @@ class TestValidation(unittest.TestCase):
 
         with self.assertRaises(SchemaError) as cm:
             regex({}, name="test")
+        show(cm)
+
+        with self.assertRaises(SchemaError) as cm:
+            regex("a", name={})
         show(cm)
 
         with self.assertRaises(SchemaError) as cm:

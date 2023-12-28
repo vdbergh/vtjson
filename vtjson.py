@@ -178,6 +178,8 @@ class quote:
 
 class set_name:
     def __init__(self, schema, name):
+        if not isinstance(name, str):
+            raise SchemaError(f"The name {_c(name)} is not a string")
         self.schema = compile(schema)
         self.__name__ = name
 
@@ -193,6 +195,8 @@ class regex:
         self.regex = regex
         self.fullmatch = fullmatch
         if name is not None:
+            if not isinstance(name, str):
+                raise SchemaError(f"The regex name {_c(name)} is not a string")
             self.__name__ = name
         else:
             _flags = "" if flags == 0 else f", flags={flags}"
