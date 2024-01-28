@@ -25,7 +25,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.4.1"
+__version__ = "1.4.2"
 
 
 _dns_resolver = None
@@ -605,7 +605,7 @@ class _callable:
         try:
             self.__name__ = self.schema.__name__
         except Exception:
-            self.__name__ = self.schema
+            self.__name__ = str(self.schema)
 
     def __validate__(self, object, name, strict):
         try:
