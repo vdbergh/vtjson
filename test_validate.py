@@ -123,13 +123,6 @@ class TestValidation(unittest.TestCase):
             validate(schema, object, strict=True)
         show(mc)
 
-        schema = {
-            "s?": 1,
-        }
-        object = {
-            "s": 1,
-        }
-
     def test_compile(self):
         schema = {"a?": 1}
         object = {"a": 1}
