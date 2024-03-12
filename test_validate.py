@@ -7,6 +7,8 @@ from vtjson import (
     ValidationError,
     _keys,
     _keys2,
+    at_least_one_of,
+    at_most_one_of,
     compile,
     complement,
     date,
@@ -19,6 +21,7 @@ from vtjson import (
     lax,
     make_type,
     number,
+    one_of,
     optional_key,
     quote,
     regex,
@@ -37,6 +40,50 @@ def show(mc):
 
 
 class TestValidation(unittest.TestCase):
+    def test_at_most_one_of(self):
+        schema = at_most_one_of("cat", "dog")
+        object = {}
+        validate(schema, object)
+        object = {"cat": None}
+        validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"cat": None, "dog": None}
+            validate(schema, object)
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            object = 1
+            validate(schema, object)
+
+    def test_at_least_one_of(self):
+        schema = at_least_one_of("cat", "dog")
+        with self.assertRaises(ValidationError) as mc:
+            object = {}
+            validate(schema, object)
+        show(mc)
+        object = {"cat": None}
+        validate(schema, object)
+        object = {"cat": None, "dog": None}
+        validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = 1
+            validate(schema, object)
+
+    def test_one_of(self):
+        schema = one_of("cat", "dog")
+        with self.assertRaises(ValidationError) as mc:
+            object = {}
+            validate(schema, object)
+        show(mc)
+        object = {"cat": None}
+        validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"cat": None, "dog": None}
+            validate(schema, object)
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            object = 1
+            validate(schema, object)
+
     def test_keys(self):
         schema = {"a?": 1, "b": 2, optional_key("c"): 3}
         keys = _keys(schema)

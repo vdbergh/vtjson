@@ -218,6 +218,9 @@ corresponding inequality is not checked.
 - `domain_name(ascii_only=True, resolve=False)`. Checks if the object is a valid domain name. If `ascii_only=False` then allow IDNA domain names. If `resolve=True` check if the domain name resolves.
 - `date_time(format=None)`. Without argument this represents an ISO 8601 date-time. The `format` argument represents a format string for `strftime`.
 - `date` and `time`. These represent an ISO 8601 date and an ISO 8601 time.
+- `one_of(*args)`. This represents a dictionary with exactly one key in `args` (the intention is that this will be combined with the schema of a dictionary, containing optional keys, using `intersect`).
+- `at_least_one_of(*args)`. This represents a dictionary with a least one key in `args`.
+- `at_most_one_of(*args)`. This represents a dictionary with at most one key in `args`.
 ## Format
 A schema can be, in order of precedence:
 - A class with the following properties:

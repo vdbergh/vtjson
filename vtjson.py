@@ -25,7 +25,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.4.2"
+__version__ = "1.5.0"
 
 
 _dns_resolver = None
@@ -462,6 +462,51 @@ class domain_name:
             except Exception as e:
                 return _wrong_type_message(object, name, self.__name__, str(e))
         return ""
+
+
+class at_least_one_of:
+    def __init__(self, *args):
+        self.args = args
+        args_s = [repr(a) for a in args]
+        self.__name__ = f"{self.__class__.__name__}({','.join(args_s)})"
+
+    def __validate__(self, object, name, strict):
+        if not isinstance(object, dict):
+            return _wrong_type_message(object, name, "dict")
+        if any([a in object for a in self.args]):
+            return ""
+        else:
+            return _wrong_type_message(object, name, self.__name__)
+
+
+class at_most_one_of:
+    def __init__(self, *args):
+        self.args = args
+        args_s = [repr(a) for a in args]
+        self.__name__ = f"{self.__class__.__name__}({','.join(args_s)})"
+
+    def __validate__(self, object, name, strict):
+        if not isinstance(object, dict):
+            return _wrong_type_message(object, name, "dict")
+        if sum([a in object for a in self.args]) <= 1:
+            return ""
+        else:
+            return _wrong_type_message(object, name, self.__name__)
+
+
+class one_of:
+    def __init__(self, *args):
+        self.args = args
+        args_s = [repr(a) for a in args]
+        self.__name__ = f"{self.__class__.__name__}({','.join(args_s)})"
+
+    def __validate__(self, object, name, strict):
+        if not isinstance(object, dict):
+            return _wrong_type_message(object, name, "dict")
+        if sum([a in object for a in self.args]) == 1:
+            return ""
+        else:
+            return _wrong_type_message(object, name, self.__name__)
 
 
 class _dict:
