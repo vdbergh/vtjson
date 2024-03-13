@@ -1,4 +1,5 @@
 import datetime
+import fnmatch as fnmatch_
 import ipaddress
 import math
 import re
@@ -25,7 +26,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.5.1"
+__version__ = "1.5.2"
 
 
 _dns_resolver = None
@@ -224,6 +225,37 @@ class regex:
         except Exception:
             pass
         return _wrong_type_message(object, name, self.__name__)
+
+
+class fnmatch:
+    def __init__(self, pattern, name=None):
+        self.pattern = pattern
+
+        if name is None:
+            self.__name__ = f"fnmatch({repr(pattern)})"
+        else:
+            self.__name__ = name
+
+        schema_error = False
+        exception = ""
+        try:
+            fnmatch_.fnmatch("", pattern)
+        except Exception as e:
+            schema_error = True
+            exception = str(e)
+        if schema_error:
+            raise SchemaError(
+                f"{repr(pattern)} is not valid filename pattern: {exception}"
+            )
+
+    def __validate__(self, object, name, strict):
+        try:
+            if fnmatch_.fnmatch(object, self.pattern):
+                return ""
+            else:
+                return _wrong_type_message(object, name, self.__name__)
+        except Exception as e:
+            return _wrong_type_message(object, name, self.__name__, str(e))
 
 
 class interval:

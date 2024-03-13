@@ -210,6 +210,7 @@ A wrapper takes one or more schemas as arguments and produces a new schema. **Wa
 ## Built-ins
 Some built-ins take arguments. If no arguments are given then the parentheses can be omitted. So `email` is equivalent to `email()`.
 - `regex(pattern, name=None, fullmatch=True, flags=0)`. This matches the strings which match the given pattern. The optional `name` argument may be used to give the regular expression a descriptive name. By default the entire string is matched, but this can be overruled via the `fullmatch` argument. The `flags` argument has the usual meaning.
+- `fnmatch(pattern, name=None)`. Unix style filename matching. See the Python manual for the documentation of `fnmatch`.
 - `interval(lowerbound, upperbound)`. This checks if `lowerbound <= object <= upperbound`, provided the comparisons make sense. An upper/lowerbound `...` (ellipsis) means that the
 corresponding inequality is not checked.
 - `number`. Matches `int` and `float`.

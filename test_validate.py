@@ -15,6 +15,7 @@ from vtjson import (
     date_time,
     domain_name,
     email,
+    fnmatch,
     intersect,
     interval,
     ip_address,
@@ -40,6 +41,23 @@ def show(mc):
 
 
 class TestValidation(unittest.TestCase):
+    def test_fnmatch(self):
+        schema = fnmatch("*.txt")
+        object = "hello.txt"
+        validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = "hello.doc"
+            validate(schema, object)
+        show(mc)
+        with self.assertRaises(SchemaError) as mc:
+            schema = fnmatch({})
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            schema = fnmatch("*.txt", name="text_file")
+            object = "hello.doc"
+            validate(schema, object)
+        show(mc)
+
     def test_at_most_one_of(self):
         schema = at_most_one_of("cat", "dog")
         object = {}
