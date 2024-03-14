@@ -26,7 +26,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.5.2"
+__version__ = "1.5.3"
 
 
 _dns_resolver = None
@@ -503,12 +503,13 @@ class at_least_one_of:
         self.__name__ = f"{self.__class__.__name__}({','.join(args_s)})"
 
     def __validate__(self, object, name, strict):
-        if not isinstance(object, dict):
-            return _wrong_type_message(object, name, "dict")
-        if any([a in object for a in self.args]):
-            return ""
-        else:
-            return _wrong_type_message(object, name, self.__name__)
+        try:
+            if any([a in object for a in self.args]):
+                return ""
+            else:
+                return _wrong_type_message(object, name, self.__name__)
+        except Exception as e:
+            return _wrong_type_message(object, name, self.__name__, str(e))
 
 
 class at_most_one_of:
@@ -518,12 +519,13 @@ class at_most_one_of:
         self.__name__ = f"{self.__class__.__name__}({','.join(args_s)})"
 
     def __validate__(self, object, name, strict):
-        if not isinstance(object, dict):
-            return _wrong_type_message(object, name, "dict")
-        if sum([a in object for a in self.args]) <= 1:
-            return ""
-        else:
-            return _wrong_type_message(object, name, self.__name__)
+        try:
+            if sum([a in object for a in self.args]) <= 1:
+                return ""
+            else:
+                return _wrong_type_message(object, name, self.__name__)
+        except Exception as e:
+            return _wrong_type_message(object, name, self.__name__, str(e))
 
 
 class one_of:
@@ -533,12 +535,13 @@ class one_of:
         self.__name__ = f"{self.__class__.__name__}({','.join(args_s)})"
 
     def __validate__(self, object, name, strict):
-        if not isinstance(object, dict):
-            return _wrong_type_message(object, name, "dict")
-        if sum([a in object for a in self.args]) == 1:
-            return ""
-        else:
-            return _wrong_type_message(object, name, self.__name__)
+        try:
+            if sum([a in object for a in self.args]) == 1:
+                return ""
+            else:
+                return _wrong_type_message(object, name, self.__name__)
+        except Exception as e:
+            return _wrong_type_message(object, name, self.__name__, str(e))
 
 
 class _dict:

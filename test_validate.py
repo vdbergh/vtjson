@@ -71,6 +71,7 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = 1
             validate(schema, object)
+        show(mc)
 
     def test_at_least_one_of(self):
         schema = at_least_one_of("cat", "dog")
@@ -85,6 +86,7 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = 1
             validate(schema, object)
+        show(mc)
 
     def test_one_of(self):
         schema = one_of("cat", "dog")
@@ -101,6 +103,7 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object = 1
             validate(schema, object)
+        show(mc)
 
     def test_keys(self):
         schema = {"a?": 1, "b": 2, optional_key("c"): 3}
