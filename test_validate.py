@@ -27,6 +27,7 @@ from vtjson import (
     quote,
     regex,
     set_name,
+    size,
     strict,
     time,
     union,
@@ -630,6 +631,38 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             schema = regex(".", flags=re.ASCII | re.MULTILINE)
             object = "\n"
+            validate(schema, object)
+        show(mc)
+
+    def test_size(self):
+        with self.assertRaises(SchemaError) as mc:
+            schema = size("a", "b")
+            object = "a"
+            validate(schema, object)
+        show(mc)
+
+        schema = size(1, 2)
+        object = "a"
+        validate(schema, object)
+
+        with self.assertRaises(ValidationError) as mc:
+            object = -1
+            validate(schema, object)
+        show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
+            object = []
+            validate(schema, object)
+        show(mc)
+
+        object = [1]
+        validate(schema, object)
+
+        object = [1, 2]
+        validate(schema, object)
+
+        with self.assertRaises(ValidationError) as mc:
+            object = [1, 2, 3]
             validate(schema, object)
         show(mc)
 

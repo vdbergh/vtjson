@@ -338,6 +338,22 @@ class interval:
         return ""
 
 
+class size:
+    def __init__(self, lb, ub):
+        if not isinstance(lb, int) and lb != ...:
+            raise SchemaError(f"{repr(lb)} is not of type 'int'")
+        if not isinstance(ub, int) and ub != ...:
+            raise SchemaError(f"{repr(ub)} is not of type 'int'")
+        self.interval = interval(lb, ub)
+
+    def __validate__(self, object, name, strict):
+        try:
+            L = len(object)
+        except Exception:
+            return f"{name} (value:{_c(object)}) has no len()"
+        return self.interval.__validate__(L, f"len({name})", strict)
+
+
 def compile(schema):
     if isinstance(schema, type) and hasattr(schema, "__validate__"):
         schema_error = False
