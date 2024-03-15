@@ -26,7 +26,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.5.4"
+__version__ = "1.5.5"
 
 
 _dns_resolver = None
@@ -340,10 +340,14 @@ class interval:
 
 class size:
     def __init__(self, lb, ub):
-        if not isinstance(lb, int) and lb != ...:
+        if not isinstance(lb, int):
             raise SchemaError(f"{repr(lb)} is not of type 'int'")
+        if lb < -0:
+            raise SchemaError(f"{repr(lb)} is not >= 0")
         if not isinstance(ub, int) and ub != ...:
             raise SchemaError(f"{repr(ub)} is not of type 'int'")
+        if isinstance(ub, int) and ub < lb:
+            raise SchemaError(f"{repr(ub)} is not >= {repr(lb)}")
         self.interval = interval(lb, ub)
 
     def __validate__(self, object, name, strict):

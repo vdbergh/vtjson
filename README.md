@@ -224,7 +224,7 @@ Mixins are built-ins that are meant to be combined with other schemas using `int
 - `one_of(*args)`. This represents an iterable (e.g. a dictionary) with exactly one entry in `args`.
 - `at_least_one_of(*args)`. This represents an iterable with a least one entry in `args`.
 - `at_most_one_of(*args)`. This represents an iterable with at most one entry in `args`.
-- `size(lowerbound, upperbound)`. Matches the objects (which support `len()` such as strings or lists) whose length is in the interval `[upperbound, lowerbound]`.
+- `size(lowerbound, upperbound)`. Matches the objects (which support `len()` such as strings or lists) whose length is in the interval `[upperbound, lowerbound]`. The value of `upperbound` can be `...` (ellipsis).
 ## Format
 A schema can be, in order of precedence:
 - A class with the following properties:
