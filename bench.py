@@ -7,184 +7,258 @@ from bson.objectid import ObjectId
 
 from vtjson import (  # noqa: F401
     _validate,
-    compile,
+    at_most_one_of,
+    fnmatch,
+    intersect,
+    interval,
     ip_address,
     number,
+    one_of,
     regex,
+    union,
     url,
     validate,
 )
 
-# This schema only matches new runs.
-
-net_name = regex("nn-[a-z0-9]{12}.nnue", name="net_name")
+net_name = regex("nn-[a-f0-9]{12}.nnue", name="net_name")
 tc = regex(r"([1-9]\d*/)?\d+(\.\d+)?(\+\d+(\.\d+)?)?", name="tc")
 str_int = regex(r"[1-9]\d*", name="str_int")
 sha = regex(r"[a-f0-9]{40}", name="sha")
 country_code = regex(r"[A-Z][A-Z]", name="country_code")
 run_id = regex(r"[a-f0-9]{24}", name="run_id")
 uuid = regex(r"[0-9a-zA-z]{2,}(-[0-9a-f]{4}){3}-[0-9a-f]{12}")
+epd_file = fnmatch("*.epd", name="epd_file")
+pgn_file = fnmatch("*.pgn", name="pgn_file")
+
+uint = intersect(int, interval(0, ...))
+suint = intersect(int, interval(1, ...))
+unumber = intersect(number, interval(0, ...))
+
+
+def valid_results(R):
+    l, d, w = R["losses"], R["draws"], R["wins"]
+    R = R["pentanomial"]
+    return (
+        l + d + w == 2 * sum(R)
+        and w - l == 2 * R[4] + R[3] - R[1] - 2 * R[0]
+        and R[2] >= R[3] + 2 * R[2] + R[1] - d >= 0
+    )
+
+
+def if_bad_then_not_active(task):
+    return not ("bad" in task and task["active"])
+
+
+zero_results = {
+    "wins": 0,
+    "draws": 0,
+    "losses": 0,
+    "crashes": 0,
+    "time_losses": 0,
+    "pentanomial": 5 * [0],
+}
+
+
+def if_bad_then_zero_stats(task):
+    return not ("bad" in task and task["stats"] != zero_results)
+
+
+def final_results_must_match(run):
+    rr = copy.deepcopy(zero_results)
+    for t in run["tasks"]:
+        r = t["stats"]
+        for k in r:
+            if k != "pentanomial":
+                rr[k] += r[k]
+            else:
+                for i, p in enumerate(r["pentanomial"]):
+                    rr[k][i] += p
+    if rr != run["results"]:
+        raise Exception(
+            f"The final results {run['results']} do not match the computed results {rr}"
+        )
+    else:
+        return True
+
 
 worker_info_schema = {
     "uname": str,
     "architecture": [str, str],
-    "concurrency": int,
-    "max_memory": int,
-    "min_threads": int,
+    "concurrency": suint,
+    "max_memory": uint,
+    "min_threads": suint,
     "username": str,
-    "version": int,
-    "python_version": [int, int, int],
-    "gcc_version": [int, int, int],
-    "compiler": {"clang++", "g++"},
+    "version": uint,
+    "python_version": [uint, uint, uint],
+    "gcc_version": [uint, uint, uint],
+    "compiler": union("clang++", "g++"),
     "unique_key": uuid,
     "modified": bool,
     "ARCH": str,
-    "nps": number,
+    "nps": unumber,
     "near_github_api_limit": bool,
     "remote_addr": ip_address,
-    "country_code": {country_code, "?"},
+    "country_code": union(country_code, "?"),
 }
 
-results_schema = {
-    "wins": int,
-    "losses": int,
-    "draws": int,
-    "crashes": int,
-    "time_losses": int,
-    "pentanomial": [int, int, int, int, int],
-}
-
-runs_schema = {
-    "_id?": ObjectId,
-    "start_time": datetime,
-    "last_updated": datetime,
-    "tc_base": number,
-    "base_same_as_master": bool,
-    "results_stale?": bool,  # Will go away soon
-    "rescheduled_from?": run_id,
-    "approved": bool,
-    "approver": str,
-    "finished": bool,
-    "deleted": bool,
-    "failed": bool,
-    "is_green": bool,
-    "is_yellow": bool,
-    "workers?": int,  # Will become non-optional
-    "cores?": int,  # Will become non-optional
-    "results": results_schema,
-    "results_info?": {
-        "style": str,
-        "info": [str, ...],
+results_schema = intersect(
+    {
+        "wins": uint,
+        "losses": uint,
+        "draws": uint,
+        "crashes": uint,
+        "time_losses": uint,
+        "pentanomial": [uint, uint, uint, uint, uint],
     },
-    "args": {
-        "base_tag": str,
-        "new_tag": str,
-        "base_net": net_name,
-        "new_net": net_name,
-        "num_games": int,
-        "tc": tc,
-        "new_tc": tc,
-        "book": str,
-        "book_depth": str_int,
-        "threads": int,
-        "resolved_base": sha,
-        "resolved_new": sha,
-        "msg_base": str,
-        "msg_new": str,
-        "base_options": str,
-        "new_options": str,
-        "info": str,
-        "base_signature": str_int,
-        "new_signature": str_int,
-        "username": str,
-        "tests_repo": url,
-        "auto_purge": bool,
-        "throughput": number,
-        "itp": number,
-        "priority": number,
-        "adjudication": bool,
-        "sprt?": {
-            "alpha": 0.05,
-            "beta": 0.05,
-            "elo0": number,
-            "elo1": number,
-            "elo_model": "normalized",
-            "state": {"", "accepted", "rejected"},
-            "llr": number,
-            "batch_size": int,
-            "lower_bound": -math.log(19),
-            "upper_bound": math.log(19),
-            "lost_samples?": int,
-            "illegal_update?": int,
-            "overshoot?": {
-                "last_update": int,
-                "skipped_updates": int,
-                "ref0": number,
-                "m0": number,
-                "sq0": number,
-                "ref1": number,
-                "m1": number,
-                "sq1": number,
-            },
+    valid_results,
+)
+
+runs_schema = intersect(
+    {
+        "_id?": ObjectId,
+        "start_time": datetime,
+        "last_updated": datetime,
+        "tc_base": unumber,
+        "base_same_as_master": bool,
+        "rescheduled_from?": run_id,
+        "approved": bool,
+        "approver": str,
+        "finished": bool,
+        "deleted": bool,
+        "failed": bool,
+        "is_green": bool,
+        "is_yellow": bool,
+        "workers": uint,
+        "cores": uint,
+        "results": results_schema,
+        "results_info?": {
+            "style": str,
+            "info": [str, ...],
         },
-        "spsa?": {
-            "A": number,
-            "alpha": number,
-            "gamma": number,
-            "raw_params": str,
-            "iter": int,
-            "num_iter": int,
-            "params": [
-                {
-                    "name": str,
-                    "start": number,
-                    "min": number,
-                    "max": number,
-                    "c_end": number,
-                    "r_end": number,
-                    "c": number,
-                    "a_end": number,
-                    "a": number,
-                    "theta": number,
+        "args": intersect(
+            {
+                "base_tag": str,
+                "new_tag": str,
+                "base_nets": [net_name, ...],
+                "new_nets": [net_name, ...],
+                "num_games": uint,
+                "tc": tc,
+                "new_tc": tc,
+                "book": union(epd_file, pgn_file),
+                "book_depth": str_int,
+                "threads": suint,
+                "resolved_base": sha,
+                "resolved_new": sha,
+                "msg_base": str,
+                "msg_new": str,
+                "base_options": str,
+                "new_options": str,
+                "info": str,
+                "base_signature": str_int,
+                "new_signature": str_int,
+                "username": str,
+                "tests_repo": url,
+                "auto_purge": bool,
+                "throughput": unumber,
+                "itp": unumber,
+                "priority": unumber,
+                "adjudication": bool,
+                "sprt?": intersect(
+                    {
+                        "alpha": 0.05,
+                        "beta": 0.05,
+                        "elo0": number,
+                        "elo1": number,
+                        "elo_model": "normalized",
+                        "state": union("", "accepted", "rejected"),
+                        "llr": number,
+                        "batch_size": suint,
+                        "lower_bound": -math.log(19),
+                        "upper_bound": math.log(19),
+                        "lost_samples?": uint,
+                        "illegal_update?": uint,
+                        "overshoot?": {
+                            "last_update": uint,
+                            "skipped_updates": uint,
+                            "ref0": number,
+                            "m0": number,
+                            "sq0": unumber,
+                            "ref1": number,
+                            "m1": number,
+                            "sq1": unumber,
+                        },
+                    },
+                    one_of("overshoot", "lost_samples"),
+                ),
+                "spsa?": {
+                    "A": unumber,
+                    "alpha": unumber,
+                    "gamma": unumber,
+                    "raw_params": str,
+                    "iter": uint,
+                    "num_iter": uint,
+                    "params": [
+                        {
+                            "name": str,
+                            "start": number,
+                            "min": number,
+                            "max": number,
+                            "c_end": unumber,
+                            "r_end": unumber,
+                            "c": unumber,
+                            "a_end": unumber,
+                            "a": unumber,
+                            "theta": number,
+                        },
+                        ...,
+                    ],
+                    "param_history?": [
+                        [
+                            {"theta": number, "R": unumber, "c": unumber},
+                            ...,
+                        ],
+                        ...,
+                    ],
                 },
-                ...,
-            ],
-            "param_history?": [
-                [{"theta": number, "R": number, "c": number}, ...],
-                ...,
-            ],
-        },
+            },
+            at_most_one_of("sprt", "spsa"),
+        ),
+        "tasks": [
+            intersect(
+                {
+                    "num_games": uint,
+                    "active": bool,
+                    "last_updated": datetime,
+                    "start": uint,
+                    "residual?": number,
+                    "residual_color?": str,
+                    "bad?": True,
+                    "stats": results_schema,
+                    "worker_info": worker_info_schema,
+                },
+                if_bad_then_not_active,
+                if_bad_then_zero_stats,
+            ),
+            ...,
+        ],
+        "bad_tasks?": [
+            {
+                "num_games": uint,
+                "active": False,
+                "last_updated": datetime,
+                "start": uint,
+                "residual": number,
+                "residual_color": str,
+                "bad": True,
+                "task_id": uint,
+                "stats": results_schema,
+                "worker_info": worker_info_schema,
+            },
+            ...,
+        ],
     },
-    "tasks": [
-        {
-            "num_games": int,
-            "active": bool,
-            "last_updated": datetime,
-            "start": int,
-            "residual?": number,
-            "residual_color?": str,
-            "bad?": True,
-            "stats": results_schema,
-            "worker_info": worker_info_schema,
-        },
-        ...,
-    ],
-    "bad_tasks?": [
-        {
-            "num_games": int,
-            "active": False,
-            "last_updated": datetime,
-            "start": int,
-            "residual": number,
-            "residual_color": str,
-            "bad": True,
-            "task_id": int,
-            "stats": results_schema,
-            "worker_info": worker_info_schema,
-        },
-        ...,
-    ],
-}
+    final_results_must_match,
+)
 
 task_object = {
     "num_games": 1632,
@@ -227,8 +301,8 @@ run_sprt_object = {
     "args": {
         "base_tag": "master",
         "new_tag": "phRed8",
-        "base_net": "nn-0000000000a0.nnue",
-        "new_net": "nn-0000000000a0.nnue",
+        "base_nets": ["nn-0000000000a0.nnue"],
+        "new_nets": ["nn-0000000000a0.nnue"],
         "num_games": 800000,
         "tc": "10+0.1",
         "new_tc": "10+0.1",
@@ -263,7 +337,7 @@ run_sprt_object = {
             "lower_bound": -2.9444389791664403,
             "upper_bound": 2.9444389791664403,
             "overshoot": {
-                "last_update": 53184,
+                "last_update": 3184,
                 "skipped_updates": 0,
                 "ref0": -2.936953911013966,
                 "m0": -2.936953911013966,
@@ -287,7 +361,6 @@ run_sprt_object = {
         "time_losses": 12,
         "pentanomial": [369, 12695, 27124, 12664, 332],
     },
-    "results_stale": False,
     "approved": True,
     "approver": "bigpen0r",
     "finished": True,
@@ -311,14 +384,115 @@ total_tasks = 500
 for i in range(total_tasks):
     run_sprt_object["tasks"].append(copy.deepcopy(task_object))
 
+# fix results
 
-validate(runs_schema, run_sprt_object, "run")
+tmp = copy.deepcopy(zero_results)
+for t in run_sprt_object["tasks"]:
+    r = t["stats"]
+    for k in r:
+        if k != "pentanomial":
+            tmp[k] += r[k]
+        else:
+            for i, p in enumerate(r["pentanomial"]):
+                tmp[k][i] += p
+run_sprt_object["results"] = tmp
+
+# To avoid bugs
+validate(runs_schema, run_sprt_object)
 
 N = 100
-t = timeit(
-    "_validate(runs_schema, run_sprt_object, 'run')", number=N, globals=globals()
-)
+t = timeit("_validate(runs_schema, run_sprt_object)", number=N, globals=globals())
 print(f"Validating an SPRT run with {total_tasks} tasks takes {1000*t/N:.2f} ms")
 
-t = timeit("compile(runs_schema)", number=N, globals=globals())
-print(f"Compiling runs schema takes {1000*t/N:.2f} ms")
+thetas = [
+    {"R": 0.02380368399108814, "c": 2.9826065718051287, "theta": 61.28398809721997},
+    {"R": 0.02380368399108814, "c": 2.9826065718051287, "theta": 66.71601190278002},
+    {"R": 0.02380368399108814, "c": 2.9826065718051287, "theta": 16.283988097219968},
+    {"R": 0.02380368399108814, "c": 2.9826065718051287, "theta": 61.71601190278003},
+    {"R": 0.02380368399108814, "c": 2.9826065718051287, "theta": 30.716011902780032},
+]
+
+param_history = 101 * [thetas]
+
+spsa = {
+    "A": 5000,
+    "alpha": 0.602,
+    "gamma": 0.101,
+    "iter": 50000,
+    "num_iter": 50000,
+    "param_history": param_history,
+    "params": [
+        {
+            "a": 35.700010464300185,
+            "a_end": 0.05,
+            "c": 2.9826065718051287,
+            "c_end": 1.0,
+            "max": 125.0,
+            "min": -3.0,
+            "name": "A[1]",
+            "r_end": 0.05,
+            "start": 61.0,
+            "theta": 61.45857717957549,
+        },
+        {
+            "a": 35.700010464300185,
+            "a_end": 0.05,
+            "c": 2.9826065718051287,
+            "c_end": 1.0,
+            "max": 131.0,
+            "min": 3.0,
+            "name": "A[2]",
+            "r_end": 0.05,
+            "start": 67.0,
+            "theta": 63.541704176544684,
+        },
+        {
+            "a": 35.700010464300185,
+            "a_end": 0.05,
+            "c": 2.9826065718051287,
+            "c_end": 1.0,
+            "max": 80.0,
+            "min": -48.0,
+            "name": "A[3]",
+            "r_end": 0.05,
+            "start": 16.0,
+            "theta": 4.751241882584454,
+        },
+        {
+            "a": 35.700010464300185,
+            "a_end": 0.05,
+            "c": 2.9826065718051287,
+            "c_end": 1.0,
+            "max": 126.0,
+            "min": -2.0,
+            "name": "A[4]",
+            "r_end": 0.05,
+            "start": 62.0,
+            "theta": 44.58456299118108,
+        },
+        {
+            "a": 35.700010464300185,
+            "a_end": 0.05,
+            "c": 2.9826065718051287,
+            "c_end": 1.0,
+            "max": 95.0,
+            "min": -33.0,
+            "name": "A[6]",
+            "r_end": 0.05,
+            "start": 31.0,
+            "theta": 36.56109862629754,
+        },
+    ],
+    "raw_params": "A[1],61,-3,125,1,0.05\r\nA[2],67,3,131,1,0.05\r\n"
+    "A[3],16,-48,80,1,0.05\r\nA[4],62,-2,126,1,0.05\r\nA[6],31,-33,95,1,0.05",
+}
+
+run_spsa_object = run_sprt_object
+del run_spsa_object["args"]["sprt"]
+run_spsa_object["args"]["spsa"] = spsa
+validate(runs_schema, run_spsa_object)
+t = timeit("_validate(runs_schema, run_sprt_object)", number=N, globals=globals())
+print(
+    f"Validating an SPSA run with {len(spsa['param_history'])}"
+    f" param_history entries and {total_tasks} tasks takes {1000*t/N:.2f} ms"
+)
