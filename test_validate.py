@@ -15,7 +15,7 @@ from vtjson import (
     date_time,
     domain_name,
     email,
-    fnmatch,
+    glob,
     intersect,
     interval,
     ip_address,
@@ -42,8 +42,8 @@ def show(mc):
 
 
 class TestValidation(unittest.TestCase):
-    def test_fnmatch(self):
-        schema = fnmatch("*.txt")
+    def test_glob(self):
+        schema = glob("*.txt")
         object = "hello.txt"
         validate(schema, object)
         with self.assertRaises(ValidationError) as mc:
@@ -51,10 +51,10 @@ class TestValidation(unittest.TestCase):
             validate(schema, object)
         show(mc)
         with self.assertRaises(SchemaError) as mc:
-            schema = fnmatch({})
+            schema = glob({})
         show(mc)
         with self.assertRaises(ValidationError) as mc:
-            schema = fnmatch("*.txt", name="text_file")
+            schema = glob("*.txt", name="text_file")
             object = "hello.doc"
             validate(schema, object)
         show(mc)

@@ -1,7 +1,7 @@
 import datetime
-import fnmatch as fnmatch_
 import ipaddress
 import math
+import pathlib
 import re
 import urllib.parse
 
@@ -26,7 +26,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.5.5"
+__version__ = "1.5.6"
 
 
 _dns_resolver = None
@@ -227,19 +227,19 @@ class regex:
         return _wrong_type_message(object, name, self.__name__)
 
 
-class fnmatch:
+class glob:
     def __init__(self, pattern, name=None):
         self.pattern = pattern
 
         if name is None:
-            self.__name__ = f"fnmatch({repr(pattern)})"
+            self.__name__ = f"glob({repr(pattern)})"
         else:
             self.__name__ = name
 
         schema_error = False
         exception = ""
         try:
-            fnmatch_.fnmatch("", pattern)
+            pathlib.PurePath("").match(pattern)
         except Exception as e:
             schema_error = True
             exception = str(e)
@@ -250,7 +250,7 @@ class fnmatch:
 
     def __validate__(self, object, name, strict):
         try:
-            if fnmatch_.fnmatch(object, self.pattern):
+            if pathlib.PurePath(object).match(self.pattern):
                 return ""
             else:
                 return _wrong_type_message(object, name, self.__name__)
