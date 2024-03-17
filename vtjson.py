@@ -26,7 +26,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.5.6"
+__version__ = "1.5.7"
 
 
 _dns_resolver = None
@@ -204,16 +204,12 @@ class regex:
             _fullmatch = "" if fullmatch else ", fullmatch=False"
             self.__name__ = f"regex({repr(regex)}{_fullmatch}{_flags})"
 
-        schema_error = False
         try:
             self.pattern = re.compile(regex, flags)
         except Exception as e:
-            schema_error = True
-            message = str(e)
-        if schema_error:
             _name = f" (name: {repr(name)})" if name is not None else ""
             raise SchemaError(
-                f"{regex}{_name} is an invalid regular expression: {message}"
+                f"{regex}{_name} is an invalid regular expression: {str(e)}"
             )
 
     def __validate__(self, object, name, strict):
@@ -236,16 +232,11 @@ class glob:
         else:
             self.__name__ = name
 
-        schema_error = False
-        exception = ""
         try:
             pathlib.PurePath("").match(pattern)
         except Exception as e:
-            schema_error = True
-            exception = str(e)
-        if schema_error:
             raise SchemaError(
-                f"{repr(pattern)} is not valid filename pattern: {exception}"
+                f"{repr(pattern)} is not valid filename pattern: {str(e)}"
             )
 
     def __validate__(self, object, name, strict):
@@ -265,15 +256,12 @@ class interval:
         self.lb_s = "..." if lb == ... else repr(lb)
         self.ub_s = "..." if ub == ... else repr(ub)
 
-        schema_error = False
         if lb is ... and ub is ...:
             self.__validate__ = self.__validate_none__
         elif lb is ...:
             try:
                 ub <= ub
             except Exception:
-                schema_error = True
-            if schema_error:
                 raise SchemaError(
                     f"The upper bound in the interval"
                     f" [{self.lb_s},{self.ub_s}] does not support comparison"
@@ -283,8 +271,6 @@ class interval:
             try:
                 lb <= lb
             except Exception:
-                schema_error = True
-            if schema_error:
                 raise SchemaError(
                     f"The lower bound in the interval"
                     f" [{self.lb_s},{self.ub_s}] does not support comparison"
@@ -294,8 +280,6 @@ class interval:
             try:
                 lb <= ub
             except Exception:
-                schema_error = True
-            if schema_error:
                 raise SchemaError(
                     f"The upper and lower bound in the interval"
                     f" [{self.lb_s},{self.ub_s}] are incomparable"
@@ -360,12 +344,9 @@ class size:
 
 def compile(schema):
     if isinstance(schema, type) and hasattr(schema, "__validate__"):
-        schema_error = False
         try:
             return schema()
         except Exception:
-            schema_error = True
-        if schema_error:
             raise SchemaError(
                 f"{repr(schema.__name__)} does " f"not have a no-argument constructor"
             )
