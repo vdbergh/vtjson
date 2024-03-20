@@ -26,7 +26,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.6.0"
+__version__ = "1.6.1"
 
 
 _dns_resolver = None
@@ -557,19 +557,19 @@ class keys:
 
 
 class ifthen:
-    def __init__(self, if_clause, then_clause, else_clause=None):
-        self.if_clause = compile(if_clause)
-        self.then_clause = compile(then_clause)
-        if else_clause is not None:
-            self.else_clause = compile(else_clause)
+    def __init__(self, if_schema, then_schema, else_schema=None):
+        self.if_schema = compile(if_schema)
+        self.then_schema = compile(then_schema)
+        if else_schema is not None:
+            self.else_schema = compile(else_schema)
         else:
-            self.else_clause = else_clause
+            self.else_schema = else_schema
 
     def __validate__(self, object, name, strict):
-        if self.if_clause.__validate__(object, name, strict) == "":
-            return self.then_clause.__validate__(object, name, strict)
-        elif self.else_clause is not None:
-            return self.else_clause.__validate__(object, name, strict)
+        if self.if_schema.__validate__(object, name, strict) == "":
+            return self.then_schema.__validate__(object, name, strict)
+        elif self.else_schema is not None:
+            return self.else_schema.__validate__(object, name, strict)
         return ""
 
 
