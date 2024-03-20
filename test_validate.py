@@ -16,6 +16,7 @@ from vtjson import (
     domain_name,
     email,
     glob,
+    ifthen,
     intersect,
     interval,
     ip_address,
@@ -115,6 +116,23 @@ class TestValidation(unittest.TestCase):
             object = {"a": 1}
             validate(schema, object)
         show(mc)
+
+    def test_ifthen(self):
+        schema = ifthen(keys("a"), keys("b"))
+        object = {"a": 1, "b": 1}
+        validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"a": 1}
+            validate(schema, object)
+        show(mc)
+        object = {"c": 1}
+        validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = ifthen(keys("a"), keys("b"), keys("d"))
+            validate(schema, object)
+        show(mc)
+        object = {"d": 1}
+        validate(schema, object)
 
     def test_key_classification(self):
         schema = {"a?": 1, "b": 2, optional_key("c"): 3}

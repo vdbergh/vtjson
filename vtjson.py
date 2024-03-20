@@ -556,6 +556,23 @@ class keys:
         return ""
 
 
+class ifthen:
+    def __init__(self, if_clause, then_clause, else_clause=None):
+        self.if_clause = compile(if_clause)
+        self.then_clause = compile(then_clause)
+        if else_clause is not None:
+            self.else_clause = compile(else_clause)
+        else:
+            self.else_clause = else_clause
+
+    def __validate__(self, object, name, strict):
+        if self.if_clause.__validate__(object, name, strict) == "":
+            return self.then_clause.__validate__(object, name, strict)
+        elif self.else_clause is not None:
+            return self.else_clause.__validate__(object, name, strict)
+        return ""
+
+
 class _dict:
     def __init__(self, schema):
         self.schema = {}

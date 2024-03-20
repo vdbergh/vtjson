@@ -225,6 +225,8 @@ Mixins are built-ins that are meant to be combined with other schemas using `int
 - `at_least_one_of(*args)`. This represents a dictionary with a least one key in `args`.
 - `at_most_one_of(*args)`. This represents an dictionary with at most one key in `args`.
 - `keys(*args)`. This represents a dictionary containing all the keys in `args`.
+- `ifthen(if_clause, then_clause, else_clause=None)`. It the object matches the `if_clause` then it should also match the `then_clause`. If the object does not match the `if_cause` then it should match
+the `else_clause`, if present.
 - `size(lowerbound, upperbound)`. Matches the objects (which support `len()` such as strings or lists) whose length is in the interval `[upperbound, lowerbound]`. The value of `upperbound` can be `...` (ellipsis).
 ## Format
 A schema can be, in order of precedence:
