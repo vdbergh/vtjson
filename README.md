@@ -7,13 +7,13 @@ Validation of JSON like Python objects is done according to a `schema` which is 
 
 ### Example
 
-Below is the schema of the run object in the mongodb database underlying the Fishtest web application https://tests.stockfishchess.org/tests
+Below is a simplified version of the schema of the run object in the mongodb database underlying the Fishtest web application https://tests.stockfishchess.org/tests
 
 ```python
 import math
 from datetime import datetime
 from bson.objectid import ObjectId
-from vtjson import ip_address, number, regex, url
+from vtjson import glob, ip_address, number, regex, url
 
 net_name = regex("nn-[a-z0-9]{12}.nnue", name="net_name")
 tc = regex(r"([1-9]\d*/)?\d+(\.\d+)?(\+\d+(\.\d+)?)?", name="tc")
@@ -21,6 +21,9 @@ str_int = regex(r"[1-9]\d*", name="str_int")
 sha = regex(r"[a-f0-9]{40}", name="sha")
 country_code = regex(r"[A-Z][A-Z]", name="country_code")
 run_id = regex(r"[a-f0-9]{24}", name="run_id")
+uuid = regex(r"[0-9a-zA-Z]{2,}(-[a-f0-9]{4}){3}-[a-f0-9]{12}", name="uuid")
+epd_file = glob("*.epd", name="epd_file")
+pgn_file = glob("*.pgn", name="pgn_file")
 
 worker_info_schema = {
     "uname": str,
@@ -32,14 +35,14 @@ worker_info_schema = {
     "version": int,
     "python_version": [int, int, int],
     "gcc_version": [int, int, int],
-    "compiler": {"clang++", "g++"},
-    "unique_key": str,
+    "compiler": union("clang++", "g++"),
+    "unique_key": uuid,
     "modified": bool,
     "ARCH": str,
     "nps": number,
     "near_github_api_limit": bool,
     "remote_addr": ip_address,
-    "country_code": {country_code, "?"},
+    "country_code": union(country_code, "?"),
 }
 
 results_schema = {
@@ -57,7 +60,6 @@ schema = {
     "last_updated": datetime,
     "tc_base": number,
     "base_same_as_master": bool,
-    "results_stale?": bool,
     "rescheduled_from?": run_id,
     "approved": bool,
     "approver": str,
@@ -66,8 +68,8 @@ schema = {
     "failed": bool,
     "is_green": bool,
     "is_yellow": bool,
-    "workers?": int,
-    "cores?": int,
+    "workers": int,
+    "cores": int,
     "results": results_schema,
     "results_info?": {
         "style": str,
@@ -76,12 +78,12 @@ schema = {
     "args": {
         "base_tag": str,
         "new_tag": str,
-        "base_net": net_name,
-        "new_net": net_name,
+	"base_nets": [net_name, ...],
+        "new_nets": [net_name, ...],
         "num_games": int,
         "tc": tc,
         "new_tc": tc,
-        "book": str,
+        "book": union(epd_file, pgn_file),
         "book_depth": str_int,
         "threads": int,
         "resolved_base": sha,
@@ -106,7 +108,7 @@ schema = {
             "elo0": number,
             "elo1": number,
             "elo_model": "normalized",
-            "state": {"", "accepted", "rejected"},
+            "state": union("", "accepted", "rejected"),
             "llr": number,
             "batch_size": int,
             "lower_bound": -math.log(19),
