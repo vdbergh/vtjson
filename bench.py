@@ -8,10 +8,13 @@ from bson.objectid import ObjectId
 from vtjson import (  # noqa: F401
     _validate,
     at_most_one_of,
-    fnmatch,
+    glob,
+    ifthen,
     intersect,
     interval,
     ip_address,
+    keys,
+    lax,
     number,
     one_of,
     regex,
@@ -27,8 +30,8 @@ sha = regex(r"[a-f0-9]{40}", name="sha")
 country_code = regex(r"[A-Z][A-Z]", name="country_code")
 run_id = regex(r"[a-f0-9]{24}", name="run_id")
 uuid = regex(r"[0-9a-zA-Z]{2,}(-[a-f0-9]{4}){3}-[a-f0-9]{12}", name="uuid")
-epd_file = fnmatch("*.epd", name="epd_file")
-pgn_file = fnmatch("*.pgn", name="pgn_file")
+epd_file = glob("*.epd", name="epd_file")
+pgn_file = glob("*.pgn", name="pgn_file")
 
 uint = intersect(int, interval(0, ...))
 suint = intersect(int, interval(1, ...))
@@ -45,10 +48,6 @@ def valid_results(R):
     )
 
 
-def if_bad_then_not_active(task):
-    return not ("bad" in task and task["active"])
-
-
 zero_results = {
     "wins": 0,
     "draws": 0,
@@ -58,9 +57,9 @@ zero_results = {
     "pentanomial": 5 * [0],
 }
 
-
-def if_bad_then_zero_stats(task):
-    return not ("bad" in task and task["stats"] != zero_results)
+if_bad_then_zero_stats_and_not_active = ifthen(
+    keys("bad"), lax({"active": False, "stats": zero_results})
+)
 
 
 def final_results_must_match(run):
@@ -236,8 +235,7 @@ runs_schema = intersect(
                     "stats": results_schema,
                     "worker_info": worker_info_schema,
                 },
-                if_bad_then_not_active,
-                if_bad_then_zero_stats,
+                if_bad_then_zero_stats_and_not_active,
             ),
             ...,
         ],
@@ -262,7 +260,7 @@ runs_schema = intersect(
 
 task_object = {
     "num_games": 1632,
-    "active": False,
+    "active": True,
     "worker_info": {
         "uname": "Linux 6.5.8-200.fc38.x86_64",
         "architecture": ["64bit", "ELF"],
@@ -353,6 +351,7 @@ run_sprt_object = {
     "tc_base": 10.0,
     "base_same_as_master": True,
     "tasks": [],
+    "bad_tasks": [],
     "results": {
         "wins": 26829,
         "losses": 26934,
@@ -383,6 +382,16 @@ run_sprt_object = {
 total_tasks = 500
 for i in range(total_tasks):
     run_sprt_object["tasks"].append(copy.deepcopy(task_object))
+total_bad_tasks = 50
+for i in range(total_bad_tasks):
+    run_sprt_object["bad_tasks"].append(copy.deepcopy(task_object))
+    run_sprt_object["bad_tasks"][-1]["bad"] = True
+    run_sprt_object["bad_tasks"][-1]["active"] = False
+    run_sprt_object["bad_tasks"][-1]["task_id"] = i
+    run_sprt_object["tasks"][i]["bad"] = True
+    run_sprt_object["tasks"][i]["stats"] = zero_results
+    run_sprt_object["tasks"][i]["active"] = False
+
 
 # fix results
 
@@ -402,7 +411,10 @@ validate(runs_schema, run_sprt_object)
 
 N = 100
 t = timeit("_validate(runs_schema, run_sprt_object)", number=N, globals=globals())
-print(f"Validating an SPRT run with {total_tasks} tasks takes {1000*t/N:.2f} ms")
+print(
+    f"Validating an SPRT run with {total_tasks} tasks "
+    f"and {total_bad_tasks} bad task takes {1000*t/N:.2f} ms"
+)
 
 thetas = [
     {"R": 0.02380368399108814, "c": 2.9826065718051287, "theta": 61.28398809721997},
@@ -494,5 +506,6 @@ validate(runs_schema, run_spsa_object)
 t = timeit("_validate(runs_schema, run_sprt_object)", number=N, globals=globals())
 print(
     f"Validating an SPSA run with {len(spsa['param_history'])}"
-    f" param_history entries and {total_tasks} tasks takes {1000*t/N:.2f} ms"
+    f" param_history entries and {total_tasks} tasks and "
+    f"{total_bad_tasks} bad task takes {1000*t/N:.2f} ms"
 )
