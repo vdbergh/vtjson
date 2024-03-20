@@ -19,6 +19,7 @@ from vtjson import (
     intersect,
     interval,
     ip_address,
+    keys,
     lax,
     make_type,
     number,
@@ -107,6 +108,15 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_keys(self):
+        schema = keys("a", "b")
+        object = {"a": 1, "b": 2}
+        validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"a": 1}
+            validate(schema, object)
+        show(mc)
+
+    def test_key_classification(self):
         schema = {"a?": 1, "b": 2, optional_key("c"): 3}
         keys = _keys(schema)
         self.assertEqual(keys, {"a", "b", "c"})

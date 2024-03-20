@@ -221,9 +221,10 @@ corresponding inequality is not checked.
 - `date` and `time`. These represent an ISO 8601 date and an ISO 8601 time.
 ## Mixins
 Mixins are built-ins that are meant to be combined with other schemas using `intersect`.
-- `one_of(*args)`. This represents an iterable (e.g. a dictionary) with exactly one entry in `args`.
-- `at_least_one_of(*args)`. This represents an iterable with a least one entry in `args`.
-- `at_most_one_of(*args)`. This represents an iterable with at most one entry in `args`.
+- `one_of(*args)`. This represents a dictionary with exactly one key in `args`.
+- `at_least_one_of(*args)`. This represents a dictionary with a least one key in `args`.
+- `at_most_one_of(*args)`. This represents an dictionary with at most one key in `args`.
+- `keys(*args)`. This represents a dictionary containing all the keys in `args`.
 - `size(lowerbound, upperbound)`. Matches the objects (which support `len()` such as strings or lists) whose length is in the interval `[upperbound, lowerbound]`. The value of `upperbound` can be `...` (ellipsis).
 ## Format
 A schema can be, in order of precedence:

@@ -545,6 +545,17 @@ class one_of:
             return _wrong_type_message(object, name, self.__name__, str(e))
 
 
+class keys:
+    def __init__(self, *args):
+        self.args = args
+
+    def __validate__(self, object, name, strict):
+        for k in self.args:
+            if k not in object:
+                return f"{name}[{repr(k)}] is missing"
+        return ""
+
+
 class _dict:
     def __init__(self, schema):
         self.schema = {}
