@@ -44,6 +44,20 @@ def show(mc):
 
 
 class TestValidation(unittest.TestCase):
+    def test_immutable(self):
+        L = ["a"]
+        schema = compile(L)
+        object = ["a"]
+        validate(schema, object)
+        L[0] = "b"
+        validate(schema, object)
+        L = {"a": 1}
+        schema = compile(L)
+        object = {"a": 1}
+        validate(schema, object)
+        L["b"] = 2
+        validate(schema, object)
+
     def test_glob(self):
         schema = glob("*.txt")
         object = "hello.txt"
