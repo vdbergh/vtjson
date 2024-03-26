@@ -17,6 +17,7 @@ from vtjson import (  # noqa: F401
     lax,
     number,
     one_of,
+    quote,
     regex,
     union,
     url,
@@ -58,7 +59,7 @@ zero_results = {
 }
 
 if_bad_then_zero_stats_and_not_active = ifthen(
-    keys("bad"), lax({"active": False, "stats": zero_results})
+    keys("bad"), lax({"active": False, "stats": quote(zero_results)})
 )
 
 
