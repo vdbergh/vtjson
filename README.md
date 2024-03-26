@@ -220,7 +220,7 @@ Some built-ins take arguments. If no arguments are given then the parentheses ca
 - `date_time(format=None)`. Without argument this represents an ISO 8601 date-time. The `format` argument represents a format string for `strftime`.
 - `date` and `time`. These represent an ISO 8601 date and an ISO 8601 time.
 ## Mixins
-Mixins are built-ins that are meant to be combined with other schemas using `intersect`.
+Mixins are built-ins that are usually combined with other schemas using `intersect`.
 - `one_of(*args)`. This represents a dictionary with exactly one key in `args`.
 - `at_least_one_of(*args)`. This represents a dictionary with a least one key in `args`.
 - `at_most_one_of(*args)`. This represents an dictionary with at most one key in `args`.
