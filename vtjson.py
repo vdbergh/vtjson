@@ -236,7 +236,7 @@ class glob:
             pathlib.PurePath("").match(pattern)
         except Exception as e:
             raise SchemaError(
-                f"{repr(pattern)} is not valid filename pattern: {str(e)}"
+                f"{repr(pattern)} is not a valid filename pattern: {str(e)}"
             )
 
     def __validate__(self, object, name, strict):
