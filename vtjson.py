@@ -249,6 +249,35 @@ class glob:
             return _wrong_type_message(object, name, self.__name__, str(e))
 
 
+class div:
+    def __init__(self, divisor, remainder=0, name=None):
+        if not isinstance(divisor, int):
+            raise SchemaError(f"The divisor {repr(divisor)} is not an integer")
+        if divisor == 0:
+            raise SchemaError("The divisor cannot be zero")
+        if not isinstance(remainder, int):
+            raise SchemaError(f"The remainder {repr(remainder)} is not an integer")
+        self.divisor = divisor
+        self.remainder = remainder
+
+        if name is None:
+            _divisor = str(divisor)
+            _remainder = ""
+            if remainder != 0:
+                _remainder = "," + str(remainder)
+            self.__name__ = f"div({_divisor+_remainder})"
+        else:
+            self.__name__ = name
+
+    def __validate__(self, object, name, strict):
+        if not isinstance(object, int):
+            _wrong_type_message(object, name, int)
+        elif (object - self.remainder) % self.divisor == 0:
+            return ""
+        else:
+            return _wrong_type_message(object, name, self.__name__)
+
+
 class interval:
     def __init__(self, lb, ub):
         self.lb = lb

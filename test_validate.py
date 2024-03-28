@@ -13,6 +13,7 @@ from vtjson import (
     complement,
     date,
     date_time,
+    div,
     domain_name,
     email,
     glob,
@@ -72,6 +73,38 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             schema = glob("*.txt", name="text_file")
             object = "hello.doc"
+            validate(schema, object)
+        show(mc)
+
+    def test_div(self):
+        schema = div(2)
+        object = 2
+        validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = 3
+            validate(schema, object)
+        show(mc)
+        with self.assertRaises(SchemaError) as mc:
+            schema = div({})
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            schema = div(2, name="even")
+            object = 3
+            validate(schema, object)
+        show(mc)
+        schema = div(2, 1)
+        object = 3
+        validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = 2
+            validate(schema, object)
+        show(mc)
+        with self.assertRaises(SchemaError) as mc:
+            schema = div(1, {})
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            schema = div(2, 1, name="odd")
+            object = 2
             validate(schema, object)
         show(mc)
 
