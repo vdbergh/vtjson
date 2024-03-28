@@ -8,6 +8,7 @@ from bson.objectid import ObjectId
 from vtjson import (  # noqa: F401
     _validate,
     at_most_one_of,
+    div,
     glob,
     ifthen,
     intersect,
@@ -33,6 +34,7 @@ run_id = regex(r"[a-f0-9]{24}", name="run_id")
 uuid = regex(r"[0-9a-zA-Z]{2,}(-[a-f0-9]{4}){3}-[a-f0-9]{12}", name="uuid")
 epd_file = glob("*.epd", name="epd_file")
 pgn_file = glob("*.pgn", name="pgn_file")
+even = div(2, name="even")
 
 uint = intersect(int, interval(0, ...))
 suint = intersect(int, interval(1, ...))
@@ -141,7 +143,7 @@ runs_schema = intersect(
                 "new_tag": str,
                 "base_nets": [net_name, ...],
                 "new_nets": [net_name, ...],
-                "num_games": uint,
+                "num_games": intersect(uint, even),
                 "tc": tc,
                 "new_tc": tc,
                 "book": union(epd_file, pgn_file),
@@ -226,7 +228,7 @@ runs_schema = intersect(
         "tasks": [
             intersect(
                 {
-                    "num_games": uint,
+                    "num_games": intersect(uint, even),
                     "active": bool,
                     "last_updated": datetime,
                     "start": uint,
@@ -242,7 +244,7 @@ runs_schema = intersect(
         ],
         "bad_tasks?": [
             {
-                "num_games": uint,
+                "num_games": intersect(uint, even),
                 "active": False,
                 "last_updated": datetime,
                 "start": uint,
