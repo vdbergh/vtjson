@@ -70,6 +70,9 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(SchemaError) as mc:
             schema = glob({})
         show(mc)
+        with self.assertRaises(SchemaError) as mc:
+            schema = glob({}, name="Invalid")
+        show(mc)
         with self.assertRaises(ValidationError) as mc:
             schema = glob("*.txt", name="text_file")
             object = "hello.doc"

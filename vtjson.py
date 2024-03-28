@@ -210,9 +210,9 @@ class regex:
             self.pattern = re.compile(regex, flags)
         except Exception as e:
             message = str(e)
-            _name = f" (name: {repr(name)})" if name is not None else ""
             schema_error = True
         if schema_error:
+            _name = f" (name: {repr(name)})" if name is not None else ""
             raise SchemaError(
                 f"{regex}{_name} is an invalid regular expression: {message}"
             )
@@ -245,8 +245,9 @@ class glob:
             schema_error = True
             message = str(e)
         if schema_error:
+            _name = f" (name: {repr(name)})" if name is not None else ""
             raise SchemaError(
-                f"{repr(pattern)} is not a valid filename pattern: {message}"
+                f"{repr(pattern)}{_name} is not a valid filename pattern: {message}"
             )
 
     def __validate__(self, object, name, strict):
