@@ -84,6 +84,10 @@ class TestValidation(unittest.TestCase):
             object = 3
             validate(schema, object)
         show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            object = "3"
+            validate(schema, object)
+        show(mc)
         with self.assertRaises(SchemaError) as mc:
             schema = div({})
         show(mc)

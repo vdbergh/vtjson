@@ -26,7 +26,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.6.3"
+__version__ = "1.6.4"
 
 
 _dns_resolver = None
@@ -281,7 +281,7 @@ class div:
 
     def __validate__(self, object, name, strict):
         if not isinstance(object, int):
-            _wrong_type_message(object, name, int)
+            return _wrong_type_message(object, name, "int")
         elif (object - self.remainder) % self.divisor == 0:
             return ""
         else:
