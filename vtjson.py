@@ -1,3 +1,4 @@
+import collections
 import datetime
 import ipaddress
 import math
@@ -627,7 +628,7 @@ class ifthen:
 
 class _dict:
     def __init__(self, schema):
-        self.schema = {}
+        self.schema = collections.OrderedDict()
         for k, v in schema.items():
             self.schema[k] = compile(v)
         self.keys = _keys(self.schema)
