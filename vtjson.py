@@ -637,10 +637,6 @@ class _dict:
     def __validate__(self, object, name, strict):
         if type(object) is not dict:
             return _wrong_type_message(object, name, type(self.schema).__name__)
-        if strict:
-            for x in object:
-                if x not in self.keys:
-                    return f"{name}['{x}'] is not in the schema"
         for k_, k, o in self.keys2:
             # (k_,k,o)=(normalized key, key, optional)
             name_ = f"{name}['{k_}']"
@@ -653,6 +649,10 @@ class _dict:
                 ret = self.schema[k].__validate__(object[k_], name=name_, strict=strict)
                 if ret != "":
                     return ret
+        if strict:
+            for x in object:
+                if x not in self.keys:
+                    return f"{name}['{x}'] is not in the schema"
         return ""
 
     def __str__(self):
