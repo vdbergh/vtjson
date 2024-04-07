@@ -604,6 +604,21 @@ class ifthen:
         return ""
 
 
+class cond:
+    def __init__(self, *args):
+        self.conditions = []
+        for c in args:
+            if not isinstance(c, tuple) or len(c) != 2:
+                raise SchemaError(f"{repr(c)} is not a tuple of length two")
+            self.conditions.append((compile(c[0]), compile(c[1])))
+
+    def __validate__(self, object, name, strict):
+        for c in self.conditions:
+            if c[0].__validate__(object, name, strict) == "":
+                return c[1].__validate__(object, name, strict)
+        return ""
+
+
 class _dict:
     def __init__(self, schema):
         self.schema = collections.OrderedDict()

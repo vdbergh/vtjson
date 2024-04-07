@@ -11,6 +11,7 @@ from vtjson import (
     at_most_one_of,
     compile,
     complement,
+    cond,
     date,
     date_time,
     div,
@@ -187,6 +188,29 @@ class TestValidation(unittest.TestCase):
         show(mc)
         object = {"d": 1}
         validate(schema, object)
+
+    def test_cond(self):
+        with self.assertRaises(SchemaError) as mc:
+            schema = cond("a", "b", "c")
+        show(mc)
+
+        schema = cond((0, 0), (1, 1))
+        object = 1
+        validate(schema, object)
+
+        schema = cond((0, 0), (1, 1))
+        object = 0
+        validate(schema, object)
+
+        schema = cond((0, 0), (1, 1))
+        object = 2
+        validate(schema, object)
+
+        schema = cond((0, 0), (1, 1), (object, 1))
+        object = 2
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, object)
+        show(mc)
 
     def test_key_classification(self):
         schema = {"a?": 1, "b": 2, optional_key("c"): 3}
