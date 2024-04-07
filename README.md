@@ -297,6 +297,10 @@ Q: How is this different from https://pypi.org/project/json-checker/ \?
 
 A: Good question! I discovered `json-checker` after I had written `vtjson`. Although the details are different `json-checker` and `vtjson` share many of the same principles.
 
+Q: Why is there no type `any`?
+
+A: The type `object` plays the role of `any`.
+
 Q: How to combine validations?
 
 A: Use `intersect`. For example the following schema validates positive integers but reject positive floats.
