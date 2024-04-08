@@ -7,6 +7,7 @@ from vtjson import (
     ValidationError,
     _keys,
     _keys2,
+    anything,
     at_least_one_of,
     at_most_one_of,
     compile,
@@ -413,6 +414,11 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             validate(schema, object)
         show(mc)
+
+    def test_anything(self):
+        schema = anything
+        object = "dummy"
+        validate(schema, object)
 
     def test_set(self):
         with self.assertRaises(ValidationError) as mc:
