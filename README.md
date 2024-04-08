@@ -220,6 +220,8 @@ Some built-ins take arguments. If no arguments are given then the parentheses ca
 - `domain_name(ascii_only=True, resolve=False)`. Checks if the object is a valid domain name. If `ascii_only=False` then allow IDNA domain names. If `resolve=True` check if the domain name resolves.
 - `date_time(format=None)`. Without argument this represents an ISO 8601 date-time. The `format` argument represents a format string for `strftime`.
 - `date` and `time`. These represent an ISO 8601 date and an ISO 8601 time.
+- `anything`. Matches anything. This is functionally the same as just `object`.
+- `nothing`. Matches nothing.
 ## Mixins
 Mixins are built-ins that are usually combined with other schemas using `intersect`.
 - `one_of(*args)`. This represents a dictionary with exactly one key in `args`.
@@ -228,6 +230,8 @@ Mixins are built-ins that are usually combined with other schemas using `interse
 - `keys(*args)`. This represents a dictionary containing all the keys in `args`.
 - `ifthen(if_schema, then_schema, else_schema=None)`. It the object matches the `if_schema` then it should also match the `then_schema`. If the object does not match the `if_schema` then it should match
 the `else_schema`, if present.
+- `cond((if_schema1, then_schema1), ... , (if_schemaN, then_schemaN))`. An object is successively tested against `if_schema1`, `if_schema2`, ... until a validation succeeds. Then the object should
+match the corresponding `then_schema`. If no `if_schema` succeeds then the object is considered to have been validated. If you need a fall back validation then you can take `if_schemaN=anything`.
 - `interval(lowerbound, upperbound)`. This checks if `lowerbound <= object <= upperbound`, provided the comparisons make sense. An upper/lowerbound `...` (ellipsis) means that the
 corresponding inequality is not checked.
 - `size(lowerbound, upperbound)`. Matches the objects (which support `len()` such as strings or lists) whose length is in the interval `[upperbound, lowerbound]`. The value of `upperbound` can be `...` (ellipsis).

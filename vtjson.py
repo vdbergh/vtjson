@@ -497,6 +497,7 @@ class nothing:
     def __validate__(self, object, name, strict):
         return _wrong_type_message(object, name, "nothing")
 
+
 class anything:
     def __validate__(self, object, name, strict):
         return ""
