@@ -224,17 +224,18 @@ Some built-ins take arguments. If no arguments are given then the parentheses ca
 - `nothing`. Matches nothing.
 ## Mixins
 Mixins are built-ins that are usually combined with other schemas using `intersect`.
-- `one_of(*args)`. This represents a dictionary with exactly one key in `args`.
-- `at_least_one_of(*args)`. This represents a dictionary with a least one key in `args`.
-- `at_most_one_of(*args)`. This represents an dictionary with at most one key in `args`.
-- `keys(*args)`. This represents a dictionary containing all the keys in `args`.
+- `one_of(key1, ..., keyN)`. This represents a dictionary with exactly one key among `key1, ..., keyN`.
+- `at_least_one_of(key1, ..., keyN)`. This represents a dictionary with a least one key among `key1, ..., keyN`.
+- `at_most_one_of(key1, ..., keyN)`. This represents an dictionary with at most one key among `key1, ..., keyN`.
+- `keys(key1, ..., keyN)`. This represents a dictionary containing all the keys in `key1, ..., keyN`.
+- `interval(lowerbound, upperbound)`. This checks if `lowerbound <= object <= upperbound`, provided the comparisons make sense. An upper/lowerbound `...` (ellipsis) means that the
+corresponding inequality is not checked.
+- `size(lowerbound, upperbound)`. Matches the objects (which support `len()` such as strings or lists) whose length is in the interval `[upperbound, lowerbound]`. The value of `upperbound` can be `...` (ellipsis).
+## Conditional schemas
 - `ifthen(if_schema, then_schema, else_schema=None)`. It the object matches the `if_schema` then it should also match the `then_schema`. If the object does not match the `if_schema` then it should match
 the `else_schema`, if present.
 - `cond((if_schema1, then_schema1), ... , (if_schemaN, then_schemaN))`. An object is successively validated against `if_schema1`, `if_schema2`, ... until a validation succeeds. When this happens the object should
 match the corresponding `then_schema`. If no `if_schema` succeeds then the object is considered to have been validated. If one sets `if_schemaN` equal to `anything` then this serves as a catch all.
-- `interval(lowerbound, upperbound)`. This checks if `lowerbound <= object <= upperbound`, provided the comparisons make sense. An upper/lowerbound `...` (ellipsis) means that the
-corresponding inequality is not checked.
-- `size(lowerbound, upperbound)`. Matches the objects (which support `len()` such as strings or lists) whose length is in the interval `[upperbound, lowerbound]`. The value of `upperbound` can be `...` (ellipsis).
 ## Format
 A schema can be, in order of precedence:
 - A class with the following properties:
