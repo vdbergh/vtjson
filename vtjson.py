@@ -493,6 +493,11 @@ class time:
         return ""
 
 
+class nothing:
+    def __validate__(self, object, name, strict):
+        return _wrong_type_message(object, name, "nothing")
+
+
 class domain_name:
     def __init__(self, ascii_only=True, resolve=False):
         self.re_ascii = re.compile(r"[\x00-\x7F]*")

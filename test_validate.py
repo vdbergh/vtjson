@@ -25,6 +25,7 @@ from vtjson import (
     keys,
     lax,
     make_type,
+    nothing,
     number,
     one_of,
     optional_key,
@@ -403,6 +404,13 @@ class TestValidation(unittest.TestCase):
 
         with self.assertRaises(ValidationError) as mc:
             object = "2023-10-10T01:01:01"
+            validate(schema, object)
+        show(mc)
+
+    def test_nothing(self):
+        schema = nothing
+        object = "dummy"
+        with self.assertRaises(ValidationError) as mc:
             validate(schema, object)
         show(mc)
 
