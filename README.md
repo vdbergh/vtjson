@@ -302,6 +302,10 @@ Q: How is this different from https://pypi.org/project/json-checker/ \?
 
 A: Good question! I discovered `json-checker` after I had written `vtjson`. Although the details are different `json-checker` and `vtjson` share many of the same principles.
 
+Q: Why are there no variables in vtjson (see https://opis.io/json-schema/2.x/variables.html)?
+
+A: They did not seem to essential yet. In our use cases conditional schemas were sufficient to achieve the required functionality. See for example the `action_schema` in <a href=https://raw.githubusercontent.com/official-stockfish/fishtest/master/server/fishtest/schemas.py>`schemas.py`</a>. More importantly `vtjson` has a strict separation between the definition of a schema and its subsequent use for validation. By allowing a schema to refer directly to the object being validated this separation would become blurred. This being said, I am still thinking about a good way to introduce variables.
+
 Q: How to combine validations?
 
 A: Use `intersect`. For example the following schema validates positive integers but reject positive floats.
