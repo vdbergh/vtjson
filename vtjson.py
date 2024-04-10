@@ -381,6 +381,8 @@ class _deferred:
         self.key = key
 
     def __validate__(self, object, name, strict):
+        if self.key not in self.collection:
+            raise ValidationError(f"{name}: key {self.key} is unknown")
         return self.collection[self.key].__validate__(object, name, strict)
 
 
