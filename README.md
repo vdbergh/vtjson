@@ -289,7 +289,7 @@ vtjson.ValidationError: object['fruit'] (value:dog) is not of type 'fruit'
 ...
 vtjson.ValidationError: object['price'] is missing
 ```
-For many more examples see the file `test_validate.py` in the source distribution.
+A good source of more advanced examples is the file `schemas.py` in the source distribution of Fishtest: https://raw.githubusercontent.com/official-stockfish/fishtest/master/server/fishtest/schemas.py. Another source of examples is the file `test_validate.py` in the source distribution of `vtjson`.
 ## FAQ
 Q: Why not just use the Python implementation of `JSON schema` (see https://pypi.org/project/jsonschema/)?
 
