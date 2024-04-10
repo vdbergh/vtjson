@@ -373,28 +373,50 @@ class size:
         return self.interval.__validate__(L, f"len({name})", strict)
 
 
-def compile(schema):
+class _deferred:
+    def __init__(self, collection, key):
+        if not isinstance(collection, dict):
+            raise SchemaError(f"{repr(collection)} is not a dictionary")
+        self.collection = collection
+        self.key = key
+
+    def __validate__(self, object, name, strict):
+        return self.collection[self.key].__validate__(object, name, strict)
+
+
+def compile(schema, _compiled_schemas={}):
+    id_ = id(schema)
+    # avoid infinite loop in case of a recursive schema
+    if id_ in _compiled_schemas:
+        compiled_schema = _compiled_schemas[id_]
+        if isinstance(compiled_schema, _deferred):
+            return compiled_schema
+    _compiled_schemas[id_] = _deferred(_compiled_schemas, id_)
     if isinstance(schema, type) and hasattr(schema, "__validate__"):
         try:
-            return schema()
+            ret = schema()
         except Exception:
             raise SchemaError(
                 f"{repr(schema.__name__)} does " f"not have a no-argument constructor"
             ) from None
     elif hasattr(schema, "__validate__"):
-        return schema
+        ret = schema
     elif isinstance(schema, type) or isinstance(schema, _GenericAlias):
-        return _type(schema)
+        ret = _type(schema)
     elif callable(schema):
-        return _callable(schema)
+        ret = _callable(schema)
     elif isinstance(schema, tuple) or isinstance(schema, list):
-        return _sequence(schema)
+        ret = _sequence(schema, _compiled_schemas=_compiled_schemas)
     elif isinstance(schema, dict):
-        return _dict(schema)
+        ret = _dict(schema, _compiled_schemas=_compiled_schemas)
     elif isinstance(schema, set):
-        return union(*schema)
+        ret = union(*schema)
     else:
-        return _object(schema)
+        if object is None:
+            raise Exception("object is None")
+        ret = _object(schema)
+    _compiled_schemas[id_] = ret
+    return ret
 
 
 def _validate(schema, object, name="object", strict=True):
@@ -630,10 +652,10 @@ class cond:
 
 
 class _dict:
-    def __init__(self, schema):
+    def __init__(self, schema, _compiled_schemas={}):
         self.schema = collections.OrderedDict()
         for k, v in schema.items():
-            self.schema[k] = compile(v)
+            self.schema[k] = compile(v, _compiled_schemas=_compiled_schemas)
         self.keys = _keys(self.schema)
         self.keys2 = _keys2(self.schema)
 
@@ -682,9 +704,12 @@ class _type:
 
 
 class _sequence:
-    def __init__(self, schema):
+    def __init__(self, schema, _compiled_schemas={}):
         self.type_schema = type(schema)
-        self.schema = [compile(o) if o is not ... else ... for o in schema]
+        self.schema = [
+            compile(o, _compiled_schemas=_compiled_schemas) if o is not ... else ...
+            for o in schema
+        ]
         if len(schema) > 0 and schema[-1] is ...:
             if len(schema) >= 2:
                 self.fill = self.schema[-2]

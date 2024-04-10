@@ -48,6 +48,20 @@ def show(mc):
 
 
 class TestValidation(unittest.TestCase):
+    def test_recursion(self):
+        a = {}
+        a["a?"] = a
+        object = {"a": {}}
+        validate(a, object)
+        object = {"a": {"a": {}}}
+        validate(a, object)
+        object = {"a": {"a": {"a": {}}}}
+        validate(a, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"a": {"a": {"b": {}}}}
+            validate(a, object)
+        show(mc)
+
     def test_immutable(self):
         L = ["a"]
         schema = compile(L)
