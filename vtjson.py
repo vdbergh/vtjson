@@ -115,9 +115,11 @@ class optional_key:
         return hash(self.key)
 
 
-class union:
-    def __init__(self, *schemas):
-        self.schemas = [compile(s) for s in schemas]
+class _union:
+    def __init__(self, schemas, _deferred_compiles={}):
+        self.schemas = [
+            compile(s, _deferred_compiles=_deferred_compiles) for s in schemas
+        ]
 
     def __validate__(self, object, name, strict):
         messages = []
@@ -130,9 +132,19 @@ class union:
         return " and ".join(messages)
 
 
-class intersect:
+class union:
     def __init__(self, *schemas):
-        self.schemas = [compile(s) for s in schemas]
+        self.schemas = schemas
+
+    def __compile__(self, _deferred_compiles={}):
+        return _union(self.schemas, _deferred_compiles=_deferred_compiles)
+
+
+class _intersect:
+    def __init__(self, schemas, _deferred_compiles={}):
+        self.schemas = [
+            compile(s, _deferred_compiles=_deferred_compiles) for s in schemas
+        ]
 
     def __validate__(self, object, name, strict):
         for schema in self.schemas:
@@ -142,9 +154,17 @@ class intersect:
         return ""
 
 
-class complement:
-    def __init__(self, schema):
-        self.schema = compile(schema)
+class intersect:
+    def __init__(self, *schemas):
+        self.schemas = schemas
+
+    def __compile__(self, _deferred_compiles={}):
+        return _intersect(self.schemas, _deferred_compiles=_deferred_compiles)
+
+
+class _complement:
+    def __init__(self, schema, _deferred_compiles={}):
+        self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
 
     def __validate__(self, object, name, strict):
         message = self.schema.__validate__(object, name=name, strict=strict)
@@ -154,20 +174,44 @@ class complement:
             return f"{name} does not match the complemented schema"
 
 
-class lax:
+class complement:
     def __init__(self, schema):
-        self.schema = compile(schema)
+        self.schema = schema
+
+    def __compile__(self, _deferred_compiles={}):
+        return _complement(self.schema, _deferred_compiles=_deferred_compiles)
+
+
+class _lax:
+    def __init__(self, schema, _deferred_compiles={}):
+        self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
 
     def __validate__(self, object, name, strict):
         return self.schema.__validate__(object, name=name, strict=False)
 
 
-class strict:
+class lax:
     def __init__(self, schema):
-        self.schema = compile(schema)
+        self.schema = schema
+
+    def __compile__(self, _deferred_compiles={}):
+        return _lax(self.schema, _deferred_compiles=_deferred_compiles)
+
+
+class _strict:
+    def __init__(self, schema, _deferred_compiles={}):
+        self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
 
     def __validate__(self, object, name, strict):
         return self.schema.__validate__(object, name=name, strict=True)
+
+
+class strict:
+    def __init__(self, schema):
+        self.schema = schema
+
+    def __compile__(self, _deferred_compiles={}):
+        return _strict(self.schema, _deferred_compiles=_deferred_compiles)
 
 
 class quote:
@@ -178,11 +222,9 @@ class quote:
         return self.schema.__validate__(object, name, strict)
 
 
-class set_name:
-    def __init__(self, schema, name):
-        if not isinstance(name, str):
-            raise SchemaError(f"The name {_c(name)} is not a string")
-        self.schema = compile(schema)
+class _set_name:
+    def __init__(self, schema, name, _deferred_compiles={}):
+        self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
         self.__name__ = name
 
     def __validate__(self, object, name, strict):
@@ -190,6 +232,17 @@ class set_name:
         if message != "":
             return _wrong_type_message(object, name, self.__name__)
         return ""
+
+
+class set_name:
+    def __init__(self, schema, name):
+        if not isinstance(name, str):
+            raise SchemaError(f"The name {_c(name)} is not a string")
+        self.schema = schema
+        self.name = name
+
+    def __compile__(self, _deferred_compiles={}):
+        return _set_name(self.schema, self.name, _deferred_compiles=_deferred_compiles)
 
 
 class regex:
@@ -407,6 +460,8 @@ def compile(schema, _deferred_compiles={}):
             ) from None
     elif hasattr(schema, "__validate__"):
         ret = schema
+    elif hasattr(schema, "__compile__"):
+        ret = schema.__compile__(_deferred_compiles=_deferred_compiles)
     elif isinstance(schema, type) or isinstance(schema, _GenericAlias):
         ret = _type(schema)
     elif callable(schema):
@@ -416,7 +471,7 @@ def compile(schema, _deferred_compiles={}):
     elif isinstance(schema, dict):
         ret = _dict(schema, _deferred_compiles=_deferred_compiles)
     elif isinstance(schema, set):
-        ret = union(*schema)
+        ret = _union(schema, _deferred_compiles=_deferred_compiles)
     else:
         ret = _object(schema)
     _deferred_compiles[id_] = ret
@@ -664,8 +719,8 @@ class _dict:
         self.keys2 = _keys2(self.schema)
 
     def __validate__(self, object, name, strict):
-        if type(object) is not dict:
-            return _wrong_type_message(object, name, type(self.schema).__name__)
+        if not isinstance(object, dict):
+            return _wrong_type_message(object, name, "dict")
         for k_, k, o in self.keys2:
             # (k_,k,o)=(normalized key, key, optional)
             name_ = f"{name}['{k_}']"

@@ -8,6 +8,7 @@ from bson.objectid import ObjectId
 from vtjson import (  # noqa: F401
     _validate,
     at_most_one_of,
+    compile,
     div,
     glob,
     ifthen,
@@ -411,6 +412,10 @@ run_sprt_object["results"] = tmp
 
 # To avoid bugs
 validate(runs_schema, run_sprt_object)
+
+N = 100
+t = timeit("compile(runs_schema)", number=N, globals=globals())
+print(f"Compiling the runs_schema takes {1000*t/N:.2f} ms")
 
 N = 100
 t = timeit("_validate(runs_schema, run_sprt_object)", number=N, globals=globals())

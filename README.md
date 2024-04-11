@@ -207,7 +207,6 @@ A wrapper takes one or more schemas as arguments and produces a new schema.
 - An object matches the schema `lax(schema)` if it matches `schema` when validated with `strict=False`.
 - An object matches the schema `strict(schema)` if it matches `schema` when validated with `strict=True`.
 - An object matches the schema `set_name(schema, name)` if it matches `schema`. But the `name` argument will be used in non-validation messages.
-- An object matches the schema `compile(schema)` if it matches `schema`. `vtjson` compiles the schema before performing a validation so pre-compiling is not necessary but, in some cases, it may gain a bit of performance. 
 - An object matches the schema `quote(schema)` if it is equal to `schema`. For example the schema `{"cats", "dogs"}` matches the strings `"cats"` and `"dogs"` but the schema `quote({"cats", "dogs"})` matches the set `{"cats", "dogs"}`. 
 ## Built-ins
 Some built-ins take arguments. If no arguments are given then the parentheses can be omitted. So `email` is equivalent to `email()`.
@@ -236,6 +235,8 @@ corresponding inequality is not checked.
 the `else_schema`, if present.
 - `cond((if_schema1, then_schema1), ... , (if_schemaN, then_schemaN))`. An object is successively validated against `if_schema1`, `if_schema2`, ... until a validation succeeds. When this happens the object should
 match the corresponding `then_schema`. If no `if_schema` succeeds then the object is considered to have been validated. If one sets `if_schemaN` equal to `anything` then this serves as a catch all.
+## Pre-compiling a schema
+- An object matches the schema `compile(schema)` if it matches `schema`. `vtjson` compiles the schema before performing a validation so pre-compiling is not necessary but, in some cases, it may gain a bit of performance. 
 ## Format
 A schema can be, in order of precedence:
 - A class with the following properties:
@@ -304,7 +305,20 @@ A: Good question! I discovered `json-checker` after I had written `vtjson`. Alth
 
 Q: Why are there no variables in vtjson (see https://opis.io/json-schema/2.x/variables.html)?
 
-A: They did not seem to essential yet. In our use cases conditional schemas were sufficient to achieve the required functionality. See for example the `action_schema` in <a href=https://raw.githubusercontent.com/official-stockfish/fishtest/master/server/fishtest/schemas.py>`schemas.py`</a>. More importantly `vtjson` has a strict separation between the definition of a schema and its subsequent use for validation. By allowing a schema to refer directly to the object being validated this separation would become blurred. This being said, I am still thinking about a good way to introduce variables.
+A: They did not seem to be essential yet. In our use cases conditional schemas were sufficient to achieve the required functionality. See for example the `action_schema` in <a href=https://raw.githubusercontent.com/official-stockfish/fishtest/master/server/fishtest/schemas.py>`schemas.py`</a>. More importantly `vtjson` has a strict separation between the definition of a schema and its subsequent use for validation. By allowing a schema to refer directly to the object being validated this separation would become blurred. This being said, I am still thinking about a good way to introduce variables.
+
+Q: Does vtjson support recursive schemas?
+
+A: Yes. Here is an example
+```python
+person={}
+person["mother"]=union(person, None)
+person["father"]=union(person, None)
+```
+which matches e.g.
+```python
+{"father": {"father": None, "mother": None}, "mother": {"father": None, "mother": None}}
+```
 
 Q: How to combine validations?
 

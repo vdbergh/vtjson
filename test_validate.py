@@ -62,6 +62,49 @@ class TestValidation(unittest.TestCase):
             validate(a, object)
         show(mc)
 
+        person = {}
+        person["mother"] = union(person, None)
+        person["father"] = union(person, None)
+        object = {
+            "father": {"father": None, "mother": None},
+            "mother": {"father": None, "mother": None},
+        }
+        validate(person, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {
+                "father": {"father": None, "mother": None},
+                "mother": {"father": None, "mother": "Sarah"},
+            }
+            validate(person, object)
+        show(mc)
+
+        a = {}
+        a["a?"] = intersect(a)
+        object = {"a": {}}
+        validate(a, object)
+        object = {"a": {"a": {}}}
+        validate(a, object)
+        object = {"a": {"a": {"a": {}}}}
+        validate(a, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"a": {"a": {"b": {}}}}
+            validate(a, object)
+        show(mc)
+
+        a = {}
+        b = {}
+        a["a?"] = union(b, a)
+        object = {"a": {}}
+        validate(a, object)
+        object = {"a": {"a": {}}}
+        validate(a, object)
+        object = {"a": {"a": {"a": {}}}}
+        validate(a, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"a": {"a": {"b": {}}}}
+            validate(a, object)
+        show(mc)
+
     def test_immutable(self):
         L = ["a"]
         schema = compile(L)
@@ -499,7 +542,7 @@ class TestValidation(unittest.TestCase):
 
     def test_set_name(self):
         schema = set_name("a", "dummy")
-        self.assertTrue(schema.__name__ == "dummy")
+        self.assertTrue(compile(schema).__name__ == "dummy")
 
         with self.assertRaises(ValidationError) as mc:
             object = "b"
