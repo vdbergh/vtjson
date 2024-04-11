@@ -377,6 +377,10 @@ class _deferred:
     def __init__(self, collection, key):
         if not isinstance(collection, dict):
             raise SchemaError(f"{repr(collection)} is not a dictionary")
+        try:
+            hash(key)
+        except Exception as e:
+            raise SchemaError(f"{str(e)}") from None
         self.collection = collection
         self.key = key
 
@@ -386,14 +390,14 @@ class _deferred:
         return self.collection[self.key].__validate__(object, name, strict)
 
 
-def compile(schema, _compiled_schemas={}):
+def compile(schema, _deferred_compiles={}):
     id_ = id(schema)
     # avoid infinite loop in case of a recursive schema
-    if id_ in _compiled_schemas:
-        compiled_schema = _compiled_schemas[id_]
+    if id_ in _deferred_compiles:
+        compiled_schema = _deferred_compiles[id_]
         if isinstance(compiled_schema, _deferred):
             return compiled_schema
-    _compiled_schemas[id_] = _deferred(_compiled_schemas, id_)
+    _deferred_compiles[id_] = _deferred(_deferred_compiles, id_)
     if isinstance(schema, type) and hasattr(schema, "__validate__"):
         try:
             ret = schema()
@@ -408,14 +412,14 @@ def compile(schema, _compiled_schemas={}):
     elif callable(schema):
         ret = _callable(schema)
     elif isinstance(schema, tuple) or isinstance(schema, list):
-        ret = _sequence(schema, _compiled_schemas=_compiled_schemas)
+        ret = _sequence(schema, _deferred_compiles=_deferred_compiles)
     elif isinstance(schema, dict):
-        ret = _dict(schema, _compiled_schemas=_compiled_schemas)
+        ret = _dict(schema, _deferred_compiles=_deferred_compiles)
     elif isinstance(schema, set):
         ret = union(*schema)
     else:
         ret = _object(schema)
-    _compiled_schemas[id_] = ret
+    _deferred_compiles[id_] = ret
     return ret
 
 
@@ -652,10 +656,10 @@ class cond:
 
 
 class _dict:
-    def __init__(self, schema, _compiled_schemas={}):
+    def __init__(self, schema, _deferred_compiles={}):
         self.schema = collections.OrderedDict()
         for k, v in schema.items():
-            self.schema[k] = compile(v, _compiled_schemas=_compiled_schemas)
+            self.schema[k] = compile(v, _deferred_compiles=_deferred_compiles)
         self.keys = _keys(self.schema)
         self.keys2 = _keys2(self.schema)
 
@@ -704,10 +708,10 @@ class _type:
 
 
 class _sequence:
-    def __init__(self, schema, _compiled_schemas={}):
+    def __init__(self, schema, _deferred_compiles={}):
         self.type_schema = type(schema)
         self.schema = [
-            compile(o, _compiled_schemas=_compiled_schemas) if o is not ... else ...
+            compile(o, _deferred_compiles=_deferred_compiles) if o is not ... else ...
             for o in schema
         ]
         if len(schema) > 0 and schema[-1] is ...:
