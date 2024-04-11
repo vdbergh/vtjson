@@ -414,8 +414,6 @@ def compile(schema, _compiled_schemas={}):
     elif isinstance(schema, set):
         ret = union(*schema)
     else:
-        if object is None:
-            raise Exception("object is None")
         ret = _object(schema)
     _compiled_schemas[id_] = ret
     return ret
