@@ -63,17 +63,20 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
         person = {}
-        person["mother"] = union(person, None)
-        person["father"] = union(person, None)
+        person["mother"] = union(person, "unknown")
+        person["father"] = union(person, "unknown")
+        person["name"] = str
         object = {
-            "father": {"father": None, "mother": None},
-            "mother": {"father": None, "mother": None},
+            "name": "John",
+            "father": {"name": "Carlo", "father": "unknown", "mother": "unknown"},
+            "mother": {"name": "Iris", "father": "unknown", "mother": "unknown"},
         }
         validate(person, object)
         with self.assertRaises(ValidationError) as mc:
             object = {
-                "father": {"father": None, "mother": None},
-                "mother": {"father": None, "mother": "Sarah"},
+                "name": "John",
+                "father": {"name": "Carlo", "father": "unknown", "mother": "unknown"},
+                "mother": {"name": "Iris", "father": "unknown", "mother": "Sarah"},
             }
             validate(person, object)
         show(mc)
