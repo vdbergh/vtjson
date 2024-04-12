@@ -250,7 +250,12 @@ A schema can be, in order of precedence:
   ```python
   __validate__(object, name, strict)
   ```
-  as above. This is for example how the wrapper schemas are implemented internally.
+  as above.
+- An object having a `__compile__` attribute with signature
+  ```python
+  __compile__(_deferred_compiles={})
+  ```
+  This is an advanced feature which is used for the implementation of wrapper schemas. Please consult the source code of `vtjson` for more details.
 - A Python type. In that case validation is done by checking membership.
 - A callable. Validation is done by applying the callable to the object. If applying the callable throws an exception then the corresponding message will be part of the non-validation message.
 - A `list` or a `tuple`. Validation is done by first checking membership of the corresponding types, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
