@@ -314,7 +314,7 @@ A: They did not seem to be essential yet. In our use cases conditional schemas w
 
 Q: Does vtjson support recursive schemas?
 
-A: Yes. Here is an example
+A: Yes but it requires a bit of Python gymnastics to create them. Here is an example
 ```python
 person={}
 person["mother"]=union(person, None)
