@@ -253,7 +253,7 @@ A schema can be, in order of precedence:
   as above.
 - An object having a `__compile__` attribute with signature
   ```python
-  __compile__(_deferred_compiles={})
+  __compile__(_deferred_compiles=None)
   ```
   This is an advanced feature which is used for the implementation of wrapper schemas. Please consult the source code of `vtjson` for more details.
 - A Python type. In that case validation is done by checking membership.
@@ -314,7 +314,7 @@ A: They did not seem to be essential yet. In our use cases conditional schemas w
 
 Q: Does vtjson support recursive schemas?
 
-A: Yes. Here is an example
+A: Yes but it requires a bit of Python gymnastics to create them. Here is an example
 ```python
 person={}
 person["mother"]=union(person, None)

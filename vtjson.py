@@ -116,7 +116,7 @@ class optional_key:
 
 
 class _union:
-    def __init__(self, schemas, _deferred_compiles={}):
+    def __init__(self, schemas, _deferred_compiles=None):
         self.schemas = [
             compile(s, _deferred_compiles=_deferred_compiles) for s in schemas
         ]
@@ -136,12 +136,12 @@ class union:
     def __init__(self, *schemas):
         self.schemas = schemas
 
-    def __compile__(self, _deferred_compiles={}):
+    def __compile__(self, _deferred_compiles=None):
         return _union(self.schemas, _deferred_compiles=_deferred_compiles)
 
 
 class _intersect:
-    def __init__(self, schemas, _deferred_compiles={}):
+    def __init__(self, schemas, _deferred_compiles=None):
         self.schemas = [
             compile(s, _deferred_compiles=_deferred_compiles) for s in schemas
         ]
@@ -158,12 +158,12 @@ class intersect:
     def __init__(self, *schemas):
         self.schemas = schemas
 
-    def __compile__(self, _deferred_compiles={}):
+    def __compile__(self, _deferred_compiles=None):
         return _intersect(self.schemas, _deferred_compiles=_deferred_compiles)
 
 
 class _complement:
-    def __init__(self, schema, _deferred_compiles={}):
+    def __init__(self, schema, _deferred_compiles=None):
         self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
 
     def __validate__(self, object, name, strict):
@@ -178,12 +178,12 @@ class complement:
     def __init__(self, schema):
         self.schema = schema
 
-    def __compile__(self, _deferred_compiles={}):
+    def __compile__(self, _deferred_compiles=None):
         return _complement(self.schema, _deferred_compiles=_deferred_compiles)
 
 
 class _lax:
-    def __init__(self, schema, _deferred_compiles={}):
+    def __init__(self, schema, _deferred_compiles=None):
         self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
 
     def __validate__(self, object, name, strict):
@@ -194,12 +194,12 @@ class lax:
     def __init__(self, schema):
         self.schema = schema
 
-    def __compile__(self, _deferred_compiles={}):
+    def __compile__(self, _deferred_compiles=None):
         return _lax(self.schema, _deferred_compiles=_deferred_compiles)
 
 
 class _strict:
-    def __init__(self, schema, _deferred_compiles={}):
+    def __init__(self, schema, _deferred_compiles=None):
         self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
 
     def __validate__(self, object, name, strict):
@@ -210,7 +210,7 @@ class strict:
     def __init__(self, schema):
         self.schema = schema
 
-    def __compile__(self, _deferred_compiles={}):
+    def __compile__(self, _deferred_compiles=None):
         return _strict(self.schema, _deferred_compiles=_deferred_compiles)
 
 
@@ -223,7 +223,7 @@ class quote:
 
 
 class _set_name:
-    def __init__(self, schema, name, _deferred_compiles={}):
+    def __init__(self, schema, name, _deferred_compiles=None):
         self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
         self.__name__ = name
 
@@ -241,7 +241,7 @@ class set_name:
         self.schema = schema
         self.name = name
 
-    def __compile__(self, _deferred_compiles={}):
+    def __compile__(self, _deferred_compiles=None):
         return _set_name(self.schema, self.name, _deferred_compiles=_deferred_compiles)
 
 
@@ -428,14 +428,9 @@ class size:
 
 class _deferred:
     def __init__(self, collection, key):
-        if not isinstance(collection, dict):
-            raise SchemaError(f"{repr(collection)} is not a dictionary")
-        try:
-            hash(key)
-        except Exception as e:
-            raise SchemaError(f"{str(e)}") from None
         self.collection = collection
         self.key = key
+        self.in_use = False
 
     def __validate__(self, object, name, strict):
         if self.key not in self.collection:
@@ -443,14 +438,34 @@ class _deferred:
         return self.collection[self.key].__validate__(object, name, strict)
 
 
-def compile(schema, _deferred_compiles={}):
-    id_ = id(schema)
+class _mapping:
+    def __init__(self):
+        self.mapping = {}
+
+    def __setitem__(self, key, value):
+        self.mapping[id(key)] = (key, value)
+
+    def __getitem__(self, key):
+        return self.mapping[id(key)][1]
+
+    def __delitem__(self, key):
+        del self.mapping[id(key)]
+
+    def __contains__(self, key):
+        return id(key) in self.mapping
+
+
+def compile(schema, _deferred_compiles=None):
+    if _deferred_compiles is None:
+        _deferred_compiles = _mapping()
     # avoid infinite loop in case of a recursive schema
-    if id_ in _deferred_compiles:
-        compiled_schema = _deferred_compiles[id_]
-        if isinstance(compiled_schema, _deferred):
-            return compiled_schema
-    _deferred_compiles[id_] = _deferred(_deferred_compiles, id_)
+    if schema in _deferred_compiles:
+        if isinstance(_deferred_compiles[schema], _deferred):
+            _deferred_compiles[schema].in_use = True
+            return _deferred_compiles[schema]
+    _deferred_compiles[schema] = _deferred(_deferred_compiles, schema)
+
+    # real work starts here
     if isinstance(schema, type) and hasattr(schema, "__validate__"):
         try:
             ret = schema()
@@ -474,7 +489,12 @@ def compile(schema, _deferred_compiles={}):
         ret = _union(schema, _deferred_compiles=_deferred_compiles)
     else:
         ret = _object(schema)
-    _deferred_compiles[id_] = ret
+
+    # back to updating the cache
+    if _deferred_compiles[schema].in_use:
+        _deferred_compiles[schema] = ret
+    else:
+        del _deferred_compiles[schema]
     return ret
 
 
@@ -679,7 +699,9 @@ class keys:
 
 
 class _ifthen:
-    def __init__(self, if_schema, then_schema, else_schema=None, _deferred_compiles={}):
+    def __init__(
+        self, if_schema, then_schema, else_schema=None, _deferred_compiles=None
+    ):
         self.if_schema = compile(if_schema, _deferred_compiles=_deferred_compiles)
         self.then_schema = compile(then_schema, _deferred_compiles=_deferred_compiles)
         if else_schema is not None:
@@ -703,7 +725,7 @@ class ifthen:
         self.then_schema = then_schema
         self.else_schema = else_schema
 
-    def __compile__(self, _deferred_compiles={}):
+    def __compile__(self, _deferred_compiles=None):
         return _ifthen(
             self.if_schema,
             self.then_schema,
@@ -713,7 +735,7 @@ class ifthen:
 
 
 class _cond:
-    def __init__(self, args, _deferred_compiles={}):
+    def __init__(self, args, _deferred_compiles=None):
         self.conditions = []
         for c in args:
             self.conditions.append(
@@ -737,12 +759,12 @@ class cond:
                 raise SchemaError(f"{repr(c)} is not a tuple of length two")
         self.args = args
 
-    def __compile__(self, _deferred_compiles={}):
+    def __compile__(self, _deferred_compiles=None):
         return _cond(self.args, _deferred_compiles=_deferred_compiles)
 
 
 class _dict:
-    def __init__(self, schema, _deferred_compiles={}):
+    def __init__(self, schema, _deferred_compiles=None):
         self.schema = collections.OrderedDict()
         for k, v in schema.items():
             self.schema[k] = compile(v, _deferred_compiles=_deferred_compiles)
@@ -794,7 +816,7 @@ class _type:
 
 
 class _sequence:
-    def __init__(self, schema, _deferred_compiles={}):
+    def __init__(self, schema, _deferred_compiles=None):
         self.type_schema = type(schema)
         self.schema = [
             compile(o, _deferred_compiles=_deferred_compiles) if o is not ... else ...
