@@ -319,6 +319,7 @@ which matches e.g.
 ```python
 {"father": {"father": None, "mother": None}, "mother": {"father": None, "mother": None}}
 ```
+Note that you can create an infinite recursion by validating a recursive object against a recursive schema.
 
 Q: How to combine validations?
 
