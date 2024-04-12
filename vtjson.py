@@ -678,12 +678,14 @@ class keys:
         return ""
 
 
-class ifthen:
-    def __init__(self, if_schema, then_schema, else_schema=None):
-        self.if_schema = compile(if_schema)
-        self.then_schema = compile(then_schema)
+class _ifthen:
+    def __init__(self, if_schema, then_schema, else_schema=None, _deferred_compiles={}):
+        self.if_schema = compile(if_schema, _deferred_compiles=_deferred_compiles)
+        self.then_schema = compile(then_schema, _deferred_compiles=_deferred_compiles)
         if else_schema is not None:
-            self.else_schema = compile(else_schema)
+            self.else_schema = compile(
+                else_schema, _deferred_compiles=_deferred_compiles
+            )
         else:
             self.else_schema = else_schema
 
@@ -695,19 +697,48 @@ class ifthen:
         return ""
 
 
-class cond:
-    def __init__(self, *args):
+class ifthen:
+    def __init__(self, if_schema, then_schema, else_schema=None):
+        self.if_schema = if_schema
+        self.then_schema = then_schema
+        self.else_schema = else_schema
+
+    def __compile__(self, _deferred_compiles={}):
+        return _ifthen(
+            self.if_schema,
+            self.then_schema,
+            else_schema=self.else_schema,
+            _deferred_compiles=_deferred_compiles,
+        )
+
+
+class _cond:
+    def __init__(self, args, _deferred_compiles={}):
         self.conditions = []
         for c in args:
-            if not isinstance(c, tuple) or len(c) != 2:
-                raise SchemaError(f"{repr(c)} is not a tuple of length two")
-            self.conditions.append((compile(c[0]), compile(c[1])))
+            self.conditions.append(
+                (
+                    compile(c[0], _deferred_compiles=_deferred_compiles),
+                    compile(c[1], _deferred_compiles=_deferred_compiles),
+                )
+            )
 
     def __validate__(self, object, name, strict):
         for c in self.conditions:
             if c[0].__validate__(object, name, strict) == "":
                 return c[1].__validate__(object, name, strict)
         return ""
+
+
+class cond:
+    def __init__(self, *args):
+        for c in args:
+            if not isinstance(c, tuple) or len(c) != 2:
+                raise SchemaError(f"{repr(c)} is not a tuple of length two")
+        self.args = args
+
+    def __compile__(self, _deferred_compiles={}):
+        return _cond(self.args, _deferred_compiles=_deferred_compiles)
 
 
 class _dict:
