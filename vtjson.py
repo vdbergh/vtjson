@@ -435,24 +435,35 @@ class _deferred:
     def __validate__(self, object, name, strict):
         if self.key not in self.collection:
             raise ValidationError(f"{name}: key {self.key} is unknown")
-        return self.collection[self.key][1].__validate__(object, name, strict)
+        return self.collection[self.key].__validate__(object, name, strict)
+
+
+class _mapping:
+    def __init__(self):
+        self.mapping = {}
+
+    def __setitem__(self, key, value):
+        self.mapping[id(key)] = (key, value)
+
+    def __getitem__(self, key):
+        return self.mapping[id(key)][1]
+
+    def __delitem__(self, key):
+        del self.mapping[id(key)]
+
+    def __contains__(self, key):
+        return id(key) in self.mapping
 
 
 def compile(schema, _deferred_compiles=None):
-    # just making the default {} instead of None leads to strange
-    # behavior...
     if _deferred_compiles is None:
-        _deferred_compiles = {}
-    id_ = id(schema)
+        _deferred_compiles = _mapping()
     # avoid infinite loop in case of a recursive schema
-    if id_ in _deferred_compiles:
-        if isinstance(_deferred_compiles[id_][1], _deferred):
-            _deferred_compiles[id_][1].in_use = True
-            return _deferred_compiles[id_][1]
-    # include "schema" so that id_ does not become invalid because
-    # "schema" is garbage collected (this is likely an excess of
-    # caution)
-    _deferred_compiles[id_] = (schema, _deferred(_deferred_compiles, id_))
+    if schema in _deferred_compiles:
+        if isinstance(_deferred_compiles[schema], _deferred):
+            _deferred_compiles[schema].in_use = True
+            return _deferred_compiles[schema]
+    _deferred_compiles[schema] = _deferred(_deferred_compiles, schema)
 
     # real work starts here
     if isinstance(schema, type) and hasattr(schema, "__validate__"):
@@ -480,13 +491,10 @@ def compile(schema, _deferred_compiles=None):
         ret = _object(schema)
 
     # back to updating the cache
-    if (
-        isinstance(_deferred_compiles[id_][1], _deferred)
-        and _deferred_compiles[id_][1].in_use
-    ):
-        _deferred_compiles[id_] = (schema, ret)
+    if _deferred_compiles[schema].in_use:
+        _deferred_compiles[schema] = ret
     else:
-        del _deferred_compiles[id_]
+        del _deferred_compiles[schema]
     return ret
 
 

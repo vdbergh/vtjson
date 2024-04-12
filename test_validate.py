@@ -108,6 +108,16 @@ class TestValidation(unittest.TestCase):
             validate(a, object)
         show(mc)
 
+        a={}
+        b={}
+        a['b']=union(b, None)
+        b['a']=union(a, None)
+        object={'b':{'a':{'b':None}}}
+        validate(a, object)
+        with self.assertRaises(ValidationError) as mc:
+            validate(b, object)
+        show(mc)
+
     def test_immutable(self):
         L = ["a"]
         schema = compile(L)
