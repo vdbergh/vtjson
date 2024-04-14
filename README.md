@@ -236,7 +236,13 @@ the `else_schema`, if present.
 - `cond((if_schema1, then_schema1), ... , (if_schemaN, then_schemaN))`. An object is successively validated against `if_schema1`, `if_schema2`, ... until a validation succeeds. When this happens the object should
 match the corresponding `then_schema`. If no `if_schema` succeeds then the object is considered to have been validated. If one sets `if_schemaN` equal to `anything` then this serves as a catch all.
 ## Pre-compiling a schema
-- An object matches the schema `compile(schema)` if it matches `schema`. `vtjson` compiles the schema before performing a validation so pre-compiling is not necessary but, in some cases, it may gain a bit of performance. 
+An object matches the schema `compile(schema)` if it matches `schema`. `vtjson` compiles a schema before performing a validation against it, so pre-compiling is not necessary but it gains a bit of performance as it needs to be done only once. Compiling is an idempotent operation. It does nothing for an already compiled schema.
+
+The full signature of `compile()` is
+```python
+compile(schema, _deferred_compiles=None)
+```
+but the optional argument `_deferred_compiles` should not be set by the user.
 ## Format
 A schema can be, in order of precedence:
 - A class with the following properties:
@@ -255,7 +261,7 @@ A schema can be, in order of precedence:
   ```python
   __compile__(_deferred_compiles=None)
   ```
-  This is an advanced feature which is used for the implementation of wrapper schemas. Please consult the source code of `vtjson` for more details.
+  This is an advanced feature which is used for the implementation of wrapper schemas. `__compile__()`, which is invoked by `compile()`, should produce an object with a `__validate__` attribute as described above. The optional argument `_deferred_compiles` is an opaque data structure for handling recursive schemas. It should be passed unmodified to any internal invokations of `compile()`. Please consult the source code of `vtjson` for more details.
 - A Python type. In that case validation is done by checking membership.
 - A callable. Validation is done by applying the callable to the object. If applying the callable throws an exception then the corresponding message will be part of the non-validation message.
 - A `list` or a `tuple`. Validation is done by first checking membership of the corresponding types, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
