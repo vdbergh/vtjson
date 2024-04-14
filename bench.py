@@ -1,5 +1,6 @@
 import copy
 import math
+import sys
 from datetime import datetime, timezone
 from timeit import timeit
 
@@ -413,14 +414,28 @@ run_sprt_object["results"] = tmp
 # To avoid bugs
 validate(runs_schema, run_sprt_object)
 
+print(f"Python {sys.version}")
+
 N = 100
 t = timeit("compile(runs_schema)", number=N, globals=globals())
+print("")
 print(f"Compiling the runs_schema takes {1000*t/N:.2f} ms")
 
 N = 100
-t = timeit("_validate(runs_schema, run_sprt_object)", number=N, globals=globals())
+t = timeit("validate(runs_schema, run_sprt_object)", number=N, globals=globals())
+print("")
 print(
     f"Validating an SPRT run with {total_tasks} tasks "
+    f"and {total_bad_tasks} bad task takes {1000*t/N:.2f} ms"
+)
+runs_schema_compiled = compile(runs_schema)
+N = 100
+t = timeit(
+    "validate(runs_schema_compiled, run_sprt_object)", number=N, globals=globals()
+)
+print("")
+print(
+    f"Validating a compiled SPRT run with {total_tasks} tasks "
     f"and {total_bad_tasks} bad task takes {1000*t/N:.2f} ms"
 )
 
@@ -511,9 +526,19 @@ run_spsa_object = run_sprt_object
 del run_spsa_object["args"]["sprt"]
 run_spsa_object["args"]["spsa"] = spsa
 validate(runs_schema, run_spsa_object)
-t = timeit("_validate(runs_schema, run_sprt_object)", number=N, globals=globals())
+t = timeit("validate(runs_schema, run_sprt_object)", number=N, globals=globals())
+print("")
 print(
     f"Validating an SPSA run with {len(spsa['param_history'])}"
+    f" param_history entries and {total_tasks} tasks and "
+    f"{total_bad_tasks} bad task takes {1000*t/N:.2f} ms"
+)
+t = timeit(
+    "validate(runs_schema_compiled, run_sprt_object)", number=N, globals=globals()
+)
+print("")
+print(
+    f"Validating a compiled SPSA run with {len(spsa['param_history'])}"
     f" param_history entries and {total_tasks} tasks and "
     f"{total_bad_tasks} bad task takes {1000*t/N:.2f} ms"
 )
