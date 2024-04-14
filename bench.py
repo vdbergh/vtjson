@@ -120,6 +120,7 @@ results_schema = intersect(
 runs_schema = intersect(
     {
         "_id?": ObjectId,
+        "version": uint,
         "start_time": datetime,
         "last_updated": datetime,
         "tc_base": unumber,
@@ -153,6 +154,8 @@ runs_schema = intersect(
                 "threads": suint,
                 "resolved_base": sha,
                 "resolved_new": sha,
+                "master_sha": sha,
+                "official_master_sha": sha,
                 "msg_base": str,
                 "msg_new": str,
                 "base_options": str,
@@ -165,7 +168,7 @@ runs_schema = intersect(
                 "auto_purge": bool,
                 "throughput": unumber,
                 "itp": unumber,
-                "priority": unumber,
+                "priority": number,
                 "adjudication": bool,
                 "sprt?": intersect(
                     {
@@ -301,6 +304,7 @@ task_object = {
 
 run_sprt_object = {
     "_id": ObjectId("6549951b136acbc573529528"),
+    "version": 0,
     "args": {
         "base_tag": "master",
         "new_tag": "phRed8",
@@ -314,6 +318,8 @@ run_sprt_object = {
         "threads": 1,
         "resolved_base": "442c294a07836e9e32ad8b3bad49a853cc6f47de",
         "resolved_new": "ddfe32d14f289646e6470bde3a8ec12f1fb84578",
+        "master_sha": "442c294a07836e9e32ad8b3bad49a853cc6f47de",
+        "official_master_sha": "442c294a07836e9e32ad8b3bad49a853cc6f47de",
         "msg_base": "Use stat_malus when decreasing stats",
         "msg_new": "bench 1246774",
         "base_options": "Hash=16",
