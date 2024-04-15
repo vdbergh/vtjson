@@ -310,9 +310,9 @@ A: Various reasons.
 - `vtjson` can validate objects which are more general than strictly `JSON`. See the introductory example above. 
 - More fundamentally, the design philosophy of `vtsjon` is different. A `JSON` schema  is language independent and fully declarative. These are very nice properties but, this being said, declarative languages have a tendency to suffer from feature creep as they try to deal with more and more exotic use cases (e.g. `css`).  A `vtjson` schema on the other hand leverages the versatility of the Python language. It is generally declarative, with a limited, but easily extendable set of primitives. But if more functionality is needed then it can be extended by using appropriate bits of Python code (as the `ordered_pair` example below illustrates). In practice this is what you will need in any case since a purely declarative language will never be able to deal with every possible validation scenario. 
 
-Q: How is this different from https://pypi.org/project/json-checker/ \?
+Q: Why yet another Python validation framework?
 
-A: Good question! I discovered `json-checker` after I had written `vtjson`. Although the details are different `json-checker` and `vtjson` share many of the same principles.
+A: Good question! Initially `vtjson` consisted of home grown code for validating api calls and database accesses in the Fishtest framework. However the clear and concise schema format seemed to be of independent interest and so the code was refactored into the current self-contained package.
 
 Q: Why are there no variables in `vtjson` (see https://opis.io/json-schema/2.x/variables.html)?
 
