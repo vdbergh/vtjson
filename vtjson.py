@@ -763,6 +763,33 @@ class cond:
         return _cond(self.args, _deferred_compiles=_deferred_compiles)
 
 
+class _fields:
+    def __init__(self, d, _deferred_compiles=None):
+        self.d = {}
+        for k, v in d.items():
+            self.d[k] = compile(v, _deferred_compiles=_deferred_compiles)
+
+    def __validate__(self, object, name, strict):
+        for k, v in self.d.items():
+            name_ = f"{name}.{k}"
+            if not hasattr(object, k):
+                return f"{name_} is missing"
+            ret = self.d[k].__validate__(getattr(object, k), name=name_, strict=strict)
+            if ret != "":
+                return ret
+        return ""
+
+
+class fields:
+    def __init__(self, d):
+        if not isinstance(d, dict):
+            raise SchemaError(f"{repr(d)} is not a dictionary")
+        self.d = d
+
+    def __compile__(self, _deferred_compiles=None):
+        return _fields(self.d, _deferred_compiles=_deferred_compiles)
+
+
 class _dict:
     def __init__(self, schema, _deferred_compiles=None):
         self.schema = collections.OrderedDict()

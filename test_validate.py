@@ -1,6 +1,7 @@
 import re
 import sys
 import unittest
+from datetime import datetime, timezone
 
 from vtjson import (
     SchemaError,
@@ -18,6 +19,7 @@ from vtjson import (
     div,
     domain_name,
     email,
+    fields,
     glob,
     ifthen,
     intersect,
@@ -283,6 +285,18 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             validate(schema, object)
         show(mc)
+
+    def test_fields(self):
+        with self.assertRaises(SchemaError) as mc:
+            fields("dummy")
+        show(mc)
+        datetime_utc = intersect(datetime, fields({"tzinfo": timezone.utc}))
+        object = datetime(2024, 4, 17)
+        with self.assertRaises(ValidationError) as mc:
+            validate(datetime_utc, object)
+        show(mc)
+        object = datetime(2024, 4, 17, tzinfo=timezone.utc)
+        validate(datetime_utc, object)
 
     def test_key_classification(self):
         schema = {"a?": 1, "b": 2, optional_key("c"): 3}
