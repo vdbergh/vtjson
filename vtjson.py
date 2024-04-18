@@ -887,7 +887,7 @@ class _sequence:
             ret = self.schema[i].__validate__(object[i], name_, strict)
             if ret != "":
                 return ret
-        for i in range(ls + 1, lo):
+        for i in range(ls, lo):
             name_ = f"{name}[{i}]"
             ret = self.fill.__validate__(object[i], name_, strict)
             if ret != "":

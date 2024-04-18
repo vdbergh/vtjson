@@ -717,6 +717,12 @@ class TestValidation(unittest.TestCase):
             validate(schema, object)
         show(mc)
 
+        with self.assertRaises(ValidationError) as mc:
+            schema = [int, ...]
+            object = ["c", 1]
+            validate(schema, object)
+        show(mc)
+
     def test_validate(self):
         class lower_case_string:
             @staticmethod
