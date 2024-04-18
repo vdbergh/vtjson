@@ -11,6 +11,7 @@ from vtjson import (  # noqa: F401
     at_most_one_of,
     compile,
     div,
+    fields,
     glob,
     ifthen,
     intersect,
@@ -27,6 +28,7 @@ from vtjson import (  # noqa: F401
     validate,
 )
 
+username = regex(r"[!-~][ -~]{0,30}[!-~]", name="username")
 net_name = regex("nn-[a-f0-9]{12}.nnue", name="net_name")
 tc = regex(r"([1-9]\d*/)?\d+(\.\d+)?(\+\d+(\.\d+)?)?", name="tc")
 str_int = regex(r"[1-9]\d*", name="str_int")
@@ -37,6 +39,7 @@ uuid = regex(r"[0-9a-zA-Z]{2,}(-[a-f0-9]{4}){3}-[a-f0-9]{12}", name="uuid")
 epd_file = glob("*.epd", name="epd_file")
 pgn_file = glob("*.pgn", name="pgn_file")
 even = div(2, name="even")
+datetime_utc = intersect(datetime, fields({"tzinfo": timezone.utc}))
 
 uint = intersect(int, interval(0, ...))
 suint = intersect(int, interval(1, ...))
@@ -121,13 +124,13 @@ runs_schema = intersect(
     {
         "_id?": ObjectId,
         "version": uint,
-        "start_time": datetime,
-        "last_updated": datetime,
+        "start_time": datetime_utc,
+        "last_updated": datetime_utc,
         "tc_base": unumber,
         "base_same_as_master": bool,
         "rescheduled_from?": run_id,
         "approved": bool,
-        "approver": str,
+        "approver": union(username, ""),
         "finished": bool,
         "deleted": bool,
         "failed": bool,
@@ -163,7 +166,7 @@ runs_schema = intersect(
                 "info": str,
                 "base_signature": str_int,
                 "new_signature": str_int,
-                "username": str,
+                "username": username,
                 "tests_repo": url,
                 "auto_purge": bool,
                 "throughput": unumber,
@@ -235,7 +238,7 @@ runs_schema = intersect(
                 {
                     "num_games": intersect(uint, even),
                     "active": bool,
-                    "last_updated": datetime,
+                    "last_updated": datetime_utc,
                     "start": uint,
                     "residual?": number,
                     "residual_color?": str,
@@ -251,7 +254,7 @@ runs_schema = intersect(
             {
                 "num_games": intersect(uint, even),
                 "active": False,
-                "last_updated": datetime,
+                "last_updated": datetime_utc,
                 "start": uint,
                 "residual": number,
                 "residual_color": str,
@@ -263,12 +266,19 @@ runs_schema = intersect(
             ...,
         ],
     },
+    lax(ifthen({"approved": True}, {"approver": username}, {"approver": ""})),
+    lax(ifthen({"is_green": True}, {"is_yellow": False})),
+    lax(ifthen({"is_yellow": True}, {"is_green": False})),
+    lax(ifthen({"failed": True}, {"finished": True})),
+    lax(ifthen({"deleted": True}, {"finished": True})),
+    lax(ifthen({"finished": True}, {"workers": 0, "cores": 0})),
+    lax(ifthen({"finished": True}, {"tasks": [{"active": False}, ...]})),
     final_results_must_match,
 )
 
 task_object = {
     "num_games": 1632,
-    "active": True,
+    "active": False,
     "worker_info": {
         "uname": "Linux 6.5.8-200.fc38.x86_64",
         "architecture": ["64bit", "ELF"],
@@ -386,8 +396,8 @@ run_sprt_object = {
             "Ptnml(0-2): 369, 12695, 27124, 12664, 332",
         ],
     },
-    "workers": 7,
-    "cores": 66,
+    "workers": 0,
+    "cores": 0,
 }
 
 total_tasks = 500
