@@ -718,8 +718,8 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
         with self.assertRaises(ValidationError) as mc:
-            schema = [int, ...]
-            object = ["c", 1]
+            schema = ["a", int, ...]
+            object = ["a", "c", 1]
             validate(schema, object)
         show(mc)
 
