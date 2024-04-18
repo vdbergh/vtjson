@@ -428,7 +428,7 @@ for t in run_sprt_object["tasks"]:
 run_sprt_object["results"] = tmp
 
 # To avoid bugs
-validate(runs_schema, run_sprt_object)
+validate(runs_schema, run_sprt_object, "run")
 
 print(f"Python {sys.version}")
 
@@ -541,7 +541,7 @@ spsa = {
 run_spsa_object = run_sprt_object
 del run_spsa_object["args"]["sprt"]
 run_spsa_object["args"]["spsa"] = spsa
-validate(runs_schema, run_spsa_object)
+validate(runs_schema, run_spsa_object, "run")
 t = timeit("validate(runs_schema, run_sprt_object)", number=N, globals=globals())
 print("")
 print(
