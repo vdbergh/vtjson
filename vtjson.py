@@ -784,6 +784,9 @@ class fields:
     def __init__(self, d):
         if not isinstance(d, dict):
             raise SchemaError(f"{repr(d)} is not a dictionary")
+        for k in d:
+            if not isinstance(k, str):
+                raise SchemaError(f"key {repr(k)} in {repr(d)} is not a string")
         self.d = d
 
     def __compile__(self, _deferred_compiles=None):
