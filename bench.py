@@ -6,8 +6,7 @@ from timeit import timeit
 
 from bson.objectid import ObjectId
 
-from vtjson import (  # noqa: F401
-    _validate,
+from vtjson import (
     at_most_one_of,
     compile,
     div,
