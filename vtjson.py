@@ -530,6 +530,10 @@ class email:
             self.kw["check_deliverability"] = False
 
     def __validate__(self, object, name, strict):
+        if not isinstance(object, str):
+            return _wrong_type_message(
+                object, name, "email", f"{_c(object)} is not a string"
+            )
         try:
             email_validator.validate_email(object, *self.args, **self.kw)
             return ""
