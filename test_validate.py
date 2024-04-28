@@ -160,8 +160,10 @@ class TestValidation(unittest.TestCase):
             schema = magic({})
         show(mc)
         schema = magic("text/plain")
-        object = []
-        validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = []
+            validate(schema, object)
+        show(mc)
         object = "hello world"
         validate(schema, object)
         object = "hello world".encode()
