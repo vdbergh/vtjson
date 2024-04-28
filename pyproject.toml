@@ -10,8 +10,7 @@ authors = [
 ]
 description = "A lightweight package for validating JSON like Python objects"
 readme = "README.md"
-dependencies = ["dnspython", "email_validator", "idna"]
-optional-dependencies = ["python-magic"]
+dependencies = ["dnspython", "email_validator", "idna", "python-magic"]
 requires-python = ">=3.7"
 classifiers = [
     "Programming Language :: Python :: 3",
