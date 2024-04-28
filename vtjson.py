@@ -10,6 +10,12 @@ import dns.resolver
 import email_validator
 import idna
 
+MAGIC_AVAILABLE = True
+try:
+    import magic as magic_
+except Exception:
+    MAGIC_AVAILABLE = False
+
 
 class ValidationError(Exception):
     pass
@@ -302,6 +308,34 @@ class glob:
                 return _wrong_type_message(object, name, self.__name__)
         except Exception as e:
             return _wrong_type_message(object, name, self.__name__, str(e))
+
+
+class magic:
+    def __init__(self, mime_type, name=None):
+        if not MAGIC_AVAILABLE:
+            raise SchemaError("Failed to load python-magic")
+
+        if not isinstance(mime_type, str):
+            raise SchemaError(f"{repr(mime_type)} is not a string")
+
+        self.mime_type = mime_type
+
+        if name is None:
+            self.__name__ = f"magic({repr(mime_type)})"
+        else:
+            self.__name__ = name
+
+    def __validate__(self, object, name, strict):
+        try:
+            object_mime_type = magic_.from_buffer(object, mime=True)
+        except Exception as e:
+            return _wrong_type_message(object, name, self.__name__, str(e))
+        if object_mime_type != self.mime_type:
+            return (
+                f"The mime type of {name} is equal to {repr(object_mime_type)} "
+                f"which is different from {repr(self.mime_type)}"
+            )
+        return ""
 
 
 class div:

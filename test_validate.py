@@ -27,6 +27,7 @@ from vtjson import (
     ip_address,
     keys,
     lax,
+    magic,
     make_type,
     nothing,
     number,
@@ -151,6 +152,22 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             schema = glob("*.txt", name="text_file")
             object = "hello.doc"
+            validate(schema, object)
+        show(mc)
+
+    def test_magic(self):
+        with self.assertRaises(SchemaError) as mc:
+            schema = magic({})
+        show(mc)
+        schema = magic("text/plain")
+        object = []
+        validate(schema, object)
+        object = "hello world"
+        validate(schema, object)
+        object = "hello world".encode()
+        validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            schema = magic("application/pdf")
             validate(schema, object)
         show(mc)
 
