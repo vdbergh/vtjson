@@ -33,7 +33,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.7.8"
+__version__ = "1.7.9"
 
 
 _dns_resolver = None
@@ -331,9 +331,11 @@ class magic:
         except Exception as e:
             return _wrong_type_message(object, name, self.__name__, str(e))
         if object_mime_type != self.mime_type:
-            return (
-                f"The mime type of {name} is equal to {repr(object_mime_type)} "
-                f"which is different from {repr(self.mime_type)}"
+            return _wrong_type_message(
+                object,
+                name,
+                self.__name__,
+                f"{repr(object_mime_type)} is different from {repr(self.mime_type)}",
             )
         return ""
 

@@ -172,6 +172,10 @@ class TestValidation(unittest.TestCase):
             schema = magic("application/pdf")
             validate(schema, object)
         show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            schema = magic("application/pdf", name="pdf_data")
+            validate(schema, object)
+        show(mc)
 
     def test_div(self):
         schema = div(2)
