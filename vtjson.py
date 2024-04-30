@@ -445,13 +445,22 @@ class interval:
 class size:
     def __init__(self, lb, ub):
         if not isinstance(lb, int):
-            raise SchemaError(f"{repr(lb)} is not of type 'int'")
-        if lb < -0:
-            raise SchemaError(f"{repr(lb)} is not >= 0")
+            raise SchemaError(
+                f"the lower size bound (value: {repr(lb)}) is not of type 'int'"
+            )
+        if lb < 0:
+            raise SchemaError(
+                f"the lower size bound (value: {repr(lb)}) is smaller than 0"
+            )
         if not isinstance(ub, int) and ub != ...:
-            raise SchemaError(f"{repr(ub)} is not of type 'int'")
+            raise SchemaError(
+                f"the upper size bound (value:{repr(ub)}) is not of type 'int'"
+            )
         if isinstance(ub, int) and ub < lb:
-            raise SchemaError(f"{repr(ub)} is not >= {repr(lb)}")
+            raise SchemaError(
+                f"the lower size bound (value: {repr(lb)}) is bigger "
+                f"than the upper bound (value: {repr(ub)})"
+            )
         self.interval = interval(lb, ub)
 
     def __validate__(self, object, name, strict):

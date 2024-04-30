@@ -895,6 +895,12 @@ class TestValidation(unittest.TestCase):
             validate(schema, object)
         show(mc)
 
+        with self.assertRaises(SchemaError) as mc:
+            schema = size(1, "10")
+            object = "a"
+            validate(schema, object)
+        show(mc)
+
         schema = size(1, 2)
         object = "a"
         validate(schema, object)
