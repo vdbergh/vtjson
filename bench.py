@@ -541,7 +541,7 @@ run_spsa_object = run_sprt_object
 del run_spsa_object["args"]["sprt"]
 run_spsa_object["args"]["spsa"] = spsa
 validate(runs_schema, run_spsa_object, "run")
-t = timeit("validate(runs_schema, run_sprt_object)", number=N, globals=globals())
+t = timeit("validate(runs_schema, run_spsa_object)", number=N, globals=globals())
 print("")
 print(
     f"Validating an SPSA run with {len(spsa['param_history'])}"
@@ -549,7 +549,7 @@ print(
     f"{total_bad_tasks} bad task takes {1000*t/N:.2f} ms"
 )
 t = timeit(
-    "validate(runs_schema_compiled, run_sprt_object)", number=N, globals=globals()
+    "validate(runs_schema_compiled, run_spsa_object)", number=N, globals=globals()
 )
 print("")
 print(
