@@ -51,7 +51,7 @@ def valid_results(R):
     return (
         l + d + w == 2 * sum(R)
         and w - l == 2 * R[4] + R[3] - R[1] - 2 * R[0]
-        and R[2] >= R[3] + 2 * R[2] + R[1] - d >= 0
+        and R[3] + 2 * R[2] + R[1] >= d >= R[3] + R[1]
     )
 
 
@@ -537,7 +537,7 @@ spsa = {
     "A[3],16,-48,80,1,0.05\r\nA[4],62,-2,126,1,0.05\r\nA[6],31,-33,95,1,0.05",
 }
 
-run_spsa_object = run_sprt_object
+run_spsa_object = copy.deepcopy(run_sprt_object)
 del run_spsa_object["args"]["sprt"]
 run_spsa_object["args"]["spsa"] = spsa
 validate(runs_schema, run_spsa_object, "run")
