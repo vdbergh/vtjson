@@ -842,6 +842,40 @@ class fields:
         return _fields(self.d, _deferred_compiles=_deferred_compiles)
 
 
+class _filter:
+    def __init__(self, filter, schema, _deferred_compiles=None):
+        self.filter = filter
+        self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
+        try:
+            self.filter_name = self.filter.__name__
+        except Exception:
+            self.filter_name = "filter"
+        if self.filter_name == "<lambda>":
+            self.filter_name = "filter"
+
+    def __validate__(self, object, name, strict):
+        try:
+            object = self.filter(object)
+        except Exception as e:
+            return (
+                f"Applying {self.filter_name} to {name} "
+                f"(value: {_c(object)}) failed: {str(e)}"
+            )
+        name = f"{self.filter_name}({name})"
+        return self.schema.__validate__(object, name, strict)
+
+
+class filter:
+    def __init__(self, filter, schema):
+        if not callable(filter):
+            raise SchemaError("filter is not callable")
+        self.filter = filter
+        self.schema = schema
+
+    def __compile__(self, _deferred_compiles=None):
+        return _filter(self.filter, self.schema, _deferred_compiles=None)
+
+
 class _dict:
     def __init__(self, schema, _deferred_compiles=None):
         self.schema = collections.OrderedDict()
