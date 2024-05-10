@@ -292,7 +292,21 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(SchemaError) as mc:
             schema = filter(1, 2)
         show(mc)
+        with self.assertRaises(SchemaError) as mc:
+            schema = filter(1, 2, filter_name={})
+        show(mc)
         schema = filter(json.loads, {"a": str})
+        validate(schema, '{"a": "b"}')
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, '{"a": 1}')
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, {"a": 1})
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, "{'a': 1}")
+        show(mc)
+        schema = filter(json.loads, {"a": str}, filter_name="json.loads")
         validate(schema, '{"a": "b"}')
         with self.assertRaises(ValidationError) as mc:
             validate(schema, '{"a": 1}')

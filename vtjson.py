@@ -843,15 +843,18 @@ class fields:
 
 
 class _filter:
-    def __init__(self, filter, schema, _deferred_compiles=None):
+    def __init__(self, filter, schema, filter_name=None, _deferred_compiles=None):
         self.filter = filter
         self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
-        try:
-            self.filter_name = self.filter.__name__
-        except Exception:
-            self.filter_name = "filter"
-        if self.filter_name == "<lambda>":
-            self.filter_name = "filter"
+        if filter_name is not None:
+            self.filter_name = filter_name
+        else:
+            try:
+                self.filter_name = self.filter.__name__
+            except Exception:
+                self.filter_name = "filter"
+            if self.filter_name == "<lambda>":
+                self.filter_name = "filter"
 
     def __validate__(self, object, name, strict):
         try:
@@ -866,14 +869,22 @@ class _filter:
 
 
 class filter:
-    def __init__(self, filter, schema):
+    def __init__(self, filter, schema, filter_name=None):
+        if filter_name is not None and not isinstance(filter_name, str):
+            raise SchemaError("The filter name is not a string")
         if not callable(filter):
-            raise SchemaError("filter is not callable")
+            raise SchemaError("The filter is not callable")
         self.filter = filter
         self.schema = schema
+        self.filter_name = filter_name
 
     def __compile__(self, _deferred_compiles=None):
-        return _filter(self.filter, self.schema, _deferred_compiles=None)
+        return _filter(
+            self.filter,
+            self.schema,
+            filter_name=self.filter_name,
+            _deferred_compiles=None,
+        )
 
 
 class _dict:
