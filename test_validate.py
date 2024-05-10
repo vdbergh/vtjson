@@ -1,3 +1,4 @@
+import json
 import re
 import sys
 import unittest
@@ -20,6 +21,7 @@ from vtjson import (
     domain_name,
     email,
     fields,
+    filter,
     glob,
     ifthen,
     intersect,
@@ -285,6 +287,22 @@ class TestValidation(unittest.TestCase):
         show(mc)
         object = {"d": 1}
         validate(schema, object)
+
+    def test_filter(self):
+        with self.assertRaises(SchemaError) as mc:
+            schema = filter(1, 2)
+        show(mc)
+        schema = filter(json.loads, {"a": str})
+        validate(schema, '{"a": "b"}')
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, '{"a": 1}')
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, {"a": 1})
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, "{'a': 1}")
+        show(mc)
 
     def test_cond(self):
         with self.assertRaises(SchemaError) as mc:
