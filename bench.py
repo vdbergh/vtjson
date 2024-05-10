@@ -22,6 +22,7 @@ from vtjson import (
     one_of,
     quote,
     regex,
+    set_name,
     union,
     url,
     validate,
@@ -33,7 +34,7 @@ tc = regex(r"([1-9]\d*/)?\d+(\.\d+)?(\+\d+(\.\d+)?)?", name="tc")
 str_int = regex(r"[1-9]\d*", name="str_int")
 sha = regex(r"[a-f0-9]{40}", name="sha")
 country_code = regex(r"[A-Z][A-Z]", name="country_code")
-run_id = regex(r"[a-f0-9]{24}", name="run_id")
+run_id = set_name(ObjectId.is_valid, "run_id")
 uuid = regex(r"[0-9a-zA-Z]{2,}(-[a-f0-9]{4}){3}-[a-f0-9]{12}", name="uuid")
 epd_file = glob("*.epd", name="epd_file")
 pgn_file = glob("*.pgn", name="pgn_file")
