@@ -958,6 +958,15 @@ class TestValidation(unittest.TestCase):
             validate(schema, object)
         show(mc)
 
+        schema = size(1)
+        object = "a"
+        validate(schema, object)
+
+        with self.assertRaises(ValidationError) as mc:
+            object = "aa"
+            validate(schema, object)
+        show(mc)
+
     def test_interval(self):
         with self.assertRaises(SchemaError) as mc:
             schema = interval

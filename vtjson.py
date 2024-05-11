@@ -443,7 +443,9 @@ class interval:
 
 
 class size:
-    def __init__(self, lb, ub):
+    def __init__(self, lb, ub=None):
+        if ub is None:
+            ub = lb
         if not isinstance(lb, int):
             raise SchemaError(
                 f"the lower size bound (value: {repr(lb)}) is not of type 'int'"
