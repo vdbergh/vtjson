@@ -3,6 +3,7 @@ import re
 import sys
 import unittest
 from datetime import datetime, timezone
+from urllib.parse import urlparse
 
 from vtjson import (
     SchemaError,
@@ -316,6 +317,14 @@ class TestValidation(unittest.TestCase):
         show(mc)
         with self.assertRaises(ValidationError) as mc:
             validate(schema, "{'a': 1}")
+        show(mc)
+
+        schema = intersect(str, filter(urlparse, fields({"scheme": "http"})))
+        object = "http://example.org"
+        validate(schema, object, "url")
+        with self.assertRaises(ValidationError) as mc:
+            object = "https://example.org"
+            validate(schema, object, "url")
         show(mc)
 
     def test_cond(self):
