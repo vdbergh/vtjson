@@ -88,6 +88,40 @@ def final_results_must_match(run):
         return True
 
 
+def cores_must_match(run):
+    cores = 0
+    for t in run["tasks"]:
+        if t["active"]:
+            cores += t["worker_info"]["concurrency"]
+    if cores != run["cores"]:
+        raise Exception(
+            f"Cores mismatch. Cores from tasks: {cores}. Cores from "
+            f"run: {run['cores']}"
+        )
+
+    return True
+
+
+def workers_must_match(run):
+    workers = 0
+    for t in run["tasks"]:
+        if t["active"]:
+            workers += 1
+    if workers != run["workers"]:
+        raise Exception(
+            f"Workers mismatch. Workers from tasks: {workers}. Workers from "
+            f"run: {run['workers']}"
+        )
+
+    return True
+
+
+valid_aggregated_data = intersect(
+    final_results_must_match,
+    cores_must_match,
+    workers_must_match,
+)
+
 worker_info_schema = {
     "uname": str,
     "architecture": [str, str],
@@ -273,7 +307,7 @@ runs_schema = intersect(
     lax(ifthen({"deleted": True}, {"finished": True})),
     lax(ifthen({"finished": True}, {"workers": 0, "cores": 0})),
     lax(ifthen({"finished": True}, {"tasks": [{"active": False}, ...]})),
-    final_results_must_match,
+    valid_aggregated_data,
 )
 
 task_object = {
