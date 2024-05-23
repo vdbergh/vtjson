@@ -23,8 +23,8 @@ from vtjson import (
     email,
     fields,
     filter,
-    glob,
     ge,
+    glob,
     gt,
     ifthen,
     intersect,
@@ -986,7 +986,7 @@ class TestValidation(unittest.TestCase):
             object = "a"
             validate(schema, object)
         show(mc)
-        
+
         with self.assertRaises(ValidationError) as mc:
             schema = gt(1)
             object = "a"
@@ -1008,7 +1008,7 @@ class TestValidation(unittest.TestCase):
             object = "a"
             validate(schema, object)
         show(mc)
-        
+
         with self.assertRaises(ValidationError) as mc:
             schema = ge(1)
             object = "a"
@@ -1030,7 +1030,7 @@ class TestValidation(unittest.TestCase):
             object = "a"
             validate(schema, object)
         show(mc)
-        
+
         with self.assertRaises(ValidationError) as mc:
             schema = lt(1)
             object = "a"
@@ -1052,7 +1052,7 @@ class TestValidation(unittest.TestCase):
             object = "a"
             validate(schema, object)
         show(mc)
-        
+
         with self.assertRaises(ValidationError) as mc:
             schema = le(1)
             object = "a"
@@ -1067,7 +1067,6 @@ class TestValidation(unittest.TestCase):
 
         schema = le(1)
         object = 1
-
 
     def test_interval(self):
         with self.assertRaises(SchemaError) as mc:

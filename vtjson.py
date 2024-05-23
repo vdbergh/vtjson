@@ -368,6 +368,7 @@ class div:
         else:
             return _wrong_type_message(object, name, self.__name__)
 
+
 class gt:
     def __init__(self, lb):
         try:
@@ -379,9 +380,7 @@ class gt:
         self.lb = lb
 
     def message(self, name, object):
-        return (
-            f"{name} (value:{_c(object)}) is not strictly greater than {self.lb}"
-        )
+        return f"{name} (value:{_c(object)}) is not strictly greater than {self.lb}"
 
     def __validate__(self, object, name, strict):
         try:
@@ -391,6 +390,7 @@ class gt:
                 return self.message(name, object)
         except Exception as e:
             return f"{self.message(name, object)}: {str(e)}"
+
 
 class ge:
     def __init__(self, lb):
@@ -403,9 +403,7 @@ class ge:
         self.lb = lb
 
     def message(self, name, object):
-        return (
-            f"{name} (value:{_c(object)}) is not greater than or equal to {self.lb}"
-        )
+        return f"{name} (value:{_c(object)}) is not greater than or equal to {self.lb}"
 
     def __validate__(self, object, name, strict):
         try:
@@ -415,6 +413,7 @@ class ge:
                 return self.message(name, object)
         except Exception as e:
             return f"{self.message(name, object)}: {str(e)}"
+
 
 class lt:
     def __init__(self, ub):
@@ -427,9 +426,7 @@ class lt:
         self.ub = ub
 
     def message(self, name, object):
-        return (
-            f"{name} (value:{_c(object)}) is not strictly less than {self.ub}"
-        )
+        return f"{name} (value:{_c(object)}) is not strictly less than {self.ub}"
 
     def __validate__(self, object, name, strict):
         try:
@@ -439,6 +436,7 @@ class lt:
                 return self.message(name, object)
         except Exception as e:
             return f"{self.message(name, object)}: {str(e)}"
+
 
 class le:
     def __init__(self, ub):
@@ -451,9 +449,7 @@ class le:
         self.ub = ub
 
     def message(self, name, object):
-        return (
-            f"{name} (value:{_c(object)}) is not less than or equal to {self.ub}"
-        )
+        return f"{name} (value:{_c(object)}) is not less than or equal to {self.ub}"
 
     def __validate__(self, object, name, strict):
         try:
@@ -464,6 +460,7 @@ class le:
         except Exception as e:
             return f"{self.message(name, object)}: {str(e)}"
 
+
 class interval:
     def __init__(self, lb, ub, strict_lb=False, strict_ub=False):
         self.lb = lb
@@ -473,16 +470,16 @@ class interval:
 
         if lb is not ...:
             if strict_lb:
-                lower=gt(lb)
+                lower = gt(lb)
             else:
-                lower=ge(lb)
-                
+                lower = ge(lb)
+
         if ub is not ...:
             if strict_ub:
-                upper=lt(ub)
+                upper = lt(ub)
             else:
-                upper=le(ub)
-                
+                upper = le(ub)
+
         if lb is ... and ub is ...:
             self.__validate__ = self.__validate_none__
         elif lb is ...:
