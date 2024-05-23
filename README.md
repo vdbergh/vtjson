@@ -227,8 +227,11 @@ Mixins are built-ins that are usually combined with other schemas using `interse
 - `at_least_one_of(key1, ..., keyN)`. This represents a dictionary with a least one key among `key1, ..., keyN`.
 - `at_most_one_of(key1, ..., keyN)`. This represents an dictionary with at most one key among `key1, ..., keyN`.
 - `keys(key1, ..., keyN)`. This represents a dictionary containing all the keys in `key1, ..., keyN`.
-- `interval(lowerbound, upperbound)`. This checks if `lowerbound <= object <= upperbound`, provided the comparisons make sense. An upper/lowerbound `...` (ellipsis) means that the
-corresponding inequality is not checked.
+- `interval(lb, ub, strict_lb=False, strict_ub=False)`. This checks if `lb <= object <= ub`, provided the comparisons make sense. An upper/lowerbound `...` (ellipsis) means that the corresponding inequality is not checked. The optional arguments `strict_lb`, `strict_ub` indicate whether the corresponding inequalities should be strict.
+- `gt(lb)`. This checks if `object > lb`.
+- `ge(lb)`. This checks if `object >= lb`.
+- `lt(ub)`. This checks if `object < ub`.
+- `le(ub)`. This checks if `object <= ub`.
 - `size(lowerbound, upperbound=None)`. Matches the objects (which support `len()` such as strings or lists) whose length is in the interval `[upperbound, lowerbound]`. The value of `upperbound` can be `...` (ellipsis). If `upperbound=None` then `upperbound` is set to `lowerbound`.
 - `fields({field1: schema1, field2: schema2, ..., fieldN: schemaN})`. Matches Python objects with attributes `field1, field2, ..., fieldN` whose corresponding values should validate against `schema1, schema2, ..., schemaN` respectively.
 - `magic(mime_type, name=None)`. Checks if a buffer (for example a string or a byte array) has the given mime type. This is implemented using the `python-magic` package.
