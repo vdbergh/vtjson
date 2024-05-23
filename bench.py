@@ -11,6 +11,8 @@ from vtjson import (
     compile,
     div,
     fields,
+    ge,
+    gt,
     glob,
     ifthen,
     intersect,
@@ -41,9 +43,10 @@ pgn_file = glob("*.pgn", name="pgn_file")
 even = div(2, name="even")
 datetime_utc = intersect(datetime, fields({"tzinfo": timezone.utc}))
 
-uint = intersect(int, interval(0, ...))
-suint = intersect(int, interval(1, ...))
-unumber = intersect(number, interval(0, ...))
+uint = intersect(int, ge(0))
+suint = intersect(int, gt(0))
+unumber = intersect(number, ge(0))
+sunumber = intersect(number, gt(0))
 
 
 def valid_results(R):
@@ -247,9 +250,9 @@ runs_schema = intersect(
                             "start": number,
                             "min": number,
                             "max": number,
-                            "c_end": unumber,
+                            "c_end": sunumber,
                             "r_end": unumber,
-                            "c": unumber,
+                            "c": sunumber,
                             "a_end": unumber,
                             "a": unumber,
                             "theta": number,
