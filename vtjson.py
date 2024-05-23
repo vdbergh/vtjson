@@ -368,14 +368,121 @@ class div:
         else:
             return _wrong_type_message(object, name, self.__name__)
 
+class gt:
+    def __init__(self, lb):
+        try:
+            lb <= lb
+        except Exception:
+            raise SchemaError(
+                f"The lower bound {lb} does not support comparison"
+            ) from None
+        self.lb = lb
+
+    def message(self, name, object):
+        return (
+            f"{name} (value:{_c(object)}) is not strictly greater than {self.lb}"
+        )
+
+    def __validate__(self, object, name, strict):
+        try:
+            if self.lb < object:
+                return ""
+            else:
+                return self.message(name, object)
+        except Exception as e:
+            return f"{self.message(name, object)}: {str(e)}"
+
+class ge:
+    def __init__(self, lb):
+        try:
+            lb <= lb
+        except Exception:
+            raise SchemaError(
+                f"The lower bound {lb} does not support comparison"
+            ) from None
+        self.lb = lb
+
+    def message(self, name, object):
+        return (
+            f"{name} (value:{_c(object)}) is not greater than or equal to {self.lb}"
+        )
+
+    def __validate__(self, object, name, strict):
+        try:
+            if self.lb <= object:
+                return ""
+            else:
+                return self.message(name, object)
+        except Exception as e:
+            return f"{self.message(name, object)}: {str(e)}"
+
+class lt:
+    def __init__(self, ub):
+        try:
+            ub <= ub
+        except Exception:
+            raise SchemaError(
+                f"The upper bound {ub} does not support comparison"
+            ) from None
+        self.ub = ub
+
+    def message(self, name, object):
+        return (
+            f"{name} (value:{_c(object)}) is not strictly less than {self.ub}"
+        )
+
+    def __validate__(self, object, name, strict):
+        try:
+            if self.ub > object:
+                return ""
+            else:
+                return self.message(name, object)
+        except Exception as e:
+            return f"{self.message(name, object)}: {str(e)}"
+
+class le:
+    def __init__(self, ub):
+        try:
+            ub <= ub
+        except Exception:
+            raise SchemaError(
+                f"The upper bound {ub} does not support comparison"
+            ) from None
+        self.ub = ub
+
+    def message(self, name, object):
+        return (
+            f"{name} (value:{_c(object)}) is not less than or equal to {self.ub}"
+        )
+
+    def __validate__(self, object, name, strict):
+        try:
+            if self.ub >= object:
+                return ""
+            else:
+                return self.message(name, object)
+        except Exception as e:
+            return f"{self.message(name, object)}: {str(e)}"
 
 class interval:
-    def __init__(self, lb, ub):
+    def __init__(self, lb, ub, strict_lb=False, strict_ub=False):
         self.lb = lb
         self.ub = ub
         self.lb_s = "..." if lb == ... else repr(lb)
         self.ub_s = "..." if ub == ... else repr(ub)
 
+        if lb is not ...:
+            if strict_lb:
+                lower=gt(lb)
+            else:
+                lower=ge(lb)
+                
+        if ub is not ...:
+            if strict_ub:
+                upper=lt(ub)
+            else:
+                upper=le(ub)
+                
         if lb is ... and ub is ...:
             self.__validate__ = self.__validate_none__
         elif lb is ...:
@@ -386,7 +493,7 @@ class interval:
                     f"The upper bound in the interval"
                     f" [{self.lb_s},{self.ub_s}] does not support comparison"
                 ) from None
-            self.__validate__ = self.__validate_ub__
+            self.__validate__ = upper.__validate__
         elif ub is ...:
             try:
                 lb <= lb
@@ -395,7 +502,7 @@ class interval:
                     f"The lower bound in the interval"
                     f" [{self.lb_s},{self.ub_s}] does not support comparison"
                 ) from None
-            self.__validate__ = self.__validate_lb__
+            self.__validate__ = lower.__validate__
         else:
             try:
                 lb <= ub
@@ -404,6 +511,7 @@ class interval:
                     f"The upper and lower bound in the interval"
                     f" [{self.lb_s},{self.ub_s}] are incomparable"
                 ) from None
+            self.__validate__ = _intersect((lower, upper)).__validate__
 
     def message(self, name, object):
         return (

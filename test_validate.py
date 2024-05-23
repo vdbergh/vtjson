@@ -24,12 +24,16 @@ from vtjson import (
     fields,
     filter,
     glob,
+    ge,
+    gt,
     ifthen,
     intersect,
     interval,
     ip_address,
     keys,
     lax,
+    le,
+    lt,
     magic,
     make_type,
     nothing,
@@ -976,6 +980,95 @@ class TestValidation(unittest.TestCase):
             validate(schema, object)
         show(mc)
 
+    def test_gt(self):
+        with self.assertRaises(SchemaError) as mc:
+            schema = gt
+            object = "a"
+            validate(schema, object)
+        show(mc)
+        
+        with self.assertRaises(ValidationError) as mc:
+            schema = gt(1)
+            object = "a"
+            validate(schema, object)
+        show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
+            schema = gt(1)
+            object = 1
+            validate(schema, object)
+        show(mc)
+
+        schema = gt(1)
+        object = 2
+
+    def test_ge(self):
+        with self.assertRaises(SchemaError) as mc:
+            schema = ge
+            object = "a"
+            validate(schema, object)
+        show(mc)
+        
+        with self.assertRaises(ValidationError) as mc:
+            schema = ge(1)
+            object = "a"
+            validate(schema, object)
+        show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
+            schema = ge(1)
+            object = 0
+            validate(schema, object)
+        show(mc)
+
+        schema = ge(1)
+        object = 1
+
+    def test_lt(self):
+        with self.assertRaises(SchemaError) as mc:
+            schema = lt
+            object = "a"
+            validate(schema, object)
+        show(mc)
+        
+        with self.assertRaises(ValidationError) as mc:
+            schema = lt(1)
+            object = "a"
+            validate(schema, object)
+        show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
+            schema = lt(1)
+            object = 1
+            validate(schema, object)
+        show(mc)
+
+        schema = lt(1)
+        object = 0
+
+    def test_le(self):
+        with self.assertRaises(SchemaError) as mc:
+            schema = le
+            object = "a"
+            validate(schema, object)
+        show(mc)
+        
+        with self.assertRaises(ValidationError) as mc:
+            schema = le(1)
+            object = "a"
+            validate(schema, object)
+        show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
+            schema = le(1)
+            object = 2
+            validate(schema, object)
+        show(mc)
+
+        schema = le(1)
+        object = 1
+
+
     def test_interval(self):
         with self.assertRaises(SchemaError) as mc:
             schema = interval
@@ -1002,6 +1095,20 @@ class TestValidation(unittest.TestCase):
 
         with self.assertRaises(ValidationError) as mc:
             object = 10
+            validate(schema, object)
+        show(mc)
+
+        object = 5
+        validate(schema, object)
+
+        schema = interval(1, 9, strict_lb=True, strict_ub=True)
+        with self.assertRaises(ValidationError) as mc:
+            object = 1
+            validate(schema, object)
+        show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
+            object = 9
             validate(schema, object)
         show(mc)
 
