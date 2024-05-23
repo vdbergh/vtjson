@@ -465,8 +465,12 @@ class interval:
     def __init__(self, lb, ub, strict_lb=False, strict_ub=False):
         self.lb = lb
         self.ub = ub
+
         self.lb_s = "..." if lb == ... else repr(lb)
         self.ub_s = "..." if ub == ... else repr(ub)
+
+        ld = "]" if strict_lb else "["
+        ud = "[" if strict_ub else "]"
 
         if lb is not ...:
             if strict_lb:
@@ -481,14 +485,14 @@ class interval:
                 upper = le(ub)
 
         if lb is ... and ub is ...:
-            self.__validate__ = self.__validate_none__
+            self.__validate__ = anything().__validate__
         elif lb is ...:
             try:
                 ub <= ub
             except Exception:
                 raise SchemaError(
                     f"The upper bound in the interval"
-                    f" [{self.lb_s},{self.ub_s}] does not support comparison"
+                    f" {ld}{self.lb_s},{self.ub_s}{ud} does not support comparison"
                 ) from None
             self.__validate__ = upper.__validate__
         elif ub is ...:
@@ -497,7 +501,7 @@ class interval:
             except Exception:
                 raise SchemaError(
                     f"The lower bound in the interval"
-                    f" [{self.lb_s},{self.ub_s}] does not support comparison"
+                    f" {ld}{self.lb_s},{self.ub_s}{ud} does not support comparison"
                 ) from None
             self.__validate__ = lower.__validate__
         else:
@@ -506,44 +510,12 @@ class interval:
             except Exception:
                 raise SchemaError(
                     f"The upper and lower bound in the interval"
-                    f" [{self.lb_s},{self.ub_s}] are incomparable"
+                    f" {ld}{self.lb_s},{self.ub_s}{ud} are incomparable"
                 ) from None
             self.__validate__ = _intersect((lower, upper)).__validate__
 
-    def message(self, name, object):
-        return (
-            f"{name} (value:{_c(object)}) is not in the interval "
-            f"[{self.lb_s},{self.ub_s}]"
-        )
-
+    # Not used but necessary for the protocol
     def __validate__(self, object, name, strict):
-        try:
-            if self.lb <= object <= self.ub:
-                return ""
-            else:
-                return self.message(name, object)
-        except Exception as e:
-            return f"{self.message(name, object)}: {str(e)}"
-
-    def __validate_ub__(self, object, name, strict):
-        try:
-            if object <= self.ub:
-                return ""
-            else:
-                return self.message(name, object)
-        except Exception as e:
-            return f"{self.message(name, object)}: {str(e)}"
-
-    def __validate_lb__(self, object, name, strict):
-        try:
-            if object >= self.lb:
-                return ""
-            else:
-                return self.message(name, object)
-        except Exception as e:
-            return f"{self.message(name, object)}: {str(e)}"
-
-    def __validate_none__(self, object, name, strict):
         return ""
 
 
