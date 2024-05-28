@@ -183,8 +183,10 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_dict(self):
-        schema = {regex("[a-z]+"): "lc", regex("[A-Z]+"): "uc"}
+        schema = {regex("[a-z]+"): "lc", regex("[A-Z]+"): "UC"}
         object = {"aa": "lc"}
+        validate(schema, object)
+        object = {"aa": "lc", "bbb": "lc", "AA": "UC"}
         validate(schema, object)
         with self.assertRaises(ValidationError) as mc:
             object = {"aa": "LC"}

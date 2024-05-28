@@ -1091,32 +1091,23 @@ class _dict:
         self.schema = {}
         for k in schema:
             compiled_schema = compile(schema[k], _deferred_compiles=_deferred_compiles)
+            optional = True
             if isinstance(k, optional_key):
-                if is_object(k.key):
-                    self.object_keys.add(k.key)
-                    self.schema[k.key] = compiled_schema
-                else:
-                    c = compile(k.key, _deferred_compiles=_deferred_compiles)
-                    self.other_keys.add(c)
-                    self.schema[c] = compiled_schema
+                key = k.key
             elif isinstance(k, str) and len(k) > 0 and k[-1] == "?":
                 key = k[:-1]
-                if is_object(key):
-                    self.schema[key] = compiled_schema
-                    self.object_keys.add(key)
-                else:
-                    c = compile(key, _deferred_compiles=_deferred_compiles)
-                    self.other_keys.add(key)
-                    self.schema[c] = compiled_schema
             else:
-                if is_object(k):
-                    self.min_keys.add(k)
-                    self.object_keys.add(k)
-                    self.schema[k] = compiled_schema
-                else:
-                    c = compile(k, _deferred_compiles=_deferred_compiles)
-                    self.other_keys.add(c)
-                    self.schema[c] = compiled_schema
+                optional = False
+                key = k
+            c = compile(key, _deferred_compiles=_deferred_compiles)
+            if is_object(key):
+                if not optional:
+                    self.min_keys.add(key)
+                self.object_keys.add(key)
+                self.schema[key] = compiled_schema
+            else:
+                self.other_keys.add(c)
+                self.schema[c] = compiled_schema
 
     def __validate__(self, object, name, strict):
         if not isinstance(object, dict):
