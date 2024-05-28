@@ -1127,21 +1127,30 @@ class _dict:
                 continue
             else:
                 match = False
+                vals = []
                 for kk in self.other_keys:
                     if kk.__validate__(k, name="key", strict=strict) == "":
                         val = self.schema[kk].__validate__(
                             object[k], name=name_, strict=strict
                         )
-                        if val != "":
-                            return val
-                        else:
+                        if val == "":
                             match = True
                             break
+                        else:
+                            vals.append(val)
+
                 if match:
                     continue
-            if strict:
-                return f"{name_} is not in the schema"
+                elif len(vals) > 0:
+                    return " and ".join(vals)
+                if strict:
+                    return f"{name_} is not in the schema"
         return ""
 
     def __str__(self):
         return str(self.schema)
+
+
+# schema = {regex("[a-z]+"): "lc", regex("[A-Z]+"): "UC"}
+# object = {11: "lc"}
+# validate(schema, object)

@@ -215,6 +215,15 @@ class TestValidation(unittest.TestCase):
         validate(schema, object)
         schema = {optional_key(11): 11, regex("[a-z]+"): "lc", regex("[A-Z]+"): "uc"}
         validate(schema, object)
+        schema = {regex("[a-c]"): 4, regex("[b-d]"): 5}
+        object = {"b": 4}
+        validate(schema, object)
+        object = {"b": 5}
+        validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"b": 6}
+            validate(schema, object)
+        show(mc)
 
     def test_div(self):
         schema = div(2)
