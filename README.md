@@ -271,7 +271,7 @@ A schema can be, in order of precedence:
 - A Python type. In that case validation is done by checking membership.
 - A callable. Validation is done by applying the callable to the object. If applying the callable throws an exception then the corresponding message will be part of the non-validation message.
 - A `list` or a `tuple`. Validation is done by first checking membership of the corresponding types, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
-- A dictionary. Validation is done by first checking membership of the `dict` type, and then performing validation for each of the items of the object being validated against the corresponding items of the schema.
+- A dictionary. Validation is done by first checking membership of the `dict` type, and then performing validation for each of the items of the object being validated against the corresponding items of the schema. Keys can themselves be schemas. E.g. `{str: str}` represents a dictionary whose keys and values are both strings. If keys are not basic values such as instances of `bool`, `int`, `float`, `str`, etc... then they are automatically optional.
 - A `set`. A set validates an object, if one of its members does.
 - An arbitrary Python object. Validation is done by checking equality of the schema and the object, except when the schema is of type `float`, in which case `math.isclose` is used.
 ## Creating types
