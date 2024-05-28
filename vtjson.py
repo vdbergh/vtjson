@@ -1,4 +1,3 @@
-import collections
 import datetime
 import ipaddress
 import math
@@ -73,22 +72,6 @@ def _wrong_type_message(object, name, type_name, explanation=None):
     if explanation is not None:
         message += f": {explanation}"
     return message
-
-
-def _keys2(dict):
-    ret = set()
-    for k in dict:
-        if isinstance(k, optional_key):
-            ret.add((k.key, k, True))
-        elif isinstance(k, str) and len(k) > 0 and k[-1] == "?":
-            ret.add((k[:-1], k, True))
-        else:
-            ret.add((k, k, False))
-    return ret
-
-
-def _keys(dict):
-    return {k[0] for k in _keys2(dict)}
 
 
 class _validate_meta(type):
@@ -966,39 +949,6 @@ class filter:
         )
 
 
-class _dict:
-    def __init__(self, schema, _deferred_compiles=None):
-        self.schema = collections.OrderedDict()
-        for k, v in schema.items():
-            self.schema[k] = compile(v, _deferred_compiles=_deferred_compiles)
-        self.keys = _keys(self.schema)
-        self.keys2 = _keys2(self.schema)
-
-    def __validate__(self, object, name, strict):
-        if not isinstance(object, dict):
-            return _wrong_type_message(object, name, "dict")
-        for k_, k, o in self.keys2:
-            # (k_,k,o)=(normalized key, key, optional)
-            name_ = f"{name}['{k_}']"
-            if k_ not in object:
-                if o:
-                    continue
-                else:
-                    return f"{name_} is missing"
-            else:
-                ret = self.schema[k].__validate__(object[k_], name=name_, strict=strict)
-                if ret != "":
-                    return ret
-        if strict:
-            for x in object:
-                if x not in self.keys:
-                    return f"{name}['{x}'] is not in the schema"
-        return ""
-
-    def __str__(self):
-        return str(self.schema)
-
-
 class _type:
     def __init__(self, schema):
         self.schema = schema
@@ -1120,6 +1070,87 @@ class _callable:
                 return _wrong_type_message(object, name, self.__name__)
         except Exception as e:
             return _wrong_type_message(object, name, self.__name__, str(e))
+
+    def __str__(self):
+        return str(self.schema)
+
+
+def is_object(obj):
+    return (
+        not callable(obj)
+        and not hasattr(obj, "__validate__")
+        and not hasattr(obj, "__compile__")
+    )
+
+
+class _dict:
+    def __init__(self, schema, _deferred_compiles=None):
+        self.min_keys = set()
+        self.object_keys = set()
+        self.other_keys = set()
+        self.schema = {}
+        for k in schema:
+            compiled_schema = compile(schema[k], _deferred_compiles=_deferred_compiles)
+            if isinstance(k, optional_key):
+                if is_object(k.key):
+                    self.object_keys.add(k.key)
+                    self.schema[k.key] = compiled_schema
+                else:
+                    c = compile(k.key, _deferred_compiles=_deferred_compiles)
+                    self.other_keys.add(c)
+                    self.schema[c] = compiled_schema
+            elif isinstance(k, str) and len(k) > 0 and k[-1] == "?":
+                key = k[:-1]
+                if is_object(key):
+                    self.schema[key] = compiled_schema
+                    self.object_keys.add(key)
+                else:
+                    c = compile(key, _deferred_compiles=_deferred_compiles)
+                    self.other_keys.add(key)
+                    self.schema[c] = compiled_schema
+            else:
+                if is_object(k):
+                    self.min_keys.add(k)
+                    self.object_keys.add(k)
+                    self.schema[k] = compiled_schema
+                else:
+                    c = compile(k, _deferred_compiles=_deferred_compiles)
+                    self.other_keys.add(c)
+                    self.schema[c] = compiled_schema
+
+    def __validate__(self, object, name, strict):
+        if not isinstance(object, dict):
+            return _wrong_type_message(object, name, "dict")
+
+        for k in self.min_keys:
+            name_ = f"{name}['{k}']"
+            if k not in object:
+                return f"{name_} is missing"
+
+        for k in object:
+            name_ = f"{name}['{k}']"
+            if k in self.object_keys:
+                val = self.schema[k].__validate__(object[k], name=name_, strict=strict)
+                if val != "":
+                    return val
+                continue
+            else:
+                match = False
+                for kk in self.other_keys:
+                    if kk.__validate__(k, name="key", strict=strict) == "":
+                        val = self.schema[kk].__validate__(
+                            object[k], name=name_, strict=strict
+                        )
+                        if val != "":
+                            return val
+                        else:
+                            match = True
+                            break
+                if match:
+                    continue
+            if strict:
+                return f"{name_} is not in the schema"
+        return ""
 
     def __str__(self):
         return str(self.schema)

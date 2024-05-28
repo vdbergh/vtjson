@@ -8,8 +8,6 @@ from urllib.parse import urlparse
 from vtjson import (
     SchemaError,
     ValidationError,
-    _keys,
-    _keys2,
     anything,
     at_least_one_of,
     at_most_one_of,
@@ -183,6 +181,38 @@ class TestValidation(unittest.TestCase):
             schema = magic("application/pdf", name="pdf_data")
             validate(schema, object)
         show(mc)
+
+    def test_dict(self):
+        schema = {regex("[a-z]+"): "lc", regex("[A-Z]+"): "uc"}
+        object = {"aa": "lc"}
+        validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"aa": "LC"}
+            validate(schema, object)
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            object = {11: "lc"}
+            validate(schema, object)
+        show(mc)
+        schema = {11: 11, regex("[a-z]+"): "lc", regex("[A-Z]+"): "uc"}
+        object = {11: 11}
+        validate(schema, object)
+        object = {11: 11, 12: 12}
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, object)
+        show(mc)
+        validate(schema, object, strict=False)
+        schema = lax(schema)
+        validate(schema, object)
+        schema = {"+": 11, regex("[a-z]+"): "lc", regex("[A-Z]+"): "uc"}
+        object = {}
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, object)
+        show(mc)
+        schema = {"+?": 11, regex("[a-z]+"): "lc", regex("[A-Z]+"): "uc"}
+        validate(schema, object)
+        schema = {optional_key(11): 11, regex("[a-z]+"): "lc", regex("[A-Z]+"): "uc"}
+        validate(schema, object)
 
     def test_div(self):
         schema = div(2)
@@ -368,17 +398,6 @@ class TestValidation(unittest.TestCase):
         show(mc)
         object = datetime(2024, 4, 17, tzinfo=timezone.utc)
         validate(datetime_utc, object)
-
-    def test_key_classification(self):
-        schema = {"a?": 1, "b": 2, optional_key("c"): 3}
-        keys = _keys(schema)
-        self.assertEqual(keys, {"a", "b", "c"})
-
-        keys2 = _keys2(schema)
-        self.assertEqual(
-            keys2,
-            {("a", "a?", True), ("b", "b", False), ("c", optional_key("c"), True)},
-        )
 
     def test_strict(self):
         with self.assertRaises(ValidationError) as mc:
