@@ -205,7 +205,7 @@ class strict:
 
 class quote:
     def __init__(self, schema):
-        self.schema = _object(schema)
+        self.schema = _const(schema)
 
     def __validate__(self, object, name, strict):
         return self.schema.__validate__(object, name, strict)
@@ -595,7 +595,7 @@ def compile(schema, _deferred_compiles=None):
     elif isinstance(schema, set):
         ret = _union(schema, _deferred_compiles=_deferred_compiles)
     else:
-        ret = _object(schema)
+        ret = _const(schema)
 
     # back to updating the cache
     if _deferred_compiles[schema].in_use:
@@ -1024,7 +1024,7 @@ class _sequence:
         return str(self.schema)
 
 
-class _object:
+class _const:
     def __init__(self, schema):
         self.schema = schema
         if isinstance(schema, float):
@@ -1092,7 +1092,7 @@ class _dict:
                 optional = False
                 key = k
             c = compile(key, _deferred_compiles=_deferred_compiles)
-            if isinstance(c,_object):
+            if isinstance(c, _const):
                 if not optional:
                     self.min_keys.add(key)
                 self.object_keys.add(key)
