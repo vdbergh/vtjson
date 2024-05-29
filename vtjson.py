@@ -1119,32 +1119,33 @@ class _dict:
                 return f"{name_} is missing"
 
         for k in object:
+            vals = []
             name_ = f"{name}['{k}']"
             if k in self.object_keys:
                 val = self.schema[k].__validate__(object[k], name=name_, strict=strict)
-                if val != "":
-                    return val
-                continue
-            else:
-                match = False
-                vals = []
-                for kk in self.other_keys:
-                    if kk.__validate__(k, name="key", strict=strict) == "":
-                        val = self.schema[kk].__validate__(
-                            object[k], name=name_, strict=strict
-                        )
-                        if val == "":
-                            match = True
-                            break
-                        else:
-                            vals.append(val)
-
-                if match:
+                if val == "":
                     continue
-                elif len(vals) > 0:
-                    return " and ".join(vals)
-                if strict:
-                    return f"{name_} is not in the schema"
+                else:
+                    vals.append(val)
+
+            match = False
+            for kk in self.other_keys:
+                if kk.__validate__(k, name="key", strict=strict) == "":
+                    val = self.schema[kk].__validate__(
+                        object[k], name=name_, strict=strict
+                    )
+                    if val == "":
+                        match = True
+                        break
+                    else:
+                        vals.append(val)
+
+            if match:
+                continue
+            elif len(vals) > 0:
+                return " and ".join(vals)
+            if strict:
+                return f"{name_} is not in the schema"
         return ""
 
     def __str__(self):

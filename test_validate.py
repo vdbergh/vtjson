@@ -224,6 +224,15 @@ class TestValidation(unittest.TestCase):
             object = {"b": 6}
             validate(schema, object)
         show(mc)
+        schema = {"a": 1, regex("a"): 2}
+        object = {"a": 1}
+        validate(schema, object)
+        object = {"a": 2}
+        validate(schema, object)
+        with self.assertRaises(ValidationError) as mc:
+            object = {"a": 3}
+            validate(schema, object)
+        show(mc)
 
     def test_div(self):
         schema = div(2)
