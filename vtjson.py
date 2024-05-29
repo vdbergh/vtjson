@@ -1150,8 +1150,3 @@ class _dict:
 
     def __str__(self):
         return str(self.schema)
-
-
-# schema = {regex("[a-z]+"): "lc", regex("[A-Z]+"): "UC"}
-# object = {11: "lc"}
-# validate(schema, object)
