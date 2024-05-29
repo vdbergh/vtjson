@@ -1078,7 +1078,7 @@ class _callable:
 class _dict:
     def __init__(self, schema, _deferred_compiles=None):
         self.min_keys = set()
-        self.object_keys = set()
+        self.const_keys = set()
         self.other_keys = set()
         self.schema = {}
         for k in schema:
@@ -1095,7 +1095,7 @@ class _dict:
             if isinstance(c, _const):
                 if not optional:
                     self.min_keys.add(key)
-                self.object_keys.add(key)
+                self.const_keys.add(key)
                 self.schema[key] = compiled_schema
             else:
                 self.other_keys.add(c)
@@ -1113,7 +1113,7 @@ class _dict:
         for k in object:
             vals = []
             name_ = f"{name}['{k}']"
-            if k in self.object_keys:
+            if k in self.const_keys:
                 val = self.schema[k].__validate__(object[k], name=name_, strict=strict)
                 if val == "":
                     continue
