@@ -1075,14 +1075,6 @@ class _callable:
         return str(self.schema)
 
 
-def is_object(obj):
-    return (
-        not callable(obj)
-        and not hasattr(obj, "__validate__")
-        and not hasattr(obj, "__compile__")
-    )
-
-
 class _dict:
     def __init__(self, schema, _deferred_compiles=None):
         self.min_keys = set()
@@ -1100,7 +1092,7 @@ class _dict:
                 optional = False
                 key = k
             c = compile(key, _deferred_compiles=_deferred_compiles)
-            if is_object(key):
+            if isinstance(c,_object):
                 if not optional:
                     self.min_keys.add(key)
                 self.object_keys.add(key)
