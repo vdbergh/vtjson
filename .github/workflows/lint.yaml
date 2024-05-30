@@ -51,6 +51,7 @@ jobs:
           if [[ "${{ steps.flake8.outcome }}" == "success" ]]; then echo "✔ flake8"; else echo "❌ flake8"; fi
           if [[ "${{ steps.black.outcome }}" == "success" ]]; then echo "✔ black"; else echo "❌ black"; fi
           if [[ "${{ steps.isort.outcome }}" == "success" ]]; then echo "✔ isort"; else echo "❌ isort"; fi
+          if [[ "${{ steps.mdl.outcome }}" == "success" ]]; then echo "✔ mdl"; else echo "❌ mdl"; fi
           if [[ "${{ steps.black.outcome }}" == "failure" || "${{ steps.isort.outcome }}" == "failure" || "${{ steps.flake8.outcome }}" == "failure" ]]; then exit 1; fi
 
       - name: Print formatting instructions
