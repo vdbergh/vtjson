@@ -271,22 +271,21 @@ A schema can be, in order of precedence:
 - A Python type. In that case validation is done by checking membership.
 - A callable. Validation is done by applying the callable to the object. If applying the callable throws an exception then the corresponding message will be part of the non-validation message.
 - A `list` or a `tuple`. Validation is done by first checking membership of the corresponding types, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
-- A dictionary. Validation is done by first checking membership of the `dict` type, and then performing validation for each of the items of the object being validated against the corresponding values of the schema. Keys can themselves be schemas. E.g. `{str: str}` represents a dictionary whose keys and values are both strings. A more elaborate discussion of validation of dictionaries is given below.
+- A dictionary. Validation is done by first checking membership of the `dict` type, and then performing validation for each of the values of the object being validated against the corresponding values of the schema. Keys are themselves considered as schemas. E.g. `{str: str}` represents a dictionary whose keys and values are both strings. A more elaborate discussion of validation of dictionaries is given below.
 - A `set`. A set validates an object, if one of its members does.
 - An arbitrary Python object. Validation is done by checking equality of the schema and the object, except when the schema is of type `float`, in which case `math.isclose` is used. Below we call
 such an object a `const schema`.
 ## Validation of dictionaries
-In most cases the interpretation of a dictionary schema is obvious. Therefore the following description of the algorithm for validating an object against a dictionary schema is only needed for understanding obscure corner cases. 
+For a dictionary schema containing only `const keys` (i.e. keys corresponding to a `const schema`) the interpretation is obvious (see the introductory example above). Below we discuss the validation of an object against a dictionary schema in the general case.
 - First we verify that the object is also a dictionary. If not then validation fails.
-- Let us call a `const key` a key of the schema which is a const schema (see above). We verify that all non-optional const keys of the schema are also keys of the object. If this is not the
-case then validation fails.
-- Now we make a list of the keys of the schema (both optional and non-optional).
+- We verify that all non-optional const keys of the schema are also keys of the object. If this is not the case then validation fails.
+- Now we make a list of all the keys of the schema (both optional and non-optional). The result will be called the `key list` below.
 - The object will pass validation if all its keys pass validation. We next discuss how to validate a particular key.
 - If none of the entries of the key list validate the given key and `strict=True` (the default) then the key fails validation. Otherwise it validates.
 - We now match the given key against all entries of the key list. If it matches an entry and the corresponding value also validates then the key is validated. Otherwise we keep going through the key list.
 - If the entire key list is consumed then validation of the key fails.
 
-**Note** A consequence of this algorithm is that non-const keys are automatically optional. The wrapper `optional_key` has no effect on them.
+**Note** A consequence of this algorithm is that non-const keys are automatically optional. So applying the wrapper `optional_key` to them is meaningless and has no effect.
 ## Creating types
 A cool feature of `vtjson` is that one can transform a schema into a genuine Python type via
 ```python
