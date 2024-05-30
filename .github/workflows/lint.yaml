@@ -40,6 +40,12 @@ jobs:
         run: |
           pipx run isort --check --profile black --df .
 
+      - name: Run mdl
+        id: mdl
+        continue-on-error: true
+        run: |
+          sudo snap install mdl
+
       - name: Check linters and formatters status
         run: |
           if [[ "${{ steps.flake8.outcome }}" == "success" ]]; then echo "✔ flake8"; else echo "❌ flake8"; fi
