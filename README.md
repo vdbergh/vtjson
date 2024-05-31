@@ -319,7 +319,7 @@ For a dictionary schema containing only `const keys` (i.e. keys corresponding to
 - The object will pass validation if all its keys pass validation. We next discuss how to validate a particular key.
 - If none of the entries of the key list validate the given key and `strict=True` (the default) then the key fails validation.
 - We now match the given key against all entries of the key list. If it matches an entry and the corresponding value also validates then the key is validated. Otherwise we keep going through the key list.
-- If the entire key list is consumed then validation of the key fails.
+- If the entire key list is consumed then the key fails validation.
 
 **Note** A consequence of this algorithm is that non-const keys are automatically optional. So applying the wrapper `optional_key` to them is meaningless and has no effect.
 
