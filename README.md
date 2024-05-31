@@ -250,7 +250,7 @@ Mixins are built-ins that are usually combined with other schemas using `interse
 - `ge(lb)`. This checks if `object >= lb`.
 - `lt(ub)`. This checks if `object < ub`.
 - `le(ub)`. This checks if `object <= ub`.
-- `size(lowerbound, upperbound=None)`. Matches the objects (which support `len()` such as strings or lists) whose length is in the interval `[upperbound, lowerbound]`. The value of `upperbound` can be `...` (ellipsis). If `upperbound=None` then `upperbound` is set to `lowerbound`.
+- `size(lb, ub=None)`. Matches the objects (which support `len()` such as strings or lists) whose length is in the interval `[lb, ub]`. The value of `ub` can be `...` (ellipsis). If `ub=None` then `ub` is set to `lb`.
 - `fields({field1: schema1, field2: schema2, ..., fieldN: schemaN})`. Matches Python objects with attributes `field1, field2, ..., fieldN` whose corresponding values should validate against `schema1, schema2, ..., schemaN` respectively.
 - `magic(mime_type, name=None)`. Checks if a buffer (for example a string or a byte array) has the given mime type. This is implemented using the `python-magic` package.
 - `filter(callable, schema, filter_name=None)`. Applies `callable` to the object and validates the result with `schema`. The optional argument `filter_name` is used in non-validation messages.
