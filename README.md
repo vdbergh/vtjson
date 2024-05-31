@@ -317,7 +317,7 @@ For a dictionary schema containing only `const keys` (i.e. keys corresponding to
 - We verify that all non-optional const keys of the schema are also keys of the object. If this is not the case then validation fails.
 - Now we make a list of all the keys of the schema (both optional and non-optional). The result will be called the `key list` below.
 - The object will pass validation if all its keys pass validation. We next discuss how to validate a particular key.
-- If none of the entries of the key list validate the given key and `strict=True` (the default) then the key fails validation. Otherwise it validates.
+- If none of the entries of the key list validate the given key and `strict=True` (the default) then the key fails validation.
 - We now match the given key against all entries of the key list. If it matches an entry and the corresponding value also validates then the key is validated. Otherwise we keep going through the key list.
 - If the entire key list is consumed then validation of the key fails.
 
