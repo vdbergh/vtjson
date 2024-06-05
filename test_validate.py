@@ -840,7 +840,7 @@ class TestValidation(unittest.TestCase):
     def test_validate(self):
         class lower_case_string:
             @staticmethod
-            def __validate__(object, name, strict):
+            def __validate__(object, name, strict, exclude):
                 if not isinstance(object, str):
                     return f"{name} (value:{object}) is not of type str"
                 for c in object:
@@ -875,7 +875,7 @@ class TestValidation(unittest.TestCase):
         validate(schema, object)
 
         class lower_case_string:
-            def __validate__(self, object, name, strict):
+            def __validate__(self, object, name, strict, exclude):
                 if not isinstance(object, str):
                     return f"{name} (value:{object}) is not of type str"
                 for c in object:
