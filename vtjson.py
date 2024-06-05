@@ -113,7 +113,9 @@ class _union:
     def __validate__(self, object, name=None, strict=True, exclude=set()):
         messages = []
         for schema in self.schemas:
-            message = schema.__validate__(object, name=name, strict=strict, exclude=exclude)
+            message = schema.__validate__(
+                object, name=name, strict=strict, exclude=exclude
+            )
             if message == "":
                 return ""
             else:
@@ -137,7 +139,9 @@ class _intersect:
 
     def __validate__(self, object, name=None, strict=True, exclude=set()):
         for schema in self.schemas:
-            message = schema.__validate__(object, name=name, strict=strict, exclude=exclude)
+            message = schema.__validate__(
+                object, name=name, strict=strict, exclude=exclude
+            )
             if message != "":
                 return message
         return ""
@@ -156,7 +160,9 @@ class _complement:
         self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
 
     def __validate__(self, object, name=None, strict=True, exclude=set()):
-        message = self.schema.__validate__(object, name=name, strict=strict, exclude=exclude)
+        message = self.schema.__validate__(
+            object, name=name, strict=strict, exclude=exclude
+        )
         if message != "":
             return ""
         else:
@@ -176,7 +182,9 @@ class _lax:
         self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
 
     def __validate__(self, object, name=None, strict=True, exclude=set()):
-        return self.schema.__validate__(object, name=name, strict=False, exclude=exclude)
+        return self.schema.__validate__(
+            object, name=name, strict=False, exclude=exclude
+        )
 
 
 class lax:
@@ -211,7 +219,9 @@ class _label:
         if exclude.intersection(self.labels) != set():
             return ""
         else:
-            return self.schema.__validate__(object, name=name, strict=True, exclude=exclude)
+            return self.schema.__validate__(
+                object, name=name, strict=True, exclude=exclude
+            )
 
 
 class label:
@@ -229,7 +239,9 @@ class quote:
         self.schema = _const(schema)
 
     def __validate__(self, object, name=None, strict=True, exclude=set()):
-        return self.schema.__validate__(object, name=name, strict=strict, exclude=exclude)
+        return self.schema.__validate__(
+            object, name=name, strict=strict, exclude=exclude
+        )
 
 
 class _set_name:
@@ -238,7 +250,9 @@ class _set_name:
         self.__name__ = name
 
     def __validate__(self, object, name=None, strict=True, exclude=set()):
-        message = self.schema.__validate__(object, name=name, strict=strict, exclude=exclude)
+        message = self.schema.__validate__(
+            object, name=name, strict=strict, exclude=exclude
+        )
         if message != "":
             return _wrong_type_message(object, name, self.__name__)
         return ""
@@ -563,7 +577,9 @@ class _deferred:
     def __validate__(self, object, name=None, strict=True, exclude=set()):
         if self.key not in self.collection:
             raise ValidationError(f"{name}: key {self.key} is unknown")
-        return self.collection[self.key].__validate__(object, name=name, strict=strict, exclude=exclude)
+        return self.collection[self.key].__validate__(
+            object, name=name, strict=strict, exclude=exclude
+        )
 
 
 class _mapping:
@@ -844,10 +860,19 @@ class _ifthen:
             self.else_schema = else_schema
 
     def __validate__(self, object, name=None, strict=True, exclude=set()):
-        if self.if_schema.__validate__(object, name=name, strict=strict, exclude=exclude) == "":
-            return self.then_schema.__validate__(object, name=name, strict=strict, exclude=exclude)
+        if (
+            self.if_schema.__validate__(
+                object, name=name, strict=strict, exclude=exclude
+            )
+            == ""
+        ):
+            return self.then_schema.__validate__(
+                object, name=name, strict=strict, exclude=exclude
+            )
         elif self.else_schema is not None:
-            return self.else_schema.__validate__(object, name=name, strict=strict, exclude=exclude)
+            return self.else_schema.__validate__(
+                object, name=name, strict=strict, exclude=exclude
+            )
         return ""
 
 
@@ -879,8 +904,13 @@ class _cond:
 
     def __validate__(self, object, name=None, strict=True, exclude=set()):
         for c in self.conditions:
-            if c[0].__validate__(object, name=name, strict=strict, exclude=exclude) == "":
-                return c[1].__validate__(object, name=name, strict=strict, exclude=exclude)
+            if (
+                c[0].__validate__(object, name=name, strict=strict, exclude=exclude)
+                == ""
+            ):
+                return c[1].__validate__(
+                    object, name=name, strict=strict, exclude=exclude
+                )
         return ""
 
 
@@ -906,7 +936,9 @@ class _fields:
             name_ = f"{name}.{k}"
             if not hasattr(object, k):
                 return f"{name_} is missing"
-            ret = self.d[k].__validate__(getattr(object, k), name=name_, strict=strict, exclude=exclude)
+            ret = self.d[k].__validate__(
+                getattr(object, k), name=name_, strict=strict, exclude=exclude
+            )
             if ret != "":
                 return ret
         return ""
@@ -948,7 +980,9 @@ class _filter:
                 f"(value: {_c(object)}) failed: {str(e)}"
             )
         name = f"{self.filter_name}({name})"
-        return self.schema.__validate__(object, name=None, strict=strict, exclude=exclude)
+        return self.schema.__validate__(
+            object, name=None, strict=strict, exclude=exclude
+        )
 
 
 class filter:
@@ -1135,7 +1169,9 @@ class _dict:
             vals = []
             name_ = f"{name}['{k}']"
             if k in self.const_keys:
-                val = self.schema[k].__validate__(object[k], name=name_, strict=strict, exclude=exclude)
+                val = self.schema[k].__validate__(
+                    object[k], name=name_, strict=strict, exclude=exclude
+                )
                 if val == "":
                     continue
                 else:
