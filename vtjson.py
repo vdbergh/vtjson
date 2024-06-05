@@ -110,7 +110,7 @@ class _union:
             compile(s, _deferred_compiles=_deferred_compiles) for s in schemas
         ]
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         messages = []
         for schema in self.schemas:
             message = schema.__validate__(object, name=name, strict=strict, exclude=exclude)
@@ -135,7 +135,7 @@ class _intersect:
             compile(s, _deferred_compiles=_deferred_compiles) for s in schemas
         ]
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         for schema in self.schemas:
             message = schema.__validate__(object, name=name, strict=strict, exclude=exclude)
             if message != "":
@@ -155,7 +155,7 @@ class _complement:
     def __init__(self, schema, _deferred_compiles=None):
         self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         message = self.schema.__validate__(object, name=name, strict=strict, exclude=exclude)
         if message != "":
             return ""
@@ -175,7 +175,7 @@ class _lax:
     def __init__(self, schema, _deferred_compiles=None):
         self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         return self.schema.__validate__(object, name=name, strict=False, exclude=exclude)
 
 
@@ -191,8 +191,8 @@ class _strict:
     def __init__(self, schema, _deferred_compiles=None):
         self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
-        return self.schema.__validate__(object, name=name, strict=True, exclude=[])
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
+        return self.schema.__validate__(object, name=name, strict=True, exclude=exclude)
 
 
 class strict:
@@ -203,11 +203,32 @@ class strict:
         return _strict(self.schema, _deferred_compiles=_deferred_compiles)
 
 
+class _label:
+    def __init__(self, schema, labels, _deferred_compiles=None):
+        self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
+
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
+        if exclude.intersection(self.labels) != set():
+            return ""
+        else:
+            return self.schema.__validate__(object, name=name, strict=True, exclude=exclude)
+
+
+class label:
+    def __init__(self, schema, *add_labels):
+        self.schema = schema
+        # TODO SchemaError
+        self.labels = set(add_labels)
+
+    def __compile__(self, _deferred_compiles=None):
+        return _label(self.schema, self.labels, _deferred_compiles=_deferred_compiles)
+
+
 class quote:
     def __init__(self, schema):
         self.schema = _const(schema)
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         return self.schema.__validate__(object, name=name, strict=strict, exclude=exclude)
 
 
@@ -216,7 +237,7 @@ class _set_name:
         self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
         self.__name__ = name
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         message = self.schema.__validate__(object, name=name, strict=strict, exclude=exclude)
         if message != "":
             return _wrong_type_message(object, name, self.__name__)
@@ -255,7 +276,7 @@ class regex:
                 f"{regex}{_name} is an invalid regular expression: {str(e)}"
             ) from None
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         try:
             if self.fullmatch and self.pattern.fullmatch(object):
                 return ""
@@ -283,7 +304,7 @@ class glob:
                 f"{repr(pattern)}{_name} is not a valid filename pattern: {str(e)}"
             ) from None
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         try:
             if pathlib.PurePath(object).match(self.pattern):
                 return ""
@@ -308,7 +329,7 @@ class magic:
         else:
             self.__name__ = name
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         try:
             object_mime_type = magic_.from_buffer(object, mime=True)
         except Exception as e:
@@ -343,7 +364,7 @@ class div:
         else:
             self.__name__ = name
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         if not isinstance(object, int):
             return _wrong_type_message(object, name, "int")
         elif (object - self.remainder) % self.divisor == 0:
@@ -365,7 +386,7 @@ class gt:
     def message(self, name, object):
         return f"{name} (value:{_c(object)}) is not strictly greater than {self.lb}"
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         try:
             if self.lb < object:
                 return ""
@@ -388,7 +409,7 @@ class ge:
     def message(self, name, object):
         return f"{name} (value:{_c(object)}) is not greater than or equal to {self.lb}"
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         try:
             if self.lb <= object:
                 return ""
@@ -411,7 +432,7 @@ class lt:
     def message(self, name, object):
         return f"{name} (value:{_c(object)}) is not strictly less than {self.ub}"
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         try:
             if self.ub > object:
                 return ""
@@ -434,7 +455,7 @@ class le:
     def message(self, name, object):
         return f"{name} (value:{_c(object)}) is not less than or equal to {self.ub}"
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         try:
             if self.ub >= object:
                 return ""
@@ -498,7 +519,7 @@ class interval:
             self.__validate__ = _intersect((lower, upper)).__validate__
 
     # Not used but necessary for the protocol
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         return ""
 
 
@@ -525,7 +546,7 @@ class size:
             )
         self.interval = interval(lb, ub)
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         try:
             L = len(object)
         except Exception:
@@ -539,7 +560,7 @@ class _deferred:
         self.key = key
         self.in_use = False
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         if self.key not in self.collection:
             raise ValidationError(f"{name}: key {self.key} is unknown")
         return self.collection[self.key].__validate__(object, name=name, strict=strict, exclude=exclude)
@@ -605,12 +626,12 @@ def compile(schema, _deferred_compiles=None):
     return ret
 
 
-def _validate(schema, object, name="object", strict=True, exclude=[]):
+def _validate(schema, object, name="object", strict=True, exclude=set()):
     schema = compile(schema)
     return schema.__validate__(object, name=name, strict=strict, exclude=exclude)
 
 
-def validate(schema, object, name="object", strict=True, exclude=[]):
+def validate(schema, object, name="object", strict=True, exclude=set()):
     message = _validate(schema, object, name=name, strict=strict, exclude=exclude)
     if message != "":
         raise ValidationError(message)
@@ -620,7 +641,7 @@ def validate(schema, object, name="object", strict=True, exclude=[]):
 
 
 class number:
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         if isinstance(object, (int, float)):
             return ""
         else:
@@ -636,7 +657,7 @@ class email:
         if "check_deliverability" not in kw:
             self.kw["check_deliverability"] = False
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         if not isinstance(object, str):
             return _wrong_type_message(
                 object, name, "email", f"{_c(object)} is not a string"
@@ -649,7 +670,7 @@ class email:
 
 
 class ip_address:
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         try:
             ipaddress.ip_address(object)
             return ""
@@ -658,7 +679,7 @@ class ip_address:
 
 
 class url:
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         result = urllib.parse.urlparse(object)
         if all([result.scheme, result.netloc]):
             return ""
@@ -673,7 +694,7 @@ class date_time:
         else:
             self.__name__ = "date_time"
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         if self.format is not None:
             try:
                 datetime.datetime.strptime(object, self.format)
@@ -688,7 +709,7 @@ class date_time:
 
 
 class date:
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         try:
             datetime.date.fromisoformat(object)
         except Exception as e:
@@ -697,7 +718,7 @@ class date:
 
 
 class time:
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         try:
             datetime.time.fromisoformat(object)
         except Exception as e:
@@ -706,12 +727,12 @@ class time:
 
 
 class nothing:
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         return _wrong_type_message(object, name, "nothing")
 
 
 class anything:
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         return ""
 
 
@@ -731,7 +752,7 @@ class domain_name:
             "domain_name" if not arg_string else f"domain_name({arg_string})"
         )
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         if self.ascii_only:
             if not self.re_ascii.fullmatch(object):
                 return _wrong_type_message(
@@ -756,7 +777,7 @@ class at_least_one_of:
         args_s = [repr(a) for a in args]
         self.__name__ = f"{self.__class__.__name__}({','.join(args_s)})"
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         try:
             if any([a in object for a in self.args]):
                 return ""
@@ -772,7 +793,7 @@ class at_most_one_of:
         args_s = [repr(a) for a in args]
         self.__name__ = f"{self.__class__.__name__}({','.join(args_s)})"
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         try:
             if sum([a in object for a in self.args]) <= 1:
                 return ""
@@ -788,7 +809,7 @@ class one_of:
         args_s = [repr(a) for a in args]
         self.__name__ = f"{self.__class__.__name__}({','.join(args_s)})"
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         try:
             if sum([a in object for a in self.args]) == 1:
                 return ""
@@ -802,7 +823,7 @@ class keys:
     def __init__(self, *args):
         self.args = args
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         for k in self.args:
             if k not in object:
                 return f"{name}[{repr(k)}] is missing"
@@ -822,7 +843,7 @@ class _ifthen:
         else:
             self.else_schema = else_schema
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         if self.if_schema.__validate__(object, name=name, strict=strict, exclude=exclude) == "":
             return self.then_schema.__validate__(object, name=name, strict=strict, exclude=exclude)
         elif self.else_schema is not None:
@@ -856,7 +877,7 @@ class _cond:
                 )
             )
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         for c in self.conditions:
             if c[0].__validate__(object, name=name, strict=strict, exclude=exclude) == "":
                 return c[1].__validate__(object, name=name, strict=strict, exclude=exclude)
@@ -880,7 +901,7 @@ class _fields:
         for k, v in d.items():
             self.d[k] = compile(v, _deferred_compiles=_deferred_compiles)
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         for k, v in self.d.items():
             name_ = f"{name}.{k}"
             if not hasattr(object, k):
@@ -918,7 +939,7 @@ class _filter:
             if self.filter_name == "<lambda>":
                 self.filter_name = "filter"
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         try:
             object = self.filter(object)
         except Exception as e:
@@ -955,7 +976,7 @@ class _type:
         if isinstance(schema, _GenericAlias):
             raise SchemaError("Parametrized generics are not supported!")
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         try:
             if not isinstance(object, self.schema):
                 return _wrong_type_message(object, name, self.schema.__name__)
@@ -984,7 +1005,7 @@ class _sequence:
                 self.schema = []
             self.__validate__ = self.__validate_ellipsis__
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         if self.type_schema is not type(object):
             return _wrong_type_message(object, name, type(self.schema).__name__)
         ls = len(self.schema)
@@ -1001,7 +1022,7 @@ class _sequence:
                 return ret
         return ""
 
-    def __validate_ellipsis__(self, object, name=None, strict=True, exclude=[]):
+    def __validate_ellipsis__(self, object, name=None, strict=True, exclude=set()):
         if self.type_schema is not type(object):
             return _wrong_type_message(object, name, type(self.schema).__name__)
         ls = len(self.schema)
@@ -1033,7 +1054,7 @@ class _const:
     def message(self, name, object):
         return f"{name} (value:{_c(object)}) is not equal to {repr(self.schema)}"
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         if object != self.schema:
             return self.message(name, object)
         return ""
@@ -1041,7 +1062,7 @@ class _const:
     def message_float(self, name, object):
         return f"{name} (value:{_c(object)}) is not close to {repr(self.schema)}"
 
-    def __validate_float__(self, object, name=None, strict=True, exclude=[]):
+    def __validate_float__(self, object, name=None, strict=True, exclude=set()):
         try:
             if math.isclose(self.schema, object):
                 return ""
@@ -1062,7 +1083,7 @@ class _callable:
         except Exception:
             self.__name__ = str(self.schema)
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         try:
             if self.schema(object):
                 return ""
@@ -1101,7 +1122,7 @@ class _dict:
                 self.other_keys.add(c)
                 self.schema[c] = compiled_schema
 
-    def __validate__(self, object, name=None, strict=True, exclude=[]):
+    def __validate__(self, object, name=None, strict=True, exclude=set()):
         if not isinstance(object, dict):
             return _wrong_type_message(object, name, "dict")
 
