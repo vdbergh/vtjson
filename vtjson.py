@@ -212,11 +212,12 @@ class strict:
 
 
 class _label:
-    def __init__(self, schema, labels, _deferred_compiles=None):
+    def __init__(self, schema, label, _deferred_compiles=None):
         self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
+        self.label = label
 
     def __validate__(self, object, name=None, strict=True, exclude=set()):
-        if exclude.intersection(self.labels) != set():
+        if set(exclude).intersection(self.label) != set():
             return ""
         else:
             return self.schema.__validate__(
@@ -225,13 +226,15 @@ class _label:
 
 
 class label:
-    def __init__(self, schema, *add_labels):
+    def __init__(self, schema, *label):
         self.schema = schema
-        # TODO SchemaError
-        self.labels = set(add_labels)
+        for L in label:
+            if not isinstance(L, str):
+                raise SchemaError(f"The label {L} is not a string")
+        self.label = set(label)
 
     def __compile__(self, _deferred_compiles=None):
-        return _label(self.schema, self.labels, _deferred_compiles=_deferred_compiles)
+        return _label(self.schema, self.label, _deferred_compiles=_deferred_compiles)
 
 
 class quote:
