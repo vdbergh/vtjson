@@ -218,6 +218,8 @@ class _set_label:
         self.debug = debug
 
     def __validate__(self, object, name="object", strict=True, exclude=set()):
+        if isinstance(exclude, str):
+            exclude = {exclude}
         common_labels = set(exclude).intersection(self.labels)
         if common_labels != set():
             if self.debug:

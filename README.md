@@ -203,12 +203,12 @@ validate(schema, object)
 If the validation fails this will throw a `ValidationError` and the exception contains an explanation about what went wrong. The full signature of `validate` is
 
 ```python
-validate(schema, object, name="object", strict=True, exclude=[])
+validate(schema, object, name="object", strict=True, exclude=set())
 ```
 
 - The optional `name` argument is used to refer to the object being validated in the returned message.
 - The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
-- The optional argument `exclude` is a sequence of labels (see below) of subschemas to exclude from validation.
+- The optional argument `exclude` is either a single label, or a sequence of labels (see below) of subschemas to exclude from validation.
 
 ## Wrappers
 

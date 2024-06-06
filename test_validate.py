@@ -536,6 +536,8 @@ class TestValidation(unittest.TestCase):
         show(mc)
         schema = {1: set_label("a", "x", debug=True)}
         validate(schema, object, exclude=["x"])
+        schema = {1: set_label("a", "x", debug=True)}
+        validate(schema, object, exclude="x")
 
     def test_quote(self):
         with self.assertRaises(ValidationError) as mc:
