@@ -212,12 +212,25 @@ class strict:
 
 
 class _set_label:
-    def __init__(self, schema, labels, _deferred_compiles=None):
+    def __init__(self, schema, labels, debug, _deferred_compiles=None):
         self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
         self.labels = labels
+        self.debug = debug
 
     def __validate__(self, object, name="object", strict=True, exclude=set()):
-        if set(exclude).intersection(self.labels) != set():
+        common_labels = set(exclude).intersection(self.labels)
+        if common_labels != set():
+            if self.debug:
+                if len(common_labels) > 1:
+                    print(
+                        f"Skipping validation of {name} because the label"
+                        f"(s) {str(common_labels)[1:-1]} were excluded",
+                    )
+                else:
+                    print(
+                        f"Skipping validation of {name} because the label"
+                        f"{ str(common_labels)[1:-1]} was excluded",
+                    )
             return ""
         else:
             return self.schema.__validate__(
@@ -226,15 +239,20 @@ class _set_label:
 
 
 class set_label:
-    def __init__(self, schema, *labels):
+    def __init__(self, schema, *labels, debug=False):
         self.schema = schema
         for L in labels:
             if not isinstance(L, str):
                 raise SchemaError(f"The label {L} is not a string")
         self.labels = set(labels)
+        if not isinstance(debug, bool):
+            raise SchemaError(f"The option {debug} is not a boolean")
+        self.debug = debug
 
     def __compile__(self, _deferred_compiles=None):
-        return _set_label(self.schema, self.labels, _deferred_compiles=_deferred_compiles)
+        return _set_label(
+            self.schema, self.labels, self.debug, _deferred_compiles=_deferred_compiles
+        )
 
 
 class quote:
