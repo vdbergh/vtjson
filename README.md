@@ -203,11 +203,12 @@ validate(schema, object)
 If the validation fails this will throw a `ValidationError` and the exception contains an explanation about what went wrong. The full signature of `validate` is
 
 ```python
-validate(schema, object, name="object", strict=True)
+validate(schema, object, name="object", strict=True, exclude=[])
 ```
 
 - The optional `name` argument is used to refer to the object being validated in the returned message.
 - The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
+- The optional argument `exclude` is a sequence of labels (see below) of subschemas to exclude from validation.
 
 ## Wrappers
 
@@ -220,6 +221,7 @@ A wrapper takes one or more schemas as arguments and produces a new schema.
 - An object matches the schema `strict(schema)` if it matches `schema` when validated with `strict=True`.
 - An object matches the schema `set_name(schema, name)` if it matches `schema`. But the `name` argument will be used in non-validation messages.
 - An object matches the schema `quote(schema)` if it is equal to `schema`. For example the schema `{"cats", "dogs"}` matches the strings `"cats"` and `"dogs"` but the schema `quote({"cats", "dogs"})` matches the set `{"cats", "dogs"}`.
+- An object matches the schema `label(schema, label1, ..., labelN)` if it match `schema`, unless any of the labels were included in the `exclude` argument of `validate`, in which case it always matches.
 
 ## Built-ins
 
