@@ -221,7 +221,7 @@ A wrapper takes one or more schemas as arguments and produces a new schema.
 - An object matches the schema `strict(schema)` if it matches `schema` when validated with `strict=True`.
 - An object matches the schema `set_name(schema, name)` if it matches `schema`. But the `name` argument will be used in non-validation messages.
 - An object matches the schema `quote(schema)` if it is equal to `schema`. For example the schema `{"cats", "dogs"}` matches the strings `"cats"` and `"dogs"` but the schema `quote({"cats", "dogs"})` matches the set `{"cats", "dogs"}`.
-- An object matches the schema `label(schema, label1, ..., labelN)` if it match `schema`, unless any of the labels were included in the `exclude` argument of `validate`, in which case it always matches.
+- An object matches the schema `set_label(schema, label1, ..., labelN)` if it match `schema`, unless any of the labels were included in the `exclude` argument of `validate`, in which case it always matches.
 
 ## Built-ins
 

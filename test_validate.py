@@ -29,7 +29,6 @@ from vtjson import (
     interval,
     ip_address,
     keys,
-    label,
     lax,
     le,
     lt,
@@ -41,6 +40,7 @@ from vtjson import (
     optional_key,
     quote,
     regex,
+    set_label,
     set_name,
     size,
     strict,
@@ -517,19 +517,19 @@ class TestValidation(unittest.TestCase):
             validate(schema, object)
         show(mc)
 
-    def test_label(self):
+    def test_set_label(self):
         schema = {1: "a"}
         object = {1: "b"}
         with self.assertRaises(ValidationError) as mc:
             validate(schema, object)
         show(mc)
-        schema = {1: label("a", "x")}
+        schema = {1: set_label("a", "x")}
         with self.assertRaises(ValidationError) as mc:
             validate(schema, object)
         show(mc)
         validate(schema, object, exclude=["x"])
         with self.assertRaises(SchemaError) as mc:
-            schema = {1: label("a", {})}
+            schema = {1: set_label("a", {})}
         show(mc)
 
     def test_quote(self):
