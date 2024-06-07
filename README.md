@@ -203,12 +203,12 @@ validate(schema, object)
 If the validation fails this will throw a `ValidationError` and the exception contains an explanation about what went wrong. The full signature of `validate` is
 
 ```python
-validate(schema, object, name="object", strict=True, exclude=set())
+validate(schema, object, name="object", strict=True, subs={})
 ```
 
 - The optional `name` argument is used to refer to the object being validated in the returned message.
 - The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
-- The optional argument `exclude` is either a single label, or a sequence of labels (see below) of subschemas to exclude from validation.
+- The optional argument `subs` is a dictionary whose keys are labels (see below) and whose values are substitution schemas for schemas with those labels.
 
 ## Wrappers
 
@@ -221,7 +221,7 @@ A wrapper takes one or more schemas as arguments and produces a new schema.
 - An object matches the schema `strict(schema)` if it matches `schema` when validated with `strict=True`.
 - An object matches the schema `set_name(schema, name)` if it matches `schema`. But the `name` argument will be used in non-validation messages.
 - An object matches the schema `quote(schema)` if it is equal to `schema`. For example the schema `{"cats", "dogs"}` matches the strings `"cats"` and `"dogs"` but the schema `quote({"cats", "dogs"})` matches the set `{"cats", "dogs"}`.
-- An object matches the schema `set_label(schema, label1, ..., labelN, debug=False)` if it match `schema`, unless any of the labels were included in the `exclude` argument of `validate`, in which case it always matches. If the optional argument `debug` is `True` then a message will be printed on the console if validation has been skipped.
+- An object matches the schema `set_label(schema, label1, ..., labelN, debug=False)` if it matches `schema`, unless the schema is replaced by a different one via the `subs` argument to `validate`. If the optional argument `debug` is `True` then a message will be printed on the console if the schema was changed.
 
 ## Built-ins
 
