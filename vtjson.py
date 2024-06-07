@@ -32,7 +32,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.8.6"
+__version__ = "1.8.7"
 
 
 _dns_resolver = None
@@ -573,7 +573,7 @@ class size:
             L = len(object)
         except Exception:
             return f"{name} (value:{_c(object)}) has no len()"
-        return self.interval.__validate__(L, f"len({name})", strict)
+        return self.interval.__validate__(L, f"len({name})", strict, subs)
 
 
 class _deferred:
@@ -1050,7 +1050,7 @@ class _sequence:
             return f"{name}[{lo}] is missing"
         for i in range(ls):
             name_ = f"{name}[{i}]"
-            ret = self.schema[i].__validate__(object[i], name_, strict)
+            ret = self.schema[i].__validate__(object[i], name_, strict, subs)
             if ret != "":
                 return ret
         return ""
@@ -1064,12 +1064,12 @@ class _sequence:
             return f"{name}[{lo}] is missing"
         for i in range(ls):
             name_ = f"{name}[{i}]"
-            ret = self.schema[i].__validate__(object[i], name_, strict)
+            ret = self.schema[i].__validate__(object[i], name_, strict, subs)
             if ret != "":
                 return ret
         for i in range(ls, lo):
             name_ = f"{name}[{i}]"
-            ret = self.fill.__validate__(object[i], name_, strict)
+            ret = self.fill.__validate__(object[i], name_, strict, subs)
             if ret != "":
                 return ret
         return ""
@@ -1179,7 +1179,7 @@ class _dict:
             for kk in self.other_keys:
                 if kk.__validate__(k, name="key", strict=strict, subs=subs) == "":
                     val = self.schema[kk].__validate__(
-                        object[k], name=name_, strict=strict
+                        object[k], name=name_, strict=strict, subs=subs
                     )
                     if val == "":
                         break
