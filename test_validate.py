@@ -527,7 +527,7 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             validate(schema, object)
         show(mc)
-        validate(schema, object, exclude=["x"])
+        validate(schema, object, subs={"x": anything})
         with self.assertRaises(SchemaError) as mc:
             schema = {1: set_label("a", {})}
         show(mc)
@@ -535,9 +535,15 @@ class TestValidation(unittest.TestCase):
             schema = {1: set_label("a", "x", debug={})}
         show(mc)
         schema = {1: set_label("a", "x", debug=True)}
-        validate(schema, object, exclude=["x"])
+        validate(schema, object, subs={"x": anything})
         schema = {1: set_label("a", "x", debug=True)}
-        validate(schema, object, exclude="x")
+        validate(schema, object, subs={"x": anything})
+        schema = {1: set_label("a", "x", "y", debug=True)}
+        validate(schema, object, subs={"x": anything})
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, object, subs={"x": anything, "y": anything})
+        show(mc)
+        validate(schema, object, subs={"x": "b"})
 
     def test_quote(self):
         with self.assertRaises(ValidationError) as mc:
@@ -863,7 +869,7 @@ class TestValidation(unittest.TestCase):
     def test_validate(self):
         class lower_case_string:
             @staticmethod
-            def __validate__(object, name, strict, exclude):
+            def __validate__(object, name, strict, subs):
                 if not isinstance(object, str):
                     return f"{name} (value:{object}) is not of type str"
                 for c in object:
@@ -898,7 +904,7 @@ class TestValidation(unittest.TestCase):
         validate(schema, object)
 
         class lower_case_string:
-            def __validate__(self, object, name, strict, exclude):
+            def __validate__(self, object, name, strict, subs):
                 if not isinstance(object, str):
                     return f"{name} (value:{object}) is not of type str"
                 for c in object:
