@@ -555,23 +555,14 @@ class TestValidation(unittest.TestCase):
         schema = quote(str)
         validate(schema, object)
 
-        schema = {1, 2}
-        object = 1
-        validate(schema, object)
-
         with self.assertRaises(ValidationError) as mc:
             schema = quote({1, 2})
             object = 1
             validate(schema, object)
         show(mc)
 
-        with self.assertRaises(ValidationError) as mc:
-            schema = {1, 2}
-            object = {1, 2}
-            validate(schema, object)
-        show(mc)
-
         schema = quote({1, 2})
+        object = {1, 2}
         validate(schema, object)
 
     @unittest.skipUnless(
@@ -648,16 +639,38 @@ class TestValidation(unittest.TestCase):
         validate(schema, object)
 
     def test_set(self):
+        schema = set()
+        object = set()
+        validate(schema, object)
+        object = {"a"}
         with self.assertRaises(ValidationError) as mc:
-            schema = {2, 3}
-            object = 5
-            validate(schema, object, strict=False)
+            validate(schema, object)
         show(mc)
-
+        schema = {str}
+        object = set()
+        validate(schema, object)
+        object = {"a"}
+        validate(schema, object)
+        object = {"a", "b"}
+        validate(schema, object)
+        object = {1}
         with self.assertRaises(ValidationError) as mc:
-            schema = {int, str}
-            object = 1.0
-            validate(schema, object, strict=False)
+            validate(schema, object)
+        show(mc)
+        object = {"a", 1}
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, object)
+        show(mc)
+        schema = {int, str}
+        object = {1.0}
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, object)
+        show(mc)
+        object = {1}
+        validate(schema, object)
+        object = {1, 2.0}
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, object)
         show(mc)
 
     def test_intersect(self):

@@ -638,7 +638,7 @@ def compile(schema, _deferred_compiles=None):
     elif isinstance(schema, dict):
         ret = _dict(schema, _deferred_compiles=_deferred_compiles)
     elif isinstance(schema, set):
-        ret = _union(schema, _deferred_compiles=_deferred_compiles)
+        ret = _set(schema, _deferred_compiles=_deferred_compiles)
     else:
         ret = _const(schema)
 
@@ -1194,3 +1194,44 @@ class _dict:
 
     def __str__(self):
         return str(self.schema)
+
+
+class _set:
+    def __init__(self, schema, _deferred_compiles=None):
+        self.schema_ = schema
+        if len(schema) == 0:
+            self.schema = _const(set())
+            self.__validate__ = self.__validate_empty_set__
+        elif len(schema) == 1:
+            self.schema = compile(
+                tuple(schema)[0], _deferred_compiles=_deferred_compiles
+            )
+            self.__validate__ = self.__validate_singleton__
+        else:
+            self.schema = _union(schema, _deferred_compiles=_deferred_compiles)
+
+    def __validate_empty_set__(self, object, name="object", strict=True, subs={}):
+        return self.schema.__validate__(object, name=name, strict=True, subs=subs)
+
+    def __validate_singleton__(self, object, name="object", strict=True, subs={}):
+        if not isinstance(object, set):
+            return _wrong_type_message(object, name, "set")
+        for i, o in enumerate(object):
+            name_ = f"{name}{{{i}}}"
+            v = self.schema.__validate__(o, name=name_, strict=True, subs=subs)
+            if v != "":
+                return v
+        return ""
+
+    def __validate__(self, object, name="object", strict=True, subs={}):
+        if not isinstance(object, set):
+            return _wrong_type_message(object, name, "set")
+        for i, o in enumerate(object):
+            name_ = f"{name}{{{i}}}"
+            v = self.schema.__validate__(o, name=name_, strict=True, subs=subs)
+            if v != "":
+                return v
+        return ""
+
+    def __str__(self):
+        return str(self.schema_)
