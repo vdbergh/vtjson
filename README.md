@@ -214,13 +214,13 @@ validate(schema, object, name="object", strict=True, subs={})
 
 A wrapper takes one or more schemas as arguments and produces a new schema.
 
-- An object matches the schema `union(schema1, ..., schemaN)` if it matches one of the schemas `schema1, ..., schemaN`. This is almost the same as `{schema1, ..., schemaN}`, or equivalently `set((schema1, ..., schemaN))` if `schema1, ..., schemaN` are hashable.
+- An object matches the schema `union(schema1, ..., schemaN)` if it matches one of the schemas `schema1, ..., schemaN`.
 - An object matches the schema `intersect(schema1, ..., schemaN)` if it matches all the schemas `schema1, ..., schemaN`.
 - An object matches the schema `complement(schema)` if it does not match `schema`.
 - An object matches the schema `lax(schema)` if it matches `schema` when validated with `strict=False`.
 - An object matches the schema `strict(schema)` if it matches `schema` when validated with `strict=True`.
 - An object matches the schema `set_name(schema, name)` if it matches `schema`. But the `name` argument will be used in non-validation messages.
-- An object matches the schema `quote(schema)` if it is equal to `schema`. For example the schema `{"cats", "dogs"}` matches the strings `"cats"` and `"dogs"` but the schema `quote({"cats", "dogs"})` matches the set `{"cats", "dogs"}`.
+- An object matches the schema `quote(schema)` if it is equal to `schema`. For example the schema `str` matches strings but the schema `quote(str)` matches the object `str`.
 - An object matches the schema `set_label(schema, label1, ..., labelN, debug=False)` if it matches `schema`, unless the schema is replaced by a different one via the `subs` argument to `validate`. If the optional argument `debug` is `True` then a message will be printed on the console if the schema was changed.
 
 ## Built-ins
@@ -302,7 +302,7 @@ A schema can be, in order of precedence:
   __compile__(_deferred_compiles=None)
   ```
 
-  This is an advanced feature which is used for the implementation of wrapper schemas. `__compile__()`, which is invoked by `compile()`, should produce an object with a `__validate__` attribute as described above. The optional argument `_deferred_compiles` is an opaque data structure for handling recursive schemas. It should be passed unmodified to any internal invokations of `compile()`. Please consult the source code of `vtjson` for more details.
+  This is an advanced feature which is used for the implementation of wrapper schemas. `__compile__()`, which is invoked by `compile()`, should produce an object with a `__validate__` attribute as described above. The optional argument `_deferred_compiles` is an opaque data structure for handling recursive schemas. It should be passed unmodified to any internal invocations of `compile()`. Please consult the source code of `vtjson` for more details.
 
 - A Python type. In that case validation is done by checking membership.
 - A callable. Validation is done by applying the callable to the object. If applying the callable throws an exception then the corresponding message will be part of the non-validation message.
@@ -323,7 +323,7 @@ For a dictionary schema containing only `const keys` (i.e. keys corresponding to
 - We now match the given key against all entries of the key list. If it matches an entry and the corresponding value also validates then the key is validated. Otherwise we keep going through the key list.
 - If the entire key list is consumed then the key fails validation.
 
-**Note** A consequence of this algorithm is that non-const keys are automatically optional. So applying the wrapper `optional_key` to them is meaningless and has no effect.
+A consequence of this algorithm is that non-const keys are automatically optional. So applying the wrapper `optional_key` to them is meaningless and has no effect.
 
 ## Creating types
 
