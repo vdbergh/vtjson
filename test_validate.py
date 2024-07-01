@@ -262,7 +262,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
         self.assertTrue("fake_string" in str(mc.exception))
-        
+
     def test_div(self):
         schema = div(2)
         object = 2
