@@ -1160,13 +1160,13 @@ class _dict:
             return _wrong_type_message(object, name, "dict")
 
         for k in self.min_keys:
-            name_ = f"{name}['{k}']"
+            name_ = f"{name}[{repr(k)}]"
             if k not in object:
                 return f"{name_} is missing"
 
         for k in object:
             vals = []
-            name_ = f"{name}['{k}']"
+            name_ = f"{name}[{repr(k)}]"
             if k in self.const_keys:
                 val = self.schema[k].__validate__(
                     object[k], name=name_, strict=strict, subs=subs

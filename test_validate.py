@@ -239,6 +239,30 @@ class TestValidation(unittest.TestCase):
             validate(schema, object)
         show(mc)
 
+        class fake_string:
+            def __init__(self, s):
+                self.s = s
+
+            def __str__(self):
+                return self.s
+
+        schema = {fake_string("a"): 1}
+        object = {"a": 1}
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, object)
+        show(mc)
+
+        self.assertTrue("fake_string" in str(mc.exception))
+
+        schema = {str: 1}
+        object = {fake_string("a"): 1}
+
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, object)
+        show(mc)
+
+        self.assertTrue("fake_string" in str(mc.exception))
+        
     def test_div(self):
         schema = div(2)
         object = 2
