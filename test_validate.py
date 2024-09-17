@@ -800,6 +800,14 @@ class TestValidation(unittest.TestCase):
         t = make_type({}, debug=True)
         self.assertTrue(t.__name__ == "schema")
 
+        t = make_type({1: set_label("a", "x")}, debug=True)
+        object = {1: "b"}
+        self.assertFalse(isinstance(object, t))
+        t = make_type(
+            {1: set_label("a", "x", debug=True)}, debug=True, subs={"x": anything}
+        )
+        self.assertTrue(isinstance(object, t))
+
     def test_generics(self):
         with self.assertRaises(ValidationError) as mc:
             schema = [str, ...]

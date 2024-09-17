@@ -76,20 +76,29 @@ def _wrong_type_message(object, name, type_name, explanation=None):
 
 class _validate_meta(type):
     def __instancecheck__(cls, object):
-        valid = _validate(cls.__schema__, object, "object", strict=cls.__strict__)
+        valid = _validate(
+            cls.__schema__, object, "object", strict=cls.__strict__, subs=cls.__subs__
+        )
         if cls.__debug__ and valid != "":
             print(f"DEBUG: {valid}")
         return valid == ""
 
 
-def make_type(schema, name=None, strict=True, debug=False):
+def make_type(schema, name=None, strict=True, debug=False, subs={}):
     if name is None:
         if hasattr(schema, "__name__"):
             name = schema.__name__
         else:
             name = "schema"
     return _validate_meta(
-        name, (), {"__schema__": schema, "__strict__": strict, "__debug__": debug}
+        name,
+        (),
+        {
+            "__schema__": schema,
+            "__strict__": strict,
+            "__debug__": debug,
+            "__subs__": subs,
+        },
     )
 
 
