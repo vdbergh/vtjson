@@ -284,7 +284,7 @@ A schema can be, in order of precedence:
    - the instances have a `__validate__` method with signature
 
    ```python
-   __validate__(self, object, name, strict)
+   __validate__(self, object, name, strict, subs)
    ```
 
    - The parameters of `__validate__()` have the same semantics as those of `validate()`. The return value of `__validate__()` should be the empty string if validation succeeds, and otherwise it should be an explanation about what went wrong.
@@ -292,7 +292,7 @@ A schema can be, in order of precedence:
 - An object having a `__validate__` attribute with signature
 
   ```python
-  __validate__(object, name, strict)
+  __validate__(object, name, strict, subs)
   ```
 
   as above.
@@ -343,7 +343,7 @@ The drawback, compared to using `validate` directly, is that there is no feedbac
 The full signature of `make_type` is
 
 ```python
-make_type(schema, name=None, strict=True, debug=False)
+make_type(schema, name=None, strict=True, debug=False, subs={})
 ```
 
 The optional `name` argument is used to set the `__name__` attribute of the type. If it is not supplied then `vtjson` tries to make an educated guess.
