@@ -274,7 +274,7 @@ compile(schema, _deferred_compiles=None)
 
 but the optional argument `_deferred_compiles` should not be set by the user.
 
-## Format
+## Schema format
 
 A schema can be, in order of precedence:
 
@@ -309,7 +309,7 @@ A schema can be, in order of precedence:
 - A `list` or a `tuple`. Validation is done by first checking membership of the corresponding types, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
 - A dictionary. Validation is done by first checking membership of the `dict` type, and then performing validation for each of the values of the object being validated against the corresponding values of the schema. Keys are themselves considered as schemas. E.g. `{str: str}` represents a dictionary whose keys and values are both strings. A more elaborate discussion of validation of dictionaries is given below.
 - A `set`. A set validates an object if the object is a set and the elements of the object are validated by an element of the schema.
-- An arbitrary Python object. Validation is done by checking equality of the schema and the object, except when the schema is of type `float`, in which case `math.isclose` is used. Below we call such an object a `const schema`.
+- An arbitrary Python object. Validation is done by checking equality of the schema and the object, except when the schema is `float`, in which case `math.isclose` is used. Below we call such an object a `const schema`.
 
 ## Validating dictionaries
 
@@ -318,9 +318,9 @@ For a dictionary schema containing only `const keys` (i.e. keys corresponding to
 - First we verify that the object is also a dictionary. If not then validation fails.
 - We verify that all non-optional const keys of the schema are also keys of the object. If this is not the case then validation fails.
 - Now we make a list of all the keys of the schema (both optional and non-optional). The result will be called the `key list` below.
-- The object will pass validation if all its keys pass validation. We next discuss how to validate a particular key.
-- If none of the entries of the key list validate the given key and `strict=True` (the default) then the key fails validation.
-- We now match the given key against all entries of the key list. If it matches an entry and the corresponding value also validates then the key is validated. Otherwise we keep going through the key list.
+- The object will pass validation if all its keys pass validation. We next discuss how to validate a particular key of the object.
+- If none of the entries of the key list validate the given key and `strict==True` (the default) then the key fails validation. If on the other hand `strict==False` then the key passes.
+- Assuming the fate of the given key hasn't been decided yet, we now match it against all entries of the key list. If it matches an entry and the corresponding value also validates then the key is validated. Otherwise we keep going through the key list.
 - If the entire key list is consumed then the key fails validation.
 
 A consequence of this algorithm is that non-const keys are automatically optional. So applying the wrapper `optional_key` to them is meaningless and has no effect.
