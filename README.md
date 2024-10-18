@@ -206,7 +206,7 @@ If the validation fails this will throw a `ValidationError` and the exception co
 validate(schema, object, name="object", strict=True, subs={})
 ```
 
-- The optional `name` argument is used to refer to the object being validated in the returned message.
+- The optional argument `name` is used to refer to the object being validated in the returned message.
 - The optional argument `strict` indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
 - The optional argument `subs` is a dictionary whose keys are labels (see below) and whose values are substitution schemas for schemas with those labels.
 
