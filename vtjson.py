@@ -32,7 +32,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.9.6"
+__version__ = "1.9.7"
 
 
 _dns_resolver = None
@@ -404,7 +404,7 @@ class div:
             return _wrong_type_message(object, name, self.__name__)
 
 
-class isclose:
+class close_to:
     def __init__(self, x, rel_tol=None, abs_tol=None):
         self.kw = {}
         if not isinstance(x, (int, float)):
@@ -424,7 +424,7 @@ class isclose:
 
         kwl = [str(x)] + [f"{k}={v}" for (k, v) in self.kw.items()]
         kwl = ",".join(kwl)
-        self.__name__ = f"isclose({kwl})"
+        self.__name__ = f"close_to({kwl})"
         self.x = x
 
     def __validate__(self, object, name="object", strict=True, subs={}):
@@ -1123,7 +1123,7 @@ class _const:
     def __init__(self, schema):
         self.schema = schema
         if isinstance(schema, float):
-            self.__validate__ = isclose(schema).__validate__
+            self.__validate__ = close_to(schema).__validate__
 
     def message(self, name, object):
         return f"{name} (value:{_c(object)}) is not equal to {repr(self.schema)}"

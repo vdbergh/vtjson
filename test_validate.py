@@ -11,6 +11,7 @@ from vtjson import (
     anything,
     at_least_one_of,
     at_most_one_of,
+    close_to,
     compile,
     complement,
     cond,
@@ -28,7 +29,6 @@ from vtjson import (
     intersect,
     interval,
     ip_address,
-    isclose,
     keys,
     lax,
     le,
@@ -300,25 +300,25 @@ class TestValidation(unittest.TestCase):
             validate(schema, object)
         show(mc)
 
-    def test_isclose(self):
+    def test_close_to(self):
         with self.assertRaises(SchemaError) as mc:
-            schema = isclose({})
+            schema = close_to({})
         show(mc)
         with self.assertRaises(SchemaError) as mc:
-            schema = isclose(1.0, abs_tol={})
+            schema = close_to(1.0, abs_tol={})
         show(mc)
         with self.assertRaises(SchemaError) as mc:
-            schema = isclose(1.0, rel_tol={})
+            schema = close_to(1.0, rel_tol={})
         show(mc)
 
-        schema = isclose(1.0)
+        schema = close_to(1.0)
         validate(schema, 1.0)
 
         with self.assertRaises(ValidationError) as mc:
             validate(schema, 1.1)
         show(mc)
 
-        schema = isclose(1.0, abs_tol=0.2)
+        schema = close_to(1.0, abs_tol=0.2)
         validate(schema, 1.1)
 
         with self.assertRaises(ValidationError) as mc:
