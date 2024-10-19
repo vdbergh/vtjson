@@ -302,6 +302,10 @@ class TestValidation(unittest.TestCase):
 
     def test_close_to(self):
         with self.assertRaises(SchemaError) as mc:
+            schema = close_to
+            validate(schema, 1.0)
+        show(mc)
+        with self.assertRaises(SchemaError) as mc:
             schema = close_to({})
         show(mc)
         with self.assertRaises(SchemaError) as mc:
