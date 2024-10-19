@@ -32,7 +32,7 @@ except ImportError:
         pass
 
 
-__version__ = "1.9.5"
+__version__ = "1.9.6"
 
 
 _dns_resolver = None
