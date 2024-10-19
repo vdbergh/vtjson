@@ -28,6 +28,7 @@ from vtjson import (
     intersect,
     interval,
     ip_address,
+    isclose,
     keys,
     lax,
     le,
@@ -297,6 +298,31 @@ class TestValidation(unittest.TestCase):
             schema = div(2, 1, name="odd")
             object = 2
             validate(schema, object)
+        show(mc)
+
+    def test_isclose(self):
+        with self.assertRaises(SchemaError) as mc:
+            schema = isclose({})
+        show(mc)
+        with self.assertRaises(SchemaError) as mc:
+            schema = isclose(1.0, abs_tol={})
+        show(mc)
+        with self.assertRaises(SchemaError) as mc:
+            schema = isclose(1.0, rel_tol={})
+        show(mc)
+
+        schema = isclose(1.0)
+        validate(schema, 1.0)
+
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, 1.1)
+        show(mc)
+
+        schema = isclose(1.0, abs_tol=0.2)
+        validate(schema, 1.1)
+
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, 1.3)
         show(mc)
 
     def test_at_most_one_of(self):

@@ -404,6 +404,38 @@ class div:
             return _wrong_type_message(object, name, self.__name__)
 
 
+class isclose:
+    def __init__(self, x, rel_tol=None, abs_tol=None):
+        self.kw = {}
+        if not isinstance(x, (int, float)):
+            raise SchemaError(f"{repr(x)} is not a number")
+        if rel_tol is not None:
+            if not isinstance(rel_tol, float):
+                raise SchemaError(
+                    f"The relative tolerance {repr(rel_tol)} is not a float"
+                )
+            self.kw["rel_tol"] = rel_tol
+        if abs_tol is not None:
+            if not isinstance(abs_tol, float):
+                raise SchemaError(
+                    f"The absolute tolerance {repr(abs_tol)} is not a float"
+                )
+            self.kw["abs_tol"] = abs_tol
+
+        kwl = [str(x)] + [f"{k}={v}" for (k, v) in self.kw.items()]
+        kwl = ",".join(kwl)
+        self.__name__ = f"isclose({kwl})"
+        self.x = x
+
+    def __validate__(self, object, name="object", strict=True, subs={}):
+        if not isinstance(object, (float, int)):
+            return _wrong_type_message(object, name, "number")
+        elif math.isclose(object, self.x, **self.kw):
+            return ""
+        else:
+            return _wrong_type_message(object, name, self.__name__)
+
+
 class gt:
     def __init__(self, lb):
         try:
