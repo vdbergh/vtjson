@@ -436,6 +436,18 @@ class TestValidation(unittest.TestCase):
             validate(schema, object, "url")
         show(mc)
 
+    def test_const(self):
+        schema = "a"
+        validate(schema, "a")
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, "b")
+        show(mc)
+        schema = 1.0
+        validate(schema, 1.0)
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, 1.1)
+        show(mc)
+
     def test_cond(self):
         with self.assertRaises(SchemaError) as mc:
             schema = cond("a", "b", "c")

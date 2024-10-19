@@ -1123,7 +1123,7 @@ class _const:
     def __init__(self, schema):
         self.schema = schema
         if isinstance(schema, float):
-            self.__validate__ = self.__validate_float__
+            self.__validate__ = isclose(schema).__validate__
 
     def message(self, name, object):
         return f"{name} (value:{_c(object)}) is not equal to {repr(self.schema)}"
@@ -1132,18 +1132,6 @@ class _const:
         if object != self.schema:
             return self.message(name, object)
         return ""
-
-    def message_float(self, name, object):
-        return f"{name} (value:{_c(object)}) is not close to {repr(self.schema)}"
-
-    def __validate_float__(self, object, name="object", strict=True, subs={}):
-        try:
-            if math.isclose(self.schema, object):
-                return ""
-            else:
-                return self.message_float(name, object)
-        except Exception:
-            return self.message_float(name, object)
 
     def __str__(self):
         return str(self.schema)

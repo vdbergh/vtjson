@@ -230,6 +230,7 @@ Some built-ins take arguments. If no arguments are given then the parentheses ca
 - `regex(pattern, name=None, fullmatch=True, flags=0)`. This matches the strings which match the given pattern. By default the entire string is matched, but this can be overruled via the `fullmatch` argument. The `flags` argument has the usual meaning.
 - `glob(pattern, name=None)`. Unix style filename matching. This is implemented using `pathlib.PurePath().match()`.
 - `div(divisor, remainder=0, name=None)`. This matches the integers `x` such that `(x - remainder) % divisor` == 0.
+- `isclose(x, abs_tol=None, rel_tol=None)`. This matches the floats that are close to `x` in the sense of `math.isclose`.
 - `number`. Matches `int` and `float`.
 - `email`. Checks if the object is a valid email address. This uses the package `email_validator`. The `email` schema accepts the same options as `validate_email` in loc. cit.
 - `ip_address` and `url`. These are similar to `email`.
