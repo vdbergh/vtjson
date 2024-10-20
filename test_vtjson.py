@@ -631,6 +631,17 @@ class TestValidation(unittest.TestCase):
         object = {1, 2}
         validate(schema, object)
 
+        schema = quote(1.0 + 1e-14)
+        with self.assertRaises(ValidationError) as mc:
+            object = 1.0
+            validate(schema, object)
+        show(mc)
+
+        validate(schema, 1.0 + 1e-14)
+
+        schema = 1.0
+        validate(schema, 1.0 + 1e-14)
+
     @unittest.skipUnless(
         sys.version_info.major == 3 and sys.version_info.minor >= 7,
         "datetime.datetime.fromisoformat was introduced in Python 3.7",

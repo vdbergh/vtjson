@@ -257,7 +257,7 @@ class set_label:
 
 class quote:
     def __init__(self, schema):
-        self.schema = _const(schema)
+        self.schema = _const(schema, strict_eq=True)
 
     def __validate__(self, object, name="object", strict=True, subs={}):
         return self.schema.__validate__(object, name=name, strict=strict, subs=subs)
@@ -1120,9 +1120,9 @@ class _sequence:
 
 
 class _const:
-    def __init__(self, schema):
+    def __init__(self, schema, strict_eq=False):
         self.schema = schema
-        if isinstance(schema, float):
+        if isinstance(schema, float) and not strict_eq:
             self.__validate__ = close_to(schema).__validate__
 
     def message(self, name, object):
