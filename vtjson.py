@@ -20,7 +20,7 @@ class compiled_schema(Protocol):
         object: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str: ...
 
     def __eq__(self, x:object) -> bool:
@@ -178,9 +178,9 @@ class _union:
 
 
 class union:
-    schemas: tuple[Any, ...]
+    schemas: tuple[type_schema, ...]
 
-    def __init__(self, *schemas: Any) -> None:
+    def __init__(self, *schemas: type_schema) -> None:
         self.schemas = schemas
 
     def __compile__(self, _deferred_compiles: _mapping | None = None) -> _union:
@@ -191,7 +191,7 @@ class _intersect:
     schema: list[compiled_schema]
 
     def __init__(
-        self, schemas: tuple[Any, ...], _deferred_compiles: _mapping | None = None
+        self, schemas: tuple[type_schema, ...], _deferred_compiles: _mapping | None = None
     ) -> None:
         self.schemas = [
             compile(s, _deferred_compiles=_deferred_compiles) for s in schemas
@@ -212,9 +212,9 @@ class _intersect:
 
 
 class intersect:
-    schemas: tuple[Any, ...]
+    schemas: tuple[type_schema, ...]
 
-    def __init__(self, *schemas: Any) -> None:
+    def __init__(self, *schemas: type_schema) -> None:
         self.schemas = schemas
 
     def __compile__(self, _deferred_compiles: _mapping | None = None) -> _intersect:
@@ -262,7 +262,7 @@ class _lax:
         object: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         return self.schema.__validate__(object, name=name, strict=False, subs=subs)
 
@@ -375,7 +375,7 @@ class quote:
         object: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         return self.schema.__validate__(object, name=name, strict=strict, subs=subs)
 
@@ -578,7 +578,7 @@ class div:
         object: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         if not isinstance(object, int):
             return _wrong_type_message(object, name, "int")
