@@ -1037,6 +1037,12 @@ class TestValidation(unittest.TestCase):
         show(cm)
 
         ip_address = regex(r"(?:[\d]+\.){3}(?:[\d]+)", name="ip_address")
+        with self.assertRaises(ValidationError) as mc:
+            object = 123
+            validate(ip_address, object)
+        show(mc)
+
+        
         schema = {"ip": ip_address}
         object = {"ip": "123.123.123.123"}
         validate(schema, object)
