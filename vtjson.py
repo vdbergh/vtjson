@@ -22,7 +22,13 @@ class compiled_schema(Protocol):
         subs: dict[str, Any] = {},
     ) -> str: ...
 
+    def __eq__(self, x:object) -> bool:
+        ...
 
+class type_schema(Protocol):
+    def __eq__(self, x:object) -> bool:
+        ...
+    
 HAS_MAGIC = True
 try:
     import magic as magic_
@@ -63,7 +69,7 @@ def _get_dns_resolver() -> dns.resolver.Resolver:
     return _dns_resolver
 
 
-def _c(s: Any) -> str:
+def _c(s: type_schema) -> str:
     ss = str(s)
     if len(ss) > 0:
         c = ss[-1]
@@ -82,7 +88,7 @@ def _c(s: Any) -> str:
 
 
 def _wrong_type_message(
-    object: Any, name: str, type_name: str, explanation: str | None = None
+    object: object, name: str, type_name: str, explanation: str | None = None
 ) -> str:
     message = f"{name} (value:{_c(object)}) is not of type '{type_name}'"
     if explanation is not None:
@@ -91,21 +97,25 @@ def _wrong_type_message(
 
 
 class _validate_meta(type):
-    def __instancecheck__(cls: Any, object: Any) -> bool:
+    __schema__:type_schema
+    __strict__:bool
+    __subs__:dict[str,object]
+    __dbg__:bool
+    def __instancecheck__(cls, object: object) -> bool:
         valid = _validate(
             cls.__schema__, object, "object", strict=cls.__strict__, subs=cls.__subs__
         )
-        if cls.__debug__ and valid != "":
+        if cls.__dbg__ and valid != "":
             print(f"DEBUG: {valid}")
         return valid == ""
 
 
 def make_type(
-    schema: Any,
+    schema: type_schema,
     name: str | None = None,
     strict: bool = True,
     debug: bool = False,
-    subs: dict[str, Any] = {},
+    subs: dict[str, object] = {},
 ) -> _validate_meta:
     if name is None:
         if hasattr(schema, "__name__"):
@@ -118,21 +128,22 @@ def make_type(
         {
             "__schema__": schema,
             "__strict__": strict,
-            "__debug__": debug,
+            "__dbg__": debug,
             "__subs__": subs,
         },
     )
 
 
 class optional_key:
-    key: Any
+    key: type_schema
 
-    def __init__(self, key: Any) -> None:
+    def __init__(self, key: type_schema) -> None:
         self.key = key
 
-    def __eq__(self, key: Any) -> bool:
-        result: bool = self.key == key.key
-        return result
+    def __eq__(self, key: object) -> bool:
+        if not isinstance(key, optional_key):
+            return False
+        return self.key == key.key
 
     def __hash__(self) -> int:
         return hash(self.key)
@@ -142,7 +153,7 @@ class _union:
     schemas: list[compiled_schema]
 
     def __init__(
-        self, schemas: tuple[Any, ...], _deferred_compiles: _mapping | None = None
+        self, schemas: tuple[type_schema, ...], _deferred_compiles: _mapping | None = None
     ) -> None:
         self.schemas = [
             compile(s, _deferred_compiles=_deferred_compiles) for s in schemas
@@ -150,10 +161,10 @@ class _union:
 
     def __validate__(
         self,
-        object: Any,
+        object: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         messages = []
         for schema in self.schemas:
@@ -190,7 +201,7 @@ class _intersect:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         for schema in self.schemas:
             message = schema.__validate__(object, name=name, strict=strict, subs=subs)
@@ -212,7 +223,7 @@ class intersect:
 class _complement:
     schema: compiled_schema
 
-    def __init__(self, schema: Any, _deferred_compiles: _mapping | None = None) -> None:
+    def __init__(self, schema: type_schema, _deferred_compiles: _mapping | None = None) -> None:
         self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
 
     def __validate__(
@@ -220,7 +231,7 @@ class _complement:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         message = self.schema.__validate__(object, name=name, strict=strict, subs=subs)
         if message != "":
@@ -230,9 +241,9 @@ class _complement:
 
 
 class complement:
-    schema: Any
+    schema: type_schema
 
-    def __init__(self, schema: Any) -> None:
+    def __init__(self, schema: type_schema) -> None:
         self.schema = schema
 
     def __compile__(self, _deferred_compiles: _mapping | None = None) -> _complement:
@@ -242,7 +253,7 @@ class complement:
 class _lax:
     schema: compiled_schema
 
-    def __init__(self, schema: Any, _deferred_compiles: _mapping | None = None) -> None:
+    def __init__(self, schema: type_schema, _deferred_compiles: _mapping | None = None) -> None:
         self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
 
     def __validate__(
@@ -256,9 +267,9 @@ class _lax:
 
 
 class lax:
-    schema: Any
+    schema: type_schema
 
-    def __init__(self, schema: Any) -> None:
+    def __init__(self, schema: type_schema) -> None:
         self.schema = schema
 
     def __compile__(self, _deferred_compiles: _mapping | None = None) -> _lax:
@@ -268,7 +279,7 @@ class lax:
 class _strict:
     schema: compiled_schema
 
-    def __init__(self, schema: Any, _deferred_compiles: _mapping | None = None) -> None:
+    def __init__(self, schema: type_schema, _deferred_compiles: _mapping | None = None) -> None:
         self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
 
     def __validate__(
@@ -276,13 +287,13 @@ class _strict:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         return self.schema.__validate__(object, name=name, strict=True, subs=subs)
 
 
 class strict:
-    def __init__(self, schema: Any) -> None:
+    def __init__(self, schema: type_schema) -> None:
         self.schema = schema
 
     def __compile__(self, _deferred_compiles: _mapping | None = None) -> _strict:
@@ -296,7 +307,7 @@ class _set_label:
 
     def __init__(
         self,
-        schema: Any,
+        schema: type_schema,
         labels: set[str],
         debug: bool,
         _deferred_compiles: _mapping | None = None,
@@ -310,7 +321,7 @@ class _set_label:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         common_labels = tuple(set(subs.keys()).intersection(self.labels))
         if len(common_labels) >= 2:
@@ -332,11 +343,11 @@ class _set_label:
 
 
 class set_label:
-    schema: Any
+    schema: type_schema
     labels: set[str]
     debug: bool
 
-    def __init__(self, schema: Any, *labels: str, debug: bool = False) -> None:
+    def __init__(self, schema: type_schema, *labels: str, debug: bool = False) -> None:
         self.schema = schema
         for L in labels:
             if not isinstance(L, str):
@@ -355,7 +366,7 @@ class set_label:
 class quote:
     schema: _const
 
-    def __init__(self, schema: Any) -> None:
+    def __init__(self, schema: type_schema) -> None:
         self.schema = _const(schema, strict_eq=True)
 
     def __validate__(
@@ -373,7 +384,7 @@ class _set_name:
     __name__: str
 
     def __init__(
-        self, schema: Any, name: str, _deferred_compiles: _mapping | None = None
+        self, schema: type_schema, name: str, _deferred_compiles: _mapping | None = None
     ) -> None:
         self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
         self.__name__ = name
@@ -383,7 +394,7 @@ class _set_name:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         message = self.schema.__validate__(object, name=name, strict=strict, subs=subs)
         if message != "":
@@ -392,10 +403,10 @@ class _set_name:
 
 
 class set_name:
-    schema: Any
+    schema: type_schema
     name: str
 
-    def __init__(self, schema: Any, name: str) -> None:
+    def __init__(self, schema: type_schema, name: str) -> None:
         if not isinstance(name, str):
             raise SchemaError(f"The name {_c(name)} is not a string")
         self.schema = schema
@@ -442,7 +453,7 @@ class regex:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         try:
             if self.fullmatch and self.pattern.fullmatch(object):
@@ -479,7 +490,7 @@ class glob:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         try:
             if pathlib.PurePath(object).match(self.pattern):
@@ -513,7 +524,7 @@ class magic:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         try:
             object_mime_type = magic_.from_buffer(object, mime=True)
@@ -571,7 +582,7 @@ class div:
 
 
 class close_to:
-    kw: dict[str, Any]
+    kw: dict[str, float]
     x: int | float
     __name__: str
 
@@ -604,10 +615,10 @@ class close_to:
 
     def __validate__(
         self,
-        object: Any,
+        object: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         if not isinstance(object, (float, int)):
             return _wrong_type_message(object, name, "number")
@@ -637,7 +648,7 @@ class gt:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         try:
             if self.lb < object:
@@ -668,7 +679,7 @@ class ge:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         try:
             if self.lb <= object:
@@ -699,7 +710,7 @@ class lt:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         try:
             if self.ub > object:
@@ -730,7 +741,7 @@ class le:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         try:
             if self.ub >= object:
@@ -809,7 +820,7 @@ class interval:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         return ""
 
@@ -844,7 +855,7 @@ class size:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         try:
             L = len(object)
@@ -866,7 +877,7 @@ class _deferred:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         if self.key not in self.collection:
             raise ValidationError(f"{name}: key {self.key} is unknown")
@@ -901,7 +912,7 @@ class _mapping:
         self.mapping[id(key)] = (m[0], m[1], value)
 
 
-def compile(schema: Any, _deferred_compiles: _mapping | None = None) -> compiled_schema:
+def compile(schema: type_schema, _deferred_compiles: _mapping | None = None) -> compiled_schema:
     if _deferred_compiles is None:
         _deferred_compiles = _mapping()
     # avoid infinite loop in case of a recursive schema
@@ -920,7 +931,7 @@ def compile(schema: Any, _deferred_compiles: _mapping | None = None) -> compiled
                 f"{repr(schema.__name__)} does " f"not have a no-argument constructor"
             ) from None
     elif hasattr(schema, "__validate__"):
-        ret = schema
+        ret = cast(compiled_schema, schema)
     elif hasattr(schema, "__compile__"):
         ret = schema.__compile__(_deferred_compiles=_deferred_compiles)
     elif isinstance(schema, type) or (
@@ -947,7 +958,7 @@ def compile(schema: Any, _deferred_compiles: _mapping | None = None) -> compiled
 
 
 def _validate(
-    schema: Any,
+    schema: type_schema,
     object: Any,
     name: str = "object",
     strict: bool = True,
@@ -958,11 +969,11 @@ def _validate(
 
 
 def validate(
-    schema: Any,
+    schema: type_schema,
     object: Any,
     name: str = "object",
     strict: bool = True,
-    subs: dict[str, Any] = {},
+    subs: dict[str, type_schema] = {},
 ) -> None:
     message = _validate(schema, object, name=name, strict=strict, subs=subs)
     if message != "":
@@ -978,7 +989,7 @@ class number:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         if isinstance(object, (int, float)):
             return ""
@@ -1001,7 +1012,7 @@ class email:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         if not isinstance(object, str):
             return _wrong_type_message(
@@ -1020,7 +1031,7 @@ class ip_address:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         try:
             ipaddress.ip_address(object)
@@ -1035,7 +1046,7 @@ class url:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         result = urllib.parse.urlparse(object)
         if all([result.scheme, result.netloc]):
@@ -1059,7 +1070,7 @@ class date_time:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         if self.format is not None:
             try:
@@ -1080,7 +1091,7 @@ class date:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         try:
             datetime.date.fromisoformat(object)
@@ -1095,7 +1106,7 @@ class time:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         try:
             datetime.time.fromisoformat(object)
@@ -1110,7 +1121,7 @@ class nothing:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         return _wrong_type_message(object, name, "nothing")
 
@@ -1121,7 +1132,7 @@ class anything:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         return ""
 
@@ -1186,7 +1197,7 @@ class at_least_one_of:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         try:
             if any([a in object for a in self.args]):
@@ -1211,7 +1222,7 @@ class at_most_one_of:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         try:
             if sum([a in object for a in self.args]) <= 1:
@@ -1236,7 +1247,7 @@ class one_of:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         try:
             if sum([a in object for a in self.args]) == 1:
@@ -1258,7 +1269,7 @@ class keys:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         for k in self.args:
             if k not in object:
@@ -1273,9 +1284,9 @@ class _ifthen:
 
     def __init__(
         self,
-        if_schema: Any,
-        then_schema: Any,
-        else_schema: Any | None = None,
+        if_schema: type_schema,
+        then_schema: type_schema,
+        else_schema: type_schema | None = None,
         _deferred_compiles: _mapping | None = None,
     ) -> None:
         self.if_schema = compile(if_schema, _deferred_compiles=_deferred_compiles)
@@ -1292,7 +1303,7 @@ class _ifthen:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         if (
             self.if_schema.__validate__(object, name=name, strict=strict, subs=subs)
@@ -1309,12 +1320,12 @@ class _ifthen:
 
 
 class ifthen:
-    if_schema: Any
-    then_schema: Any
-    else_schema: Any | None
+    if_schema: type_schema
+    then_schema: type_schema
+    else_schema: type_schema | None
 
     def __init__(
-        self, if_schema: Any, then_schema: Any, else_schema: Any | None = None
+        self, if_schema: type_schema, then_schema: type_schema, else_schema: type_schema | None = None
     ) -> None:
         self.if_schema = if_schema
         self.then_schema = then_schema
@@ -1351,7 +1362,7 @@ class _cond:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         for c in self.conditions:
             if c[0].__validate__(object, name=name, strict=strict, subs=subs) == "":
@@ -1376,7 +1387,7 @@ class _fields:
     d: dict[str, compiled_schema]
 
     def __init__(
-        self, d: dict[str, Any], _deferred_compiles: _mapping | None = None
+        self, d: dict[str, type_schema], _deferred_compiles: _mapping | None = None
     ) -> None:
         self.d = {}
         for k, v in d.items():
@@ -1387,7 +1398,7 @@ class _fields:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         for k, v in self.d.items():
             name_ = f"{name}.{k}"
@@ -1422,7 +1433,7 @@ class _filter:
     def __init__(
         self,
         filter: Callable[[Any], Any],
-        schema: Any,
+        schema: type_schema,
         filter_name: str | None = None,
         _deferred_compiles: _mapping | None = None,
     ) -> None:
@@ -1443,7 +1454,7 @@ class _filter:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         try:
             object = self.filter(object)
@@ -1458,11 +1469,11 @@ class _filter:
 
 class filter:
     filter: Callable[[Any], Any]
-    schema: Any
+    schema: type_schema
     filter_name: str | None
 
     def __init__(
-        self, filter: Callable[[Any], Any], schema: Any, filter_name: str | None = None
+        self, filter: Callable[[Any], Any], schema: type_schema, filter_name: str | None = None
     ) -> None:
         if filter_name is not None and not isinstance(filter_name, str):
             raise SchemaError("The filter name is not a string")
@@ -1494,7 +1505,7 @@ class _type:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         try:
             if not isinstance(object, self.schema):
@@ -1509,14 +1520,14 @@ class _type:
 
 
 class _sequence:
-    type_schema: type
+    type_schema_: type
     schema: list[compiled_schema]
     fill: Any
 
     def __init__(
         self, schema: list[Any] | tuple[Any], _deferred_compiles: _mapping | None = None
     ) -> None:
-        self.type_schema = type(schema)
+        self.type_schema_ = type(schema)
         self.schema = [
             compile(o, _deferred_compiles=_deferred_compiles)
             for o in schema
@@ -1536,10 +1547,10 @@ class _sequence:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         object_ = object  # avoid changing the type of object to object (instead of Any)
-        if not isinstance(object_, self.type_schema):
+        if not isinstance(object_, self.type_schema_):
             return _wrong_type_message(object, name, type(self.schema).__name__)
         ls = len(self.schema)
         lo = len(object)
@@ -1560,10 +1571,10 @@ class _sequence:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         object_ = object  # avoid changing the type of object to object (instead of Any)
-        if not isinstance(object_, self.type_schema):
+        if not isinstance(object_, self.type_schema_):
             return _wrong_type_message(object, name, type(self.schema).__name__)
         ls = len(self.schema)
         lo = len(object)
@@ -1586,9 +1597,9 @@ class _sequence:
 
 
 class _const:
-    schema: Any
+    schema: type_schema
 
-    def __init__(self, schema: Any, strict_eq: bool = False) -> None:
+    def __init__(self, schema: type_schema, strict_eq: bool = False) -> None:
         self.schema = schema
         if isinstance(schema, float) and not strict_eq:
             setattr(self, "__validate__", close_to(schema).__validate__)
@@ -1601,7 +1612,7 @@ class _const:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         if object != self.schema:
             return self.message(name, object)
@@ -1627,7 +1638,7 @@ class _callable:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         try:
             if self.schema(object):
@@ -1645,10 +1656,10 @@ class _dict:
     min_keys: set[Any]
     const_keys: set[Any]
     other_keys: set[Any]
-    schema: dict[compiled_schema, compiled_schema]
+    schema: dict[type_schema, compiled_schema]
 
     def __init__(
-        self, schema: dict[Any, Any], _deferred_compiles: _mapping | None = None
+        self, schema: dict[type_schema, type_schema], _deferred_compiles: _mapping | None = None
     ) -> None:
         self.min_keys = set()
         self.const_keys = set()
@@ -1745,7 +1756,7 @@ class _set:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         return self.schema.__validate__(object, name=name, strict=True, subs=subs)
 
@@ -1754,7 +1765,7 @@ class _set:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         if not isinstance(object, set):
             return _wrong_type_message(object, name, "set")
@@ -1770,7 +1781,7 @@ class _set:
         object: Any,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, Any] = {},
+        subs: dict[str, type_schema] = {},
     ) -> str:
         if not isinstance(object, set):
             return _wrong_type_message(object, name, "set")
