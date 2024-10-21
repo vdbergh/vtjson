@@ -1042,7 +1042,6 @@ class TestValidation(unittest.TestCase):
             validate(ip_address, object)
         show(mc)
 
-        
         schema = {"ip": ip_address}
         object = {"ip": "123.123.123.123"}
         validate(schema, object)
