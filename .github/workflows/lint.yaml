@@ -45,6 +45,13 @@ jobs:
         continue-on-error: true
         run: |
           sudo snap install mdl
+          mdl *.md
+
+      - name: Run mypy
+        id: mypy
+        continue-on-error: true
+        run: |
+          pipx run mypy test_vtjson.py vtjson.py --strict --explicit-package-bases --ignore-missing-imports
 
       - name: Check linters and formatters status
         run: |
@@ -52,7 +59,8 @@ jobs:
           if [[ "${{ steps.black.outcome }}" == "success" ]]; then echo "✔ black"; else echo "❌ black"; fi
           if [[ "${{ steps.isort.outcome }}" == "success" ]]; then echo "✔ isort"; else echo "❌ isort"; fi
           if [[ "${{ steps.mdl.outcome }}" == "success" ]]; then echo "✔ mdl"; else echo "❌ mdl"; fi
-          if [[ "${{ steps.black.outcome }}" == "failure" || "${{ steps.isort.outcome }}" == "failure" || "${{ steps.flake8.outcome }}" == "failure" ]]; then exit 1; fi
+          if [[ "${{ steps.mypy.outcome }}" == "success" ]]; then echo "✔ mdl"; else echo "❌ mdl"; fi
+          if [[ "${{ steps.black.outcome }}" == "failure" || "${{ steps.isort.outcome }}" == "failure" || "${{ steps.flake8.outcome }}" == "failure" || "${{ steps.mypy.outcome }}" == "failure" ]]; then exit 1; fi
 
       - name: Print formatting instructions
         if: ${{ failure() }}
