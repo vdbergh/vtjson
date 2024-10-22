@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10"]
+        python-version: ["3.12"]
 
     steps:
       - uses: actions/checkout@v3
@@ -51,7 +51,7 @@ jobs:
         id: mypy
         continue-on-error: true
         run: |
-          pipx run mypy test_vtjson.py vtjson.py --strict --explicit-package-bases --ignore-missing-imports
+          pipx run mypy test_vtjson.py vtjson.py --strict --explicit-package-bases --ignore-missing-imports --no-warn-redundant-casts
 
       - name: Check linters and formatters status
         run: |

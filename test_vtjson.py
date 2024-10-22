@@ -13,6 +13,7 @@ from vtjson import (
     at_least_one_of,
     at_most_one_of,
     close_to,
+    comparable,
     compile,
     complement,
     cond,
@@ -1414,11 +1415,11 @@ class TestValidation(unittest.TestCase):
         show(cm_)
 
         with self.assertRaises(SchemaError) as cm_:
-            interval(..., {})
+            interval(..., cast(comparable, {}))
         show(cm_)
 
         with self.assertRaises(SchemaError) as cm_:
-            interval({}, ...)
+            interval(cast(comparable, {}), ...)
         show(cm_)
 
     def test_email(self) -> None:

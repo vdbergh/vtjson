@@ -7,6 +7,7 @@ import pathlib
 import re
 import urllib.parse
 from collections.abc import Sequence, Sized
+from types import EllipsisType
 from typing import Any, Callable, Protocol, Union, cast
 
 import dns.resolver
@@ -792,8 +793,8 @@ class interval:
 
     def __init__(
         self,
-        lb: object,  # This should really be comparable|EllipsisType
-        ub: object,
+        lb: comparable | EllipsisType,
+        ub: comparable | EllipsisType,
         strict_lb: bool = False,
         strict_ub: bool = False,
     ) -> None:

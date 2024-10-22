@@ -1,6 +1,6 @@
 #!/bin/sh
 
-mypy test_vtjson.py vtjson.py --strict --explicit-package-bases
+mypy test_vtjson.py vtjson.py --strict --explicit-package-bases --no-warn-redundant-casts
 black *.py
 isort --profile black *.py
 flake8 --max-line-length 88 bench.py test_vtjson.py vtjson.py
