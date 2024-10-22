@@ -792,7 +792,7 @@ class interval:
 
     def __init__(
         self,
-        lb: object,
+        lb: object,  # This should really be comparable|EllipsisType
         ub: object,
         strict_lb: bool = False,
         strict_ub: bool = False,
