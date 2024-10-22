@@ -68,7 +68,7 @@ except ImportError:
     HAS_GENERIC_ALIAS = False
 
 
-__version__ = "1.9.9"
+__version__ = "2.0.0"
 
 
 _dns_resolver: dns.resolver.Resolver | None = None
