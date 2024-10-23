@@ -15,14 +15,15 @@ import email_validator
 import idna
 
 
-class compiled_schema(Protocol):
+class compiled_schema:
     def __validate__(
         self,
         object_: object,
-        name: str = "object",
-        strict: bool = True,
-        subs: dict[str, object] = {},
-    ) -> str: ...
+        name: str,
+        strict: bool,
+        subs: dict[str, object],
+    ) -> str:
+        return ""
 
 
 class comparable(Protocol):
@@ -159,7 +160,7 @@ class optional_key:
         return hash(self.key)
 
 
-class _union:
+class _union(compiled_schema):
     schemas: list[compiled_schema]
 
     def __init__(
@@ -198,7 +199,7 @@ class union:
         return _union(self.schemas, _deferred_compiles=_deferred_compiles)
 
 
-class _intersect:
+class _intersect(compiled_schema):
     schema: list[compiled_schema]
 
     def __init__(
@@ -234,7 +235,7 @@ class intersect:
         return _intersect(self.schemas, _deferred_compiles=_deferred_compiles)
 
 
-class _complement:
+class _complement(compiled_schema):
     schema: compiled_schema
 
     def __init__(
@@ -266,7 +267,7 @@ class complement:
         return _complement(self.schema, _deferred_compiles=_deferred_compiles)
 
 
-class _lax:
+class _lax(compiled_schema):
     schema: compiled_schema
 
     def __init__(
@@ -294,7 +295,7 @@ class lax:
         return _lax(self.schema, _deferred_compiles=_deferred_compiles)
 
 
-class _strict:
+class _strict(compiled_schema):
     schema: compiled_schema
 
     def __init__(
@@ -320,7 +321,7 @@ class strict:
         return _strict(self.schema, _deferred_compiles=_deferred_compiles)
 
 
-class _set_label:
+class _set_label(compiled_schema):
     schema: compiled_schema
     labels: set[str]
     debug: bool
@@ -383,7 +384,7 @@ class set_label:
         )
 
 
-class quote:
+class quote(compiled_schema):
     schema: _const
 
     def __init__(self, schema: object) -> None:
@@ -399,7 +400,7 @@ class quote:
         return self.schema.__validate__(object_, name=name, strict=strict, subs=subs)
 
 
-class _set_name:
+class _set_name(compiled_schema):
     schema: compiled_schema
     __name__: str
 
@@ -436,7 +437,7 @@ class set_name:
         return _set_name(self.schema, self.name, _deferred_compiles=_deferred_compiles)
 
 
-class regex:
+class regex(compiled_schema):
     regex: str
     fullmatch: bool
     __name__: str
@@ -487,7 +488,7 @@ class regex:
         return _wrong_type_message(object_, name, self.__name__)
 
 
-class glob:
+class glob(compiled_schema):
     pattern: str
     __name__: str
 
@@ -525,7 +526,7 @@ class glob:
             return _wrong_type_message(object_, name, self.__name__, str(e))
 
 
-class magic:
+class magic(compiled_schema):
     mime_type: str
     __name__: str
 
@@ -566,7 +567,7 @@ class magic:
         return ""
 
 
-class div:
+class div(compiled_schema):
     divisor: int
     remainder: int
     __name__: str
@@ -607,7 +608,7 @@ class div:
             return _wrong_type_message(object_, name, self.__name__)
 
 
-class close_to:
+class close_to(compiled_schema):
     kw: dict[str, float]
     x: int | float
     __name__: str
@@ -654,7 +655,7 @@ class close_to:
             return _wrong_type_message(object_, name, self.__name__)
 
 
-class gt:
+class gt(compiled_schema):
     lb: comparable
 
     def __init__(self, lb: comparable) -> None:
@@ -685,7 +686,7 @@ class gt:
             return f"{self.message(name, object_)}: {str(e)}"
 
 
-class ge:
+class ge(compiled_schema):
     lb: comparable
 
     def __init__(self, lb: comparable) -> None:
@@ -716,7 +717,7 @@ class ge:
             return f"{self.message(name, object_)}: {str(e)}"
 
 
-class lt:
+class lt(compiled_schema):
     ub: comparable
 
     def __init__(self, ub: comparable) -> None:
@@ -747,7 +748,7 @@ class lt:
             return f"{self.message(name, object_)}: {str(e)}"
 
 
-class le:
+class le(compiled_schema):
     ub: comparable
 
     def __init__(self, ub: comparable) -> None:
@@ -778,7 +779,7 @@ class le:
             return f"{self.message(name, object_)}: {str(e)}"
 
 
-class interval:
+class interval(compiled_schema):
     lb_s: str
     ub_s: str
 
@@ -840,18 +841,8 @@ class interval:
         else:
             setattr(self, "__validate__", anything().__validate__)
 
-    # Not used but necessary for the protocol
-    def __validate__(
-        self,
-        object_: object,
-        name: str = "object",
-        strict: bool = True,
-        subs: dict[str, object] = {},
-    ) -> str:
-        return ""
 
-
-class size:
+class size(compiled_schema):
     interval: interval
 
     def __init__(self, lb: int, ub: int | None = None) -> None:
@@ -891,7 +882,7 @@ class size:
         return self.interval.__validate__(L, f"len({name})", strict, subs)
 
 
-class _deferred:
+class _deferred(compiled_schema):
     collection: _mapping
     key: object
 
@@ -939,6 +930,15 @@ class _mapping:
         self.mapping[id(key)] = (m[0], m[1], value)
 
 
+class _validate_schema(compiled_schema):
+    schema: object
+
+    def __init__(self, schema: object) -> None:
+        if not hasattr(schema, "__validate__"):
+            raise SchemaError(f"schema {repr(schema)} " "cannot be used for validation")
+        setattr(self, "__validate__", schema.__validate__)
+
+
 def compile(
     schema: object, _deferred_compiles: _mapping | None = None
 ) -> compiled_schema:
@@ -953,7 +953,9 @@ def compile(
 
     # real work starts here
     ret: compiled_schema
-    if isinstance(schema, type) and hasattr(schema, "__validate__"):
+    if isinstance(schema, compiled_schema):
+        ret = schema
+    elif isinstance(schema, type) and issubclass(schema, compiled_schema):
         try:
             ret = schema()
         except Exception:
@@ -961,9 +963,8 @@ def compile(
                 f"{repr(schema.__name__)} does " f"not have a no-argument constructor"
             ) from None
     elif hasattr(schema, "__validate__"):
-        ret = cast(compiled_schema, schema)
+        ret = _validate_schema(schema)
     elif hasattr(schema, "__compile__"):
-        assert schema is not None  # This should not be necessary
         ret = schema.__compile__(_deferred_compiles=_deferred_compiles)
     elif isinstance(schema, type) or (
         HAS_GENERIC_ALIAS and isinstance(schema, GenericAlias)
@@ -1013,7 +1014,7 @@ def validate(
 # Some predefined schemas
 
 
-class number:
+class number(compiled_schema):
     def __validate__(
         self,
         object_: object,
@@ -1027,7 +1028,7 @@ class number:
             return _wrong_type_message(object_, name, "number")
 
 
-class email:
+class email(compiled_schema):
     kw: dict[str, Any]
 
     def __init__(self, **kw: Any) -> None:
@@ -1055,7 +1056,7 @@ class email:
             return _wrong_type_message(object_, name, "email", str(e))
 
 
-class ip_address:
+class ip_address(compiled_schema):
     def __validate__(
         self,
         object_: object,
@@ -1072,7 +1073,7 @@ class ip_address:
             return _wrong_type_message(object_, name, "ip_address")
 
 
-class url:
+class url(compiled_schema):
     def __validate__(
         self,
         object_: object,
@@ -1088,7 +1089,7 @@ class url:
         return _wrong_type_message(object_, name, "url")
 
 
-class date_time:
+class date_time(compiled_schema):
     format: str | None
     __name__: str
 
@@ -1121,7 +1122,7 @@ class date_time:
         return ""
 
 
-class date:
+class date(compiled_schema):
     def __validate__(
         self,
         object_: object,
@@ -1138,7 +1139,7 @@ class date:
         return ""
 
 
-class time:
+class time(compiled_schema):
     def __validate__(
         self,
         object_: object,
@@ -1155,7 +1156,7 @@ class time:
         return ""
 
 
-class nothing:
+class nothing(compiled_schema):
     def __validate__(
         self,
         object_: object,
@@ -1166,7 +1167,7 @@ class nothing:
         return _wrong_type_message(object_, name, "nothing")
 
 
-class anything:
+class anything(compiled_schema):
     def __validate__(
         self,
         object_: object,
@@ -1177,7 +1178,7 @@ class anything:
         return ""
 
 
-class domain_name:
+class domain_name(compiled_schema):
     re_asci: re.Pattern[str]
     ascii_only: bool
     resolve: bool
@@ -1225,7 +1226,7 @@ class domain_name:
         return ""
 
 
-class at_least_one_of:
+class at_least_one_of(compiled_schema):
     args: tuple[object, ...]
     __name__: str
 
@@ -1252,7 +1253,7 @@ class at_least_one_of:
             return _wrong_type_message(object_, name, self.__name__, str(e))
 
 
-class at_most_one_of:
+class at_most_one_of(compiled_schema):
     args: tuple[object, ...]
     __name__: str
 
@@ -1279,7 +1280,7 @@ class at_most_one_of:
             return _wrong_type_message(object_, name, self.__name__, str(e))
 
 
-class one_of:
+class one_of(compiled_schema):
     args: tuple[object, ...]
     __name__: str
 
@@ -1306,7 +1307,7 @@ class one_of:
             return _wrong_type_message(object_, name, self.__name__, str(e))
 
 
-class keys:
+class keys(compiled_schema):
     args: tuple[object, ...]
 
     def __init__(self, *args: object) -> None:
@@ -1327,7 +1328,7 @@ class keys:
         return ""
 
 
-class _ifthen:
+class _ifthen(compiled_schema):
     if_schema: compiled_schema
     then_schema: compiled_schema
     else_schema: compiled_schema | None
@@ -1393,7 +1394,7 @@ class ifthen:
         )
 
 
-class _cond:
+class _cond(compiled_schema):
     conditions: list[tuple[compiled_schema, compiled_schema]]
 
     def __init__(
@@ -1436,7 +1437,7 @@ class cond:
         return _cond(self.args, _deferred_compiles=_deferred_compiles)
 
 
-class _fields:
+class _fields(compiled_schema):
     d: dict[str, compiled_schema]
 
     def __init__(
@@ -1478,7 +1479,7 @@ class fields:
         return _fields(self.d, _deferred_compiles=_deferred_compiles)
 
 
-class _filter:
+class _filter(compiled_schema):
     filter: Callable[[Any], Any]
     schema: compiled_schema
     filter_name: str
@@ -1550,7 +1551,7 @@ class filter:
         )
 
 
-class _type:
+class _type(compiled_schema):
     schema: type
 
     def __init__(self, schema: type | GenericAlias) -> None:
@@ -1577,7 +1578,7 @@ class _type:
         return self.schema.__name__
 
 
-class _sequence:
+class _sequence(compiled_schema):
     type_schema: type
     schema: list[compiled_schema]
     fill: compiled_schema
@@ -1658,7 +1659,7 @@ class _sequence:
         return str(self.schema)
 
 
-class _const:
+class _const(compiled_schema):
     schema: object
 
     def __init__(self, schema: object, strict_eq: bool = False) -> None:
@@ -1684,7 +1685,7 @@ class _const:
         return str(self.schema)
 
 
-class _callable:
+class _callable(compiled_schema):
     schema: Callable[[object], bool]
     __name__: str
 
@@ -1714,7 +1715,7 @@ class _callable:
         return str(self.schema)
 
 
-class _dict:
+class _dict(compiled_schema):
     min_keys: set[object]
     const_keys: set[object]
     other_keys: set[compiled_schema]
@@ -1796,7 +1797,7 @@ class _dict:
         return str(self.schema)
 
 
-class _set:
+class _set(compiled_schema):
     schema: compiled_schema
     schema_: set[object]
 

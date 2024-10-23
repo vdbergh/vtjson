@@ -15,6 +15,7 @@ from vtjson import (
     close_to,
     comparable,
     compile,
+    compiled_schema,
     complement,
     cond,
     date,
@@ -1079,7 +1080,7 @@ class TestValidation(unittest.TestCase):
         object_ = {"a": "ab"}
         validate(schema, object_)
 
-        class lower_case_string_ex:
+        class lower_case_string_ex(compiled_schema):
             def __validate__(
                 self,
                 object_: object,
