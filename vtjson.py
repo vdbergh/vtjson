@@ -8,7 +8,7 @@ import re
 import types
 import urllib.parse
 from collections.abc import Sequence, Sized
-from typing import Any, Callable, Protocol, Union, cast
+from typing import Any, Callable, Protocol, cast
 
 import dns.resolver
 import email_validator
@@ -24,14 +24,8 @@ class compiled_schema(Protocol):
         subs: dict[str, user_schema] = {},
     ) -> str: ...
 
-    def __eq__(self, x: Any) -> bool: ...
 
-
-class _user_schema(Protocol):
-    def __eq__(self, x: Any) -> bool: ...
-
-
-user_schema = Union[_user_schema, None]
+user_schema = object
 
 
 class comparable(Protocol):
