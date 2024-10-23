@@ -5,7 +5,7 @@ import ipaddress
 import math
 import pathlib
 import re
-import sys
+import types
 import urllib.parse
 from collections.abc import Sequence, Sized
 from typing import Any, Callable, Protocol, Union, cast
@@ -44,14 +44,6 @@ class comparable(Protocol):
     def __gt__(self, x: Any) -> bool: ...
 
     def __ge__(self, x: Any) -> bool: ...
-
-
-if sys.version_info >= (3, 10):
-    from types import EllipsisType
-
-    comparable_or_ellipsis = comparable | EllipsisType
-else:
-    comparable_or_ellipsis = object
 
 
 HAS_MAGIC = True
@@ -801,8 +793,8 @@ class interval:
 
     def __init__(
         self,
-        lb: comparable_or_ellipsis,
-        ub: comparable_or_ellipsis,
+        lb: comparable | types.EllipsisType,
+        ub: comparable | types.EllipsisType,
         strict_lb: bool = False,
         strict_ub: bool = False,
     ) -> None:
