@@ -1688,7 +1688,7 @@ class _callable(compiled_schema):
     schema: Callable[[object], bool]
     __name__: str
 
-    def __init__(self, schema: Callable[[object], bool]) -> None:
+    def __init__(self, schema: Callable[..., bool]) -> None:
         self.schema = schema
         try:
             self.__name__ = self.schema.__name__
