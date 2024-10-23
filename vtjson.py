@@ -5,10 +5,11 @@ import ipaddress
 import math
 import pathlib
 import re
+import sys
 import types
 import urllib.parse
 from collections.abc import Sequence, Sized
-from typing import Any, Callable, Protocol, cast
+from typing import Any, Callable, Protocol
 
 import dns.resolver
 import email_validator
@@ -53,12 +54,12 @@ class SchemaError(Exception):
     pass
 
 
-HAS_GENERIC_ALIAS = True
-try:
+if sys.version_info >= (3, 9):
     from types import GenericAlias
-except ImportError:
-    # For compatibility with older Pythons
-    HAS_GENERIC_ALIAS = False
+else:
+
+    class GenericAlias:
+        pass
 
 
 __version__ = "2.0.4"
@@ -966,9 +967,7 @@ def compile(
         ret = _validate_schema(schema)
     elif hasattr(schema, "__compile__"):
         ret = schema.__compile__(_deferred_compiles=_deferred_compiles)
-    elif isinstance(schema, type) or (
-        HAS_GENERIC_ALIAS and isinstance(schema, GenericAlias)
-    ):
+    elif isinstance(schema, type) or isinstance(schema, GenericAlias):
         ret = _type(schema)
     elif callable(schema):
         ret = _callable(schema)
@@ -1555,9 +1554,9 @@ class _type(compiled_schema):
     schema: type
 
     def __init__(self, schema: type | GenericAlias) -> None:
-        if HAS_GENERIC_ALIAS and isinstance(schema, GenericAlias):
+        if isinstance(schema, GenericAlias):
             raise SchemaError("Parametrized generics are not supported!")
-        self.schema = cast(type, schema)
+        self.schema = schema
 
     def __validate__(
         self,
