@@ -69,7 +69,7 @@ except ImportError:
     HAS_GENERIC_ALIAS = False
 
 
-__version__ = "2.0.2"
+__version__ = "2.0.3"
 
 
 _dns_resolver: dns.resolver.Resolver | None = None
