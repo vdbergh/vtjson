@@ -279,16 +279,17 @@ but the optional argument `_deferred_compiles` should not be set by the user.
 
 A schema can be, in order of precedence:
 
-- A class with the following properties:
+- An instance of the class `compiled_schema`.
 
-   - it has a no-argument constructor;
-   - the instances have a `__validate__` method with signature
+  The class `compiled_schema` defines a single method with signature
 
    ```python
    __validate__(self, object, name, strict, subs)
    ```
 
-   - The parameters of `__validate__()` have the same semantics as those of `validate()`. The return value of `__validate__()` should be the empty string if validation succeeds, and otherwise it should be an explanation about what went wrong.
+  The parameters of `__validate__()` have the same semantics as those of `validate()`. The return value of `__validate__()` should be the empty string if validation succeeds, and otherwise it should be an explanation about what went wrong.
+
+- A subclass of `compiled_schema` with a no-argument constructor.
 
 - An object having a `__validate__` attribute with signature
 
@@ -303,7 +304,7 @@ A schema can be, in order of precedence:
   __compile__(_deferred_compiles=None)
   ```
 
-  This is an advanced feature which is used for the implementation of wrapper schemas. `__compile__()`, which is invoked by `compile()`, should produce an object with a `__validate__` attribute as described above. The optional argument `_deferred_compiles` is an opaque data structure for handling recursive schemas. It should be passed unmodified to any internal invocations of `compile()`. Please consult the source code of `vtjson` for more details.
+  This is an advanced feature which is used for the implementation of wrapper schemas. `__compile__()`, which is invoked by `compile()`, should produce an instance of `compiled_schema`. The optional argument `_deferred_compiles` is an opaque data structure for handling recursive schemas. It should be passed unmodified to any internal invocations of `compile()`. Please consult the source code of `vtjson` for more details.
 
 - A Python type. In that case validation is done by checking membership.
 - A callable. Validation is done by applying the callable to the object. If applying the callable throws an exception then the corresponding message will be part of the non-validation message.
