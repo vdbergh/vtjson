@@ -806,37 +806,40 @@ class interval:
         ud = "[" if strict_ub else "]"
 
         if lb is not ...:
-            lb_ = cast(comparable, lb)
             lower: gt | ge
             if strict_lb:
-                lower = gt(lb_)
+                lower = gt(lb)
             else:
-                lower = ge(lb_)
+                lower = ge(lb)
 
         if ub is not ...:
-            ub_ = cast(comparable, ub)
             upper: lt | le
             if strict_ub:
-                upper = lt(ub_)
+                upper = lt(ub)
             else:
-                upper = le(ub_)
+                upper = le(ub)
 
-        if lb is ... and ub is ...:
-            setattr(self, "__validate__", anything().__validate__)
-        elif lb is ...:
-            ub_ = cast(comparable, ub)
+        if lb is not ... and ub is not ...:
             try:
-                ub_ <= ub_
+                lb <= ub
+            except Exception:
+                raise SchemaError(
+                    f"The upper and lower bound in the interval"
+                    f" {ld}{self.lb_s},{self.ub_s}{ud} are incomparable"
+                ) from None
+            setattr(self, "__validate__", _intersect((lower, upper)).__validate__)
+        elif ub is not ...:
+            try:
+                ub <= ub
             except Exception:
                 raise SchemaError(
                     f"The upper bound in the interval"
                     f" {ld}{self.lb_s},{self.ub_s}{ud} does not support comparison"
                 ) from None
             setattr(self, "__validate__", upper.__validate__)
-        elif ub is ...:
-            lb_ = cast(comparable, lb)
+        elif lb is not ...:
             try:
-                lb_ <= lb_
+                lb <= lb
             except Exception:
                 raise SchemaError(
                     f"The lower bound in the interval"
@@ -844,15 +847,7 @@ class interval:
                 ) from None
             setattr(self, "__validate__", lower.__validate__)
         else:
-            lb_ = cast(comparable, lb)
-            try:
-                lb_ <= ub
-            except Exception:
-                raise SchemaError(
-                    f"The upper and lower bound in the interval"
-                    f" {ld}{self.lb_s},{self.ub_s}{ud} are incomparable"
-                ) from None
-            setattr(self, "__validate__", _intersect((lower, upper)).__validate__)
+            setattr(self, "__validate__", anything().__validate__)
 
     # Not used but necessary for the protocol
     def __validate__(
