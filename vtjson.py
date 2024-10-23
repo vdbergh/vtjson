@@ -1769,8 +1769,8 @@ class _dict:
             return _wrong_type_message(object_, name, "dict")
 
         for k in self.min_keys:
-            name_ = f"{name}[{repr(k)}]"
             if k not in object_:
+                name_ = f"{name}[{repr(k)}]"
                 return f"{name_} is missing"
 
         for k in object_:
