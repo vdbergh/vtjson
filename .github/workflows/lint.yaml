@@ -51,7 +51,7 @@ jobs:
         id: mypy
         continue-on-error: true
         run: |
-          pipx run mypy test_vtjson.py vtjson.py --strict --explicit-package-bases --ignore-missing-imports --no-warn-redundant-casts
+          pipx run mypy test_vtjson.py vtjson.py --strict --explicit-package-bases --ignore-missing-imports
 
       - name: Check linters and formatters status
         run: |
