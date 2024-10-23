@@ -1479,13 +1479,13 @@ class fields:
 
 
 class _filter(compiled_schema):
-    filter: Callable[[object], object]
+    filter: Callable[[Any], object]
     schema: compiled_schema
     filter_name: str
 
     def __init__(
         self,
-        filter: Callable[[object], object],
+        filter: Callable[[Any], object],
         schema: object,
         filter_name: str | None = None,
         _deferred_compiles: _mapping | None = None,
@@ -1523,13 +1523,13 @@ class _filter(compiled_schema):
 
 
 class filter:
-    filter: Callable[[object], object]
+    filter: Callable[[Any], object]
     schema: object
     filter_name: str | None
 
     def __init__(
         self,
-        filter: Callable[..., object],
+        filter: Callable[[Any], object],
         schema: object,
         filter_name: str | None = None,
     ) -> None:
@@ -1685,10 +1685,10 @@ class _const(compiled_schema):
 
 
 class _callable(compiled_schema):
-    schema: Callable[[object], bool]
+    schema: Callable[[Any], bool]
     __name__: str
 
-    def __init__(self, schema: Callable[..., bool]) -> None:
+    def __init__(self, schema: Callable[[Any], bool]) -> None:
         self.schema = schema
         try:
             self.__name__ = self.schema.__name__
