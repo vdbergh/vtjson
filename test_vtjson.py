@@ -50,11 +50,10 @@ from vtjson import (
     time,
     union,
     url,
-    user_schema,
     validate,
 )
 
-cond_arg = Tuple[user_schema, user_schema]
+cond_arg = Tuple[object, object]
 
 
 def show(mc: Any) -> None:
@@ -135,7 +134,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_immutable(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         L = ["a"]
         schema = compile(L)
@@ -151,7 +150,7 @@ class TestValidation(unittest.TestCase):
         validate(schema, object_)
 
     def test_glob(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = glob("*.txt")
         object_ = "hello.txt"
@@ -173,7 +172,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_magic(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(SchemaError) as mc_:
             schema = magic(cast(str, {}))
@@ -197,7 +196,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_dict(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = {regex("[a-z]+"): "lc", regex("[A-Z]+"): "UC"}
         with self.assertRaises(ValidationError) as mc:
@@ -279,7 +278,7 @@ class TestValidation(unittest.TestCase):
         self.assertTrue("fake_string" in str(mc.exception))
 
     def test_div(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = div(2)
         object_ = 2
@@ -317,7 +316,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_close_to(self) -> None:
-        schema: user_schema
+        schema: object
         with self.assertRaises(SchemaError) as mc_:
             schema = close_to
             validate(schema, 1.0)
@@ -347,7 +346,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_at_most_one_of(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = at_most_one_of("cat", "dog")
         object_ = {}
@@ -364,7 +363,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_at_least_one_of(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = at_least_one_of("cat", "dog")
         with self.assertRaises(ValidationError) as mc:
@@ -381,7 +380,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_one_of(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = one_of("cat", "dog")
         with self.assertRaises(ValidationError) as mc:
@@ -400,7 +399,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_keys(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = keys("a", "b")
         object_ = {"a": 1, "b": 2}
@@ -411,7 +410,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_ifthen(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = ifthen(keys("a"), keys("b"))
         object_ = {"a": 1, "b": 1}
@@ -430,7 +429,7 @@ class TestValidation(unittest.TestCase):
         validate(schema, object_)
 
     def test_filter(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(SchemaError) as mc_:
             schema = filter(cast(Callable[[Any], Any], 1), 2)
@@ -470,7 +469,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_const(self) -> None:
-        schema: user_schema
+        schema: object
         schema = "a"
         validate(schema, "a")
         with self.assertRaises(ValidationError) as mc:
@@ -483,7 +482,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_cond(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(SchemaError) as mc_:
             schema = cond(cast(cond_arg, "a"), cast(cond_arg, "b"), cast(cond_arg, "c"))
@@ -524,7 +523,7 @@ class TestValidation(unittest.TestCase):
         validate(datetime_utc, object_)
 
     def test_strict(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(ValidationError) as mc:
             schema = {"a?": 1, "b": 2}
@@ -544,7 +543,7 @@ class TestValidation(unittest.TestCase):
         validate(schema, object_)
 
     def test_missing_keys(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = {"a?": 1, "b": 2}
         object_ = {"b": 2, "c": 3}
@@ -603,7 +602,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_compile(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = {"a?": 1}
         object_ = {"a": 1}
@@ -613,7 +612,7 @@ class TestValidation(unittest.TestCase):
         validate(schema, object_)
 
     def test_union(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = {"a?": 1, "b": union(2, 3)}
         object_ = {"b": 2, "c": 3}
@@ -625,7 +624,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_set_label(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = {1: "a"}
         object_ = {1: "b"}
@@ -655,7 +654,7 @@ class TestValidation(unittest.TestCase):
         validate(schema, object_, subs={"x": "b"})
 
     def test_quote(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(ValidationError) as mc:
             schema = str
@@ -692,7 +691,7 @@ class TestValidation(unittest.TestCase):
         "datetime.datetime.fromisoformat was introduced in Python 3.7",
     )
     def test_date_time(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(ValidationError) as mc:
             schema = date_time
@@ -727,7 +726,7 @@ class TestValidation(unittest.TestCase):
         "datetime.date.fromisoformat was introduced in Python 3.7",
     )
     def test_date(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = date
         object_ = "2023-10-10"
@@ -743,7 +742,7 @@ class TestValidation(unittest.TestCase):
         "datetime.time.fromisoformat was introduced in Python 3.7",
     )
     def test_time(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = time
         object_ = "01:01:01"
@@ -755,7 +754,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_nothing(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = nothing
         object_ = "dummy"
@@ -764,14 +763,14 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_anything(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = anything
         object_ = "dummy"
         validate(schema, object_)
 
     def test_set(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = set()
         object_ = set()
@@ -808,7 +807,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_intersect(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(ValidationError) as mc:
             schema = intersect(url, regex(r"^https", fullmatch=False))
@@ -850,7 +849,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_complement(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = intersect(url, complement(regex(r"^https", fullmatch=False)))
         object_ = "ftp://example.com"
@@ -862,7 +861,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_set_name(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = set_name("a", "dummy")
         c: Any = compile(schema)
@@ -881,14 +880,14 @@ class TestValidation(unittest.TestCase):
         show(mc_)
 
     def test_lax(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = lax(["a", "b", "c"])
         object_ = ["a", "b", "c", "d"]
         validate(schema, object_)
 
     def test_strict_wrapper(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(ValidationError) as mc:
             schema = strict(["a", "b", "c"])
@@ -897,7 +896,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_make_type(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         global url
         schema = {"a": 1}
@@ -932,7 +931,7 @@ class TestValidation(unittest.TestCase):
         self.assertTrue(isinstance(object_, t))
 
     def test_generics(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(ValidationError) as mc:
             schema = [str, ...]
@@ -1006,7 +1005,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_sequence(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(ValidationError) as mc:
             schema = {"a": 1}
@@ -1039,13 +1038,13 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_validate(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
 
         class lower_case_string:
             @staticmethod
             def __validate__(
-                object_: object, name: str, strict: bool, subs: Dict[str, user_schema]
+                object_: object, name: str, strict: bool, subs: Dict[str, object]
             ) -> str:
                 if not isinstance(object_, str):
                     return f"{name} (value:{object_}) is not of type str"
@@ -1086,7 +1085,7 @@ class TestValidation(unittest.TestCase):
                 object_: object,
                 name: str,
                 strict: bool,
-                subs: Dict[str, user_schema],
+                subs: Dict[str, object],
             ) -> str:
                 if not isinstance(object_, str):
                     return f"{name} (value:{object_}) is not of type str"
@@ -1103,7 +1102,7 @@ class TestValidation(unittest.TestCase):
         validate(schema, object_)
 
     def test_regex(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(SchemaError) as cm_:
             regex(cast(str, {}))
@@ -1178,7 +1177,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_size(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(SchemaError) as mc_:
             schema = size(cast(int, "a"), cast(int, "b"))
@@ -1245,7 +1244,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_gt(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(SchemaError) as mc_:
             schema = gt
@@ -1269,7 +1268,7 @@ class TestValidation(unittest.TestCase):
         object_ = 2
 
     def test_ge(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(SchemaError) as mc_:
             schema = ge
@@ -1293,7 +1292,7 @@ class TestValidation(unittest.TestCase):
         object_ = 1
 
     def test_lt(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(SchemaError) as mc_:
             schema = lt
@@ -1317,7 +1316,7 @@ class TestValidation(unittest.TestCase):
         object_ = 0
 
     def test_le(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(SchemaError) as mc_:
             schema = le
@@ -1341,7 +1340,7 @@ class TestValidation(unittest.TestCase):
         object_ = 1
 
     def test_interval(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(SchemaError) as mc_:
             schema = interval
@@ -1423,7 +1422,7 @@ class TestValidation(unittest.TestCase):
         show(cm_)
 
     def test_email(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = email
         object_ = "user00@user00.com"
@@ -1459,7 +1458,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_ip_address(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = {"ip": ip_address}
         object_ = {"ip": "123.123.123.123"}
@@ -1484,7 +1483,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_url(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = {"url": url}
         object_ = {"url": "https://google.com"}
@@ -1502,7 +1501,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_domain_name(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = domain_name
         object_ = "www.example.com"
@@ -1536,7 +1535,7 @@ class TestValidation(unittest.TestCase):
         validate(schema, object_)
 
     def test_number(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         schema = {"number": number}
         object_ = {"number": 1}
@@ -1551,7 +1550,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_truncation(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(ValidationError) as mc:
             schema = "a"
@@ -1600,7 +1599,7 @@ class TestValidation(unittest.TestCase):
         self.assertTrue("TRUNCATED" in valid)
 
     def test_float_equal(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(ValidationError) as mc:
             schema = 2.94
@@ -1616,7 +1615,7 @@ class TestValidation(unittest.TestCase):
         "Parametrized types were introduced in Python 3.9",
     )
     def test_type(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
         with self.assertRaises(SchemaError) as cm_:
             schema = list[str]
@@ -1625,7 +1624,7 @@ class TestValidation(unittest.TestCase):
         show(cm_)
 
     def test_callable(self) -> None:
-        schema: user_schema
+        schema: object
         object_: object
 
         def even(x: int) -> bool:
