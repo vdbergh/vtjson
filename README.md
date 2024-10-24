@@ -387,6 +387,18 @@ Q: Why yet another Python validation framework?
 
 A: Good question! Initially `vtjson` consisted of home grown code for validating api calls and database accesses in the Fishtest framework. However the clear and concise schema format seemed to be of independent interest and so the code was refactored into the current self-contained package.
 
+Q: Why not use Python type hints as the basis for validation?
+
+A: Another good question! I guess the main reason for not using Python type hints is that they were designed for static validation. So run time validations (e.g. regular expressions) cannot be expressed in them. Even for types that can be conveniently expressed in the type hinting system (like `list[str]`) one can still not verify membership by using `isinstance`, so extra code is needed to support them. This being said, it is possible to use type hints at run time using an external library like [`typeguard`](https://pypi.org/project/typeguard/). E.g. to check membership of `list[str]` one could use the `vtjson` schema
+
+```python
+lambda x: typeguard.check_type(x, list[str])
+```
+
+Note that, besides relying on a third party library,  this is more complicated than simply using the equivalent `vtjson` schema `[str, ...]`.
+
+In case you are wondering: the source code of `vtjson` is fully type hinted!
+
 Q: Why are there no variables in `vtjson` (see <https://opis.io/json-schema/2.x/variables.html>)?
 
 A: They did not seem to be essential yet. In our use cases conditional schemas were sufficient to achieve the required functionality. See for example the `action_schema` in [`schemas.py`](https://raw.githubusercontent.com/official-stockfish/fishtest/master/server/fishtest/schemas.py). More importantly `vtjson` has a strict separation between the definition of a schema and its subsequent use for validation. By allowing a schema to refer directly to the object being validated this separation would become blurred. This being said, I am still thinking about a good way to introduce variables.
