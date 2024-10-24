@@ -1244,6 +1244,18 @@ class TestValidation(unittest.TestCase):
             validate(schema, object_)
         show(mc)
 
+        schema = size(10, ...)
+        object_ = 10 * "a"
+        validate(schema, object_)
+
+        object_ = 11 * "a"
+        validate(schema, object_)
+
+        with self.assertRaises(ValidationError) as mc:
+            object_ = 9 * "a"
+            validate(schema, object_)
+        show(mc)
+
     def test_gt(self) -> None:
         schema: object
         object_: object
