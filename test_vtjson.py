@@ -3,7 +3,7 @@ import re
 import sys
 import unittest
 from datetime import datetime, timezone
-from typing import Any, Callable, Dict, Tuple, cast
+from typing import Any, Dict, Tuple
 from urllib.parse import urlparse
 
 from vtjson import (
@@ -13,7 +13,6 @@ from vtjson import (
     at_least_one_of,
     at_most_one_of,
     close_to,
-    comparable,
     compile,
     compiled_schema,
     complement,
@@ -161,10 +160,10 @@ class TestValidation(unittest.TestCase):
             validate(schema, object_)
         show(mc)
         with self.assertRaises(SchemaError) as mc_:
-            schema = glob(cast(str, {}))
+            schema = glob({})  # type: ignore
         show(mc_)
         with self.assertRaises(SchemaError) as mc_:
-            schema = glob(cast(str, {}), name="Invalid")
+            schema = glob({}, name="Invalid")  # type: ignore
         show(mc_)
         with self.assertRaises(ValidationError) as mc:
             schema = glob("*.txt", name="text_file")
@@ -176,7 +175,7 @@ class TestValidation(unittest.TestCase):
         schema: object
         object_: object
         with self.assertRaises(SchemaError) as mc_:
-            schema = magic(cast(str, {}))
+            schema = magic({})  # type: ignore
         show(mc_)
         schema = magic("text/plain")
         with self.assertRaises(ValidationError) as mc:
@@ -293,7 +292,7 @@ class TestValidation(unittest.TestCase):
             validate(schema, object_)
         show(mc)
         with self.assertRaises(SchemaError) as mc_:
-            schema = div(cast(int, {}))
+            schema = div({})  # type: ignore
         show(mc_)
         with self.assertRaises(ValidationError) as mc:
             schema = div(2, name="even")
@@ -308,7 +307,7 @@ class TestValidation(unittest.TestCase):
             validate(schema, object_)
         show(mc)
         with self.assertRaises(SchemaError) as mc_:
-            schema = div(1, cast(int, {}))
+            schema = div(1, {})  # type: ignore
         show(mc_)
         with self.assertRaises(ValidationError) as mc:
             schema = div(2, 1, name="odd")
@@ -323,13 +322,13 @@ class TestValidation(unittest.TestCase):
             validate(schema, 1.0)
         show(mc_)
         with self.assertRaises(SchemaError) as mc_:
-            schema = close_to(cast(float, {}))
+            schema = close_to({})  # type: ignore
         show(mc_)
         with self.assertRaises(SchemaError) as mc_:
-            schema = close_to(1.0, abs_tol=cast(float, {}))
+            schema = close_to(1.0, abs_tol={})  # type: ignore
         show(mc_)
         with self.assertRaises(SchemaError) as mc_:
-            schema = close_to(1.0, rel_tol=cast(float, {}))
+            schema = close_to(1.0, rel_tol={})  # type: ignore
         show(mc_)
 
         schema = close_to(1.0)
@@ -433,10 +432,10 @@ class TestValidation(unittest.TestCase):
         schema: object
         object_: object
         with self.assertRaises(SchemaError) as mc_:
-            schema = filter(cast(Callable[[Any], Any], 1), 2)
+            schema = filter(1, 2)  # type: ignore
         show(mc_)
         with self.assertRaises(SchemaError) as mc_:
-            schema = filter(cast(Callable[[Any], Any], 1), 2, filter_name=cast(str, {}))
+            schema = filter(1, 2, filter_name={})  # type: ignore
         show(mc_)
         schema = filter(json.loads, {"a": str})
         validate(schema, '{"a": "b"}')
@@ -486,7 +485,7 @@ class TestValidation(unittest.TestCase):
         schema: object
         object_: object
         with self.assertRaises(SchemaError) as mc_:
-            schema = cond(cast(cond_arg, "a"), cast(cond_arg, "b"), cast(cond_arg, "c"))
+            schema = cond("a", "b", "c")  # type: ignore
         show(mc_)
 
         schema = cond((0, 0), (1, 1))
@@ -638,10 +637,10 @@ class TestValidation(unittest.TestCase):
         show(mc)
         validate(schema, object_, subs={"x": anything})
         with self.assertRaises(SchemaError) as mc_:
-            schema = {1: set_label("a", cast(str, {}))}
+            schema = {1: set_label("a", {})}  # type: ignore
         show(mc_)
         with self.assertRaises(SchemaError) as mc_:
-            schema = {1: set_label("a", "x", debug=cast(bool, {}))}
+            schema = {1: set_label("a", "x", debug={})}  # type: ignore
         show(mc_)
         schema = {1: set_label("a", "x", debug=True)}
         validate(schema, object_, subs={"x": anything})
@@ -820,7 +819,8 @@ class TestValidation(unittest.TestCase):
         validate(schema, object_)
 
         def ordered_pair(o: Any) -> bool:
-            return cast(bool, o[0] <= o[1])
+            ret: bool = o[0] <= o[1]
+            return ret
 
         with self.assertRaises(ValidationError) as mc:
             schema = intersect((int, int), ordered_pair)
@@ -877,7 +877,7 @@ class TestValidation(unittest.TestCase):
         validate(schema, object_)
 
         with self.assertRaises(SchemaError) as mc_:
-            schema = set_name("a", cast(str, {}))
+            schema = set_name("a", {})  # type: ignore
         show(mc_)
 
     def test_lax(self) -> None:
@@ -1106,15 +1106,15 @@ class TestValidation(unittest.TestCase):
         schema: object
         object_: object
         with self.assertRaises(SchemaError) as cm_:
-            regex(cast(str, {}))
+            regex({})  # type: ignore
         show(cm_)
 
         with self.assertRaises(SchemaError) as cm_:
-            regex(cast(str, {}), name="test")
+            regex({}, name="test")  # type: ignore
         show(cm_)
 
         with self.assertRaises(SchemaError) as cm_:
-            regex("a", name=cast(str, {}))
+            regex("a", name={})  # type: ignore
         show(cm_)
 
         with self.assertRaises(SchemaError) as cm_:
@@ -1181,7 +1181,7 @@ class TestValidation(unittest.TestCase):
         schema: object
         object_: object
         with self.assertRaises(SchemaError) as mc_:
-            schema = size(cast(int, "a"), cast(int, "b"))
+            schema = size("a", "b")  # type: ignore
             object_ = "a"
             validate(schema, object_)
         show(mc_)
@@ -1199,13 +1199,13 @@ class TestValidation(unittest.TestCase):
         show(mc_)
 
         with self.assertRaises(SchemaError) as mc_:
-            schema = size(cast(int, ...), 1)
+            schema = size(..., 1)  # type: ignore
             object_ = "a"
             validate(schema, object_)
         show(mc_)
 
         with self.assertRaises(SchemaError) as mc_:
-            schema = size(1, cast(int, "10"))
+            schema = size(1, "10")  # type: ignore
             object_ = "a"
             validate(schema, object_)
         show(mc_)
@@ -1415,11 +1415,11 @@ class TestValidation(unittest.TestCase):
         show(cm_)
 
         with self.assertRaises(SchemaError) as cm_:
-            interval(..., cast(comparable, {}))
+            interval(..., {})  # type: ignore
         show(cm_)
 
         with self.assertRaises(SchemaError) as cm_:
-            interval(cast(comparable, {}), ...)
+            interval({}, ...)  # type: ignore
         show(cm_)
 
     def test_email(self) -> None:
@@ -1608,7 +1608,7 @@ class TestValidation(unittest.TestCase):
             validate(schema, object_)
         show(mc)
 
-        object_ = cast(float, schema) + 1e-10
+        object_ = 2.94 + 1e-10
         validate(schema, object_)
 
     @unittest.skipUnless(
