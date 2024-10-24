@@ -3,7 +3,7 @@ import re
 import sys
 import unittest
 from datetime import datetime, timezone
-from typing import Any, Dict, Tuple
+from typing import Any, Dict
 from urllib.parse import urlparse
 
 from vtjson import (
@@ -52,8 +52,6 @@ from vtjson import (
     url,
     validate,
 )
-
-cond_arg = Tuple[object, object]
 
 
 def show(mc: Any) -> None:
