@@ -844,9 +844,9 @@ class interval(compiled_schema):
 
 
 class size(compiled_schema):
-    interval: interval
+    interval_: interval
 
-    def __init__(self, lb: int, ub: int | None = None) -> None:
+    def __init__(self, lb: int, ub: int | types.EllipsisType | None = None) -> None:
         if ub is None:
             ub = lb
         if not isinstance(lb, int):
@@ -866,7 +866,7 @@ class size(compiled_schema):
                 f"the lower size bound (value: {repr(lb)}) is bigger "
                 f"than the upper bound (value: {repr(ub)})"
             )
-        self.interval = interval(lb, ub)
+        self.interval_ = interval(lb, ub)
 
     def __validate__(
         self,
@@ -880,7 +880,7 @@ class size(compiled_schema):
 
         L = len(object_)
 
-        return self.interval.__validate__(L, f"len({name})", strict, subs)
+        return self.interval_.__validate__(L, f"len({name})", strict, subs)
 
 
 class _deferred(compiled_schema):
