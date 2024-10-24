@@ -256,7 +256,7 @@ Mixins are built-ins that are usually combined with other schemas using `interse
 - `size(lb, ub=None)`. Matches the objects (which support `len()` such as strings or lists) whose length is in the interval `[lb, ub]`. The value of `ub` can be `...` (ellipsis). If `ub=None` then `ub` is set to `lb`.
 - `fields({field1: schema1, field2: schema2, ..., fieldN: schemaN})`. Matches Python objects with attributes `field1, field2, ..., fieldN` whose corresponding values should validate against `schema1, schema2, ..., schemaN` respectively.
 - `magic(mime_type, name=None)`. Checks if a buffer (for example a string or a byte array) has the given mime type. This is implemented using the `python-magic` package.
-- `filter(callable, schema, filter_name=None)`. Applies `callable` to the object and validates the result with `schema`. The optional argument `filter_name` is used in non-validation messages.
+- `filter(callable, schema, filter_name=None)`. Applies `callable` to the object and validates the result with `schema`. If the callable throws an exception then validation fails. The optional argument `filter_name` is used in non-validation messages.
 
 ## Conditional schemas
 
@@ -392,7 +392,7 @@ Q: Why not use Python type hints as the basis for validation?
 A: Another good question! I guess the main reason for not using Python type hints is that they were designed for static validation. So run time validations (e.g. regular expressions) cannot be expressed in them. Even for types that can be conveniently expressed in the type hinting system (like `list[str]`) one can still not verify membership by using `isinstance`, so extra code is needed to support them. This being said, it is possible to use type hints at run time using an external library like [`typeguard`](https://pypi.org/project/typeguard/). E.g. to check membership of `list[str]` one could use the `vtjson` schema
 
 ```python
-lambda x: typeguard.check_type(x, list[str])
+filter(lambda x: typeguard.check_type(x, list[str]), anything)
 ```
 
 Note that, besides relying on a third party library,  this is more complicated than simply using the equivalent `vtjson` schema `[str, ...]`.
