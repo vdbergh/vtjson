@@ -9,7 +9,7 @@ import sys
 import types
 import urllib.parse
 from collections.abc import Sequence, Sized
-from typing import Any, Callable, Protocol
+from typing import Any, Callable, Protocol, Type
 
 import dns.resolver
 import email_validator
@@ -1578,7 +1578,7 @@ class _type(compiled_schema):
 
 
 class _sequence(compiled_schema):
-    type_schema: type
+    type_schema: Type[Sequence[object]]
     schema: list[compiled_schema]
     fill: compiled_schema
 
@@ -1609,7 +1609,6 @@ class _sequence(compiled_schema):
         strict: bool = True,
         subs: dict[str, object] = {},
     ) -> str:
-        assert issubclass(self.type_schema, Sequence)
         if not isinstance(object_, self.type_schema):
             return _wrong_type_message(object_, name, type(self.schema).__name__)
         ls = len(self.schema)
@@ -1633,7 +1632,6 @@ class _sequence(compiled_schema):
         strict: bool = True,
         subs: dict[str, object] = {},
     ) -> str:
-        assert issubclass(self.type_schema, Sequence)
         if not isinstance(object_, self.type_schema):
             return _wrong_type_message(object_, name, type(self.schema).__name__)
         ls = len(self.schema)
