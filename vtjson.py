@@ -1611,7 +1611,7 @@ class _sequence(compiled_schema):
     ) -> str:
         if not isinstance(object_, self.type_schema):
             return _wrong_type_message(object_, name, type(self.schema).__name__)
-        if not isinstance(object_, Sequence):
+        if not isinstance(object_, Sequence):  # for typing...
             return _wrong_type_message(object_, name, type(self.schema).__name__)
         ls = len(self.schema)
         lo = len(object_)
@@ -1636,7 +1636,7 @@ class _sequence(compiled_schema):
     ) -> str:
         if not isinstance(object_, self.type_schema):
             return _wrong_type_message(object_, name, type(self.schema).__name__)
-        if not isinstance(object_, Sequence):
+        if not isinstance(object_, Sequence):  # for typing...
             return _wrong_type_message(object_, name, type(self.schema).__name__)
         ls = len(self.schema)
         lo = len(object_)
