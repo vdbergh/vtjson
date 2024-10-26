@@ -130,7 +130,6 @@ def make_type(
 ) -> _validate_meta:
     if name is None:
         if hasattr(schema, "__name__"):
-            assert schema is not None  # This should not be necessary
             name = schema.__name__
         else:
             name = "schema"
