@@ -66,7 +66,7 @@ else:
         pass
 
 
-__version__ = "2.0.8"
+__version__ = "2.0.9"
 
 
 _dns_resolver: dns.resolver.Resolver | None = None
