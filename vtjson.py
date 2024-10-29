@@ -9,7 +9,11 @@ import sys
 import types
 import urllib.parse
 from collections.abc import Sequence, Sized
-from typing import Any, Callable, Protocol, Type
+
+if sys.version_info >= (3, 8):
+    from typing import Any, Callable, Protocol, Type
+else:
+    from typing_extensions import Any, Callable, Protocol, Type
 
 import dns.resolver
 import email_validator

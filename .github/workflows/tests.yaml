@@ -22,7 +22,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip email_validator python-magic
+          python -m pip install --upgrade pip email_validator python-magic typing_extensions
  
       - name: Run unit tests
         run: |
