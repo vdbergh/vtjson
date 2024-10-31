@@ -1471,6 +1471,27 @@ class TestValidation(unittest.TestCase):
     def test_ip_address(self) -> None:
         schema: object
         object_: object
+
+        with self.assertRaises(SchemaError) as cm_:
+            schema = ip_address(format=5)  # type: ignore
+        show(cm_)
+
+        with self.assertRaises(ValidationError) as cm:
+            schema = ip_address(format=4)
+            object_ = "2001:db8:3333:4444:5555:6666:7777:8888"
+            validate(schema, object_)
+        show(cm)
+        object_ = "123.123.123.123"
+        validate(schema, object_)
+
+        with self.assertRaises(ValidationError) as cm:
+            schema = ip_address(format=6)
+            object_ = "123.123.123.123"
+            validate(schema, object_)
+        show(cm)
+        object_ = "2001:db8:3333:4444:5555:6666:7777:8888"
+        validate(schema, object_)
+
         schema = {"ip": ip_address}
         object_ = {"ip": "123.123.123.123"}
         validate(schema, object_)

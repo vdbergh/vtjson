@@ -11,7 +11,7 @@ import urllib.parse
 from collections.abc import Sequence, Sized
 
 if sys.version_info >= (3, 8):
-    from typing import Any, Callable, Protocol, Type
+    from typing import Any, Callable, Literal, Protocol, Type
 else:
     from typing_extensions import Any, Callable, Protocol, Type
 
@@ -1059,6 +1059,19 @@ class email(compiled_schema):
 
 
 class ip_address(compiled_schema):
+
+    format: Literal[4, 6] | None
+    __name__: str
+
+    def __init__(self, format: Literal[4, 6] | None = None) -> None:
+        if format is not None and format not in (4, 6):
+            raise SchemaError("format is not 4 or 6")
+        if format is None:
+            self.__name__ = "ip_address"
+        else:
+            self.__name__ = f"ip_address(format={format})"
+        self.format = format
+
     def __validate__(
         self,
         object_: object,
@@ -1069,10 +1082,16 @@ class ip_address(compiled_schema):
         if not isinstance(object_, (int, str)):
             return _wrong_type_message(object_, name, "ip_address")
         try:
-            ipaddress.ip_address(object_)
-            return ""
+            ip = ipaddress.ip_address(object_)
+            if format is None:
+                return ""
         except ValueError:
-            return _wrong_type_message(object_, name, "ip_address")
+            return _wrong_type_message(object_, name, self.__name__)
+        if (self.format == 4 and isinstance(ip, ipaddress.IPv6Address)) or (
+            self.format == 6 and isinstance(ip, ipaddress.IPv4Address)
+        ):
+            return _wrong_type_message(object_, name, self.__name__)
+        return ""
 
 
 class url(compiled_schema):

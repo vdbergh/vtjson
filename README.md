@@ -233,7 +233,8 @@ Some built-ins take arguments. If no arguments are given then the parentheses ca
 - `close_to(x, abs_tol=None, rel_tol=None)`. This matches the floats that are close to `x` in the sense of `math.isclose`.
 - `number`. Matches `int` and `float`.
 - `email`. Checks if the object is a valid email address. This uses the package `email_validator`. The `email` schema accepts the same options as `validate_email` in loc. cit.
-- `ip_address` and `url`. These are similar to `email`.
+- `ip_address(format=None)`. Matches ip addresses of the specified format which can be 4, 6 or None.
+- `url`. Matches valid urls.
 - `domain_name(ascii_only=True, resolve=False)`. Checks if the object is a valid domain name. If `ascii_only=False` then allow IDNA domain names. If `resolve=True` check if the domain name resolves.
 - `date_time(format=None)`. Without argument this represents an ISO 8601 date-time. The `format` argument represents a format string for `strftime`.
 - `date` and `time`. These represent an ISO 8601 date and an ISO 8601 time.
