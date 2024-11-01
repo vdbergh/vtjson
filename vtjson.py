@@ -1060,17 +1060,19 @@ class email(compiled_schema):
 
 class ip_address(compiled_schema):
 
-    format: Literal[4, 6] | None
     __name__: str
 
-    def __init__(self, format: Literal[4, 6] | None = None) -> None:
-        if format is not None and format not in (4, 6):
-            raise SchemaError("format is not 4 or 6")
-        if format is None:
+    def __init__(self, version: Literal[4, 6] | None = None) -> None:
+        if version is not None and version not in (4, 6):
+            raise SchemaError("version is not 4 or 6")
+        if version is None:
             self.__name__ = "ip_address"
         else:
-            self.__name__ = f"ip_address(format={format})"
-        self.format = format
+            self.__name__ = f"ip_address(version={version})"
+        if version == 4:
+            setattr(self, "__validate__", self.__validate_4__)
+        elif version == 6:
+            setattr(self, "__validate__", self.__validate_6__)
 
     def __validate__(
         self,
@@ -1079,18 +1081,42 @@ class ip_address(compiled_schema):
         strict: bool = True,
         subs: dict[str, object] = {},
     ) -> str:
-        if not isinstance(object_, (int, str)):
-            return _wrong_type_message(object_, name, "ip_address")
+        if not isinstance(object_, (int, str, bytes)):
+            return _wrong_type_message(object_, name, self.__name__)
         try:
-            ip = ipaddress.ip_address(object_)
-            if format is None:
-                return ""
-        except ValueError:
+            ipaddress.ip_address(object_)
+        except ValueError as e:
+            return _wrong_type_message(object_, name, self.__name__, explanation=str(e))
+        return ""
+
+    def __validate_4__(
+        self,
+        object_: object,
+        name: str = "object",
+        strict: bool = True,
+        subs: dict[str, object] = {},
+    ) -> str:
+        if not isinstance(object_, (int, str, bytes)):
             return _wrong_type_message(object_, name, self.__name__)
-        if (self.format == 4 and isinstance(ip, ipaddress.IPv6Address)) or (
-            self.format == 6 and isinstance(ip, ipaddress.IPv4Address)
-        ):
+        try:
+            ipaddress.IPv4Address(object_)
+        except ValueError as e:
+            return _wrong_type_message(object_, name, self.__name__, explanation=str(e))
+        return ""
+
+    def __validate_6__(
+        self,
+        object_: object,
+        name: str = "object",
+        strict: bool = True,
+        subs: dict[str, object] = {},
+    ) -> str:
+        if not isinstance(object_, (int, str, bytes)):
             return _wrong_type_message(object_, name, self.__name__)
+        try:
+            ipaddress.IPv6Address(object_)
+        except ValueError as e:
+            return _wrong_type_message(object_, name, self.__name__, explanation=str(e))
         return ""
 
 

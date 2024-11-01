@@ -1473,11 +1473,11 @@ class TestValidation(unittest.TestCase):
         object_: object
 
         with self.assertRaises(SchemaError) as cm_:
-            schema = ip_address(format=5)  # type: ignore
+            schema = ip_address(version=5)  # type: ignore
         show(cm_)
 
         with self.assertRaises(ValidationError) as cm:
-            schema = ip_address(format=4)
+            schema = ip_address(version=4)
             object_ = "2001:db8:3333:4444:5555:6666:7777:8888"
             validate(schema, object_)
         show(cm)
@@ -1485,7 +1485,13 @@ class TestValidation(unittest.TestCase):
         validate(schema, object_)
 
         with self.assertRaises(ValidationError) as cm:
-            schema = ip_address(format=6)
+            schema = ip_address(version=4)
+            object_ = {}
+            validate(schema, object_)
+        show(cm)
+
+        with self.assertRaises(ValidationError) as cm:
+            schema = ip_address(version=6)
             object_ = "123.123.123.123"
             validate(schema, object_)
         show(cm)
@@ -1511,6 +1517,11 @@ class TestValidation(unittest.TestCase):
 
         with self.assertRaises(ValidationError) as mc:
             object_ = {"ip": "2001:db8:3333:4444:5555:6666:7777:"}
+            validate(schema, object_)
+        show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
+            object_ = {"ip": {}}
             validate(schema, object_)
         show(mc)
 
