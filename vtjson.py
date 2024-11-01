@@ -1061,6 +1061,7 @@ class email(compiled_schema):
 class ip_address(compiled_schema):
 
     __name__: str
+    method: Callable[[Any], Any]
 
     def __init__(self, version: Literal[4, 6] | None = None) -> None:
         if version is not None and version not in (4, 6):
@@ -1070,9 +1071,11 @@ class ip_address(compiled_schema):
         else:
             self.__name__ = f"ip_address(version={version})"
         if version == 4:
-            setattr(self, "__validate__", self.__validate_4__)
+            self.method = ipaddress.IPv4Address
         elif version == 6:
-            setattr(self, "__validate__", self.__validate_6__)
+            self.method = ipaddress.IPv6Address
+        else:
+            self.method = ipaddress.ip_address
 
     def __validate__(
         self,
@@ -1084,37 +1087,7 @@ class ip_address(compiled_schema):
         if not isinstance(object_, (int, str, bytes)):
             return _wrong_type_message(object_, name, self.__name__)
         try:
-            ipaddress.ip_address(object_)
-        except ValueError as e:
-            return _wrong_type_message(object_, name, self.__name__, explanation=str(e))
-        return ""
-
-    def __validate_4__(
-        self,
-        object_: object,
-        name: str = "object",
-        strict: bool = True,
-        subs: dict[str, object] = {},
-    ) -> str:
-        if not isinstance(object_, (int, str, bytes)):
-            return _wrong_type_message(object_, name, self.__name__)
-        try:
-            ipaddress.IPv4Address(object_)
-        except ValueError as e:
-            return _wrong_type_message(object_, name, self.__name__, explanation=str(e))
-        return ""
-
-    def __validate_6__(
-        self,
-        object_: object,
-        name: str = "object",
-        strict: bool = True,
-        subs: dict[str, object] = {},
-    ) -> str:
-        if not isinstance(object_, (int, str, bytes)):
-            return _wrong_type_message(object_, name, self.__name__)
-        try:
-            ipaddress.IPv6Address(object_)
+            self.method(object_)
         except ValueError as e:
             return _wrong_type_message(object_, name, self.__name__, explanation=str(e))
         return ""
