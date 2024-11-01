@@ -1641,6 +1641,17 @@ class TestValidation(unittest.TestCase):
         self.assertTrue("...}" in valid)
         self.assertTrue("TRUNCATED" in valid)
 
+    def test_int_float(self) -> None:
+        schema: object
+        schema = float
+        validate(schema, 1)
+        validate(schema, 1.0)
+        schema = int
+        validate(schema, 1)
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, 1.0)
+        show(mc)
+
     def test_float_equal(self) -> None:
         schema: object
         object_: object

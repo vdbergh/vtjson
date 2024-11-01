@@ -1017,6 +1017,7 @@ def validate(
 
 
 class number(compiled_schema):
+    # functionally equivalent with float
     def __validate__(
         self,
         object_: object,
@@ -1577,6 +1578,8 @@ class _type(compiled_schema):
     def __init__(self, schema: type | GenericAlias) -> None:
         if isinstance(schema, GenericAlias):
             raise SchemaError("Parametrized generics are not supported!")
+        if schema == float:
+            setattr(self, "__validate__", self.__validate_float__)
         self.schema = schema
 
     def __validate__(
@@ -1587,12 +1590,27 @@ class _type(compiled_schema):
         subs: dict[str, object] = {},
     ) -> str:
         try:
+            if self.schema == float and isinstance(object_, int):
+                return ""
             if not isinstance(object_, self.schema):
                 return _wrong_type_message(object_, name, self.schema.__name__)
             else:
                 return ""
         except Exception as e:
             return f"{self.schema} is not a valid type: {str(e)}"
+
+    def __validate_float__(
+        self,
+        object_: object,
+        name: str = "object",
+        strict: bool = True,
+        subs: dict[str, object] = {},
+    ) -> str:
+        # consider int as a subtype of float
+        if isinstance(object_, (int, float)):
+            return ""
+        else:
+            return _wrong_type_message(object_, name, "float")
 
     def __str__(self) -> str:
         return self.schema.__name__
