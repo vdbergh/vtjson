@@ -8,6 +8,7 @@ import re
 import sys
 import types
 import urllib.parse
+import warnings
 from collections.abc import Sequence, Sized
 
 if sys.version_info >= (3, 8):
@@ -1017,7 +1018,13 @@ def validate(
 
 
 class number(compiled_schema):
-    # functionally equivalent with float
+    # functionally equivalent to float
+    def __init__(self) -> None:
+        warnings.warn(
+            "The schema 'number' is deprecated. Use 'float' instead.",
+            DeprecationWarning,
+        )
+
     def __validate__(
         self,
         object_: object,

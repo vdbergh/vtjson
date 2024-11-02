@@ -1580,7 +1580,10 @@ class TestValidation(unittest.TestCase):
     def test_number(self) -> None:
         schema: object
         object_: object
-        schema = {"number": number}
+        with self.assertWarns(DeprecationWarning):
+            schema = {"number": number}
+            compile(schema)
+
         object_ = {"number": 1}
         validate(schema, object_)
 
