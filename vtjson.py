@@ -12,9 +12,11 @@ import warnings
 from collections.abc import Sequence, Sized
 
 if sys.version_info >= (3, 8):
+    import typing
     from typing import Any, Callable, Literal, Protocol, Type
 else:
-    from typing_extensions import Any, Callable, Protocol, Type
+    import typing_extensions as typing
+    from typing_extensions import Any, Callable, Literal, Protocol, Type
 
 import dns.resolver
 import email_validator
@@ -971,6 +973,10 @@ def compile(
         ret = _validate_schema(schema)
     elif hasattr(schema, "__compile__"):
         ret = schema.__compile__(_deferred_compiles=_deferred_compiles)
+    elif typing.get_origin(schema) == Literal:
+        # type narrowing
+        assert hasattr(schema, "__args__") and isinstance(schema.__args__, tuple)
+        ret = _Literal(schema.__args__)
     elif isinstance(schema, type) or isinstance(schema, GenericAlias):
         ret = _type(schema)
     elif callable(schema):
@@ -1916,3 +1922,10 @@ class _set(compiled_schema):
 
     def __str__(self) -> str:
         return str(self.schema_)
+
+
+class _Literal(compiled_schema):
+
+    def __init__(self, schema: tuple[object]) -> None:
+        u = _union(schema)
+        setattr(self, "__validate__", u.__validate__)

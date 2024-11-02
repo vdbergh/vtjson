@@ -3,8 +3,13 @@ import re
 import sys
 import unittest
 from datetime import datetime, timezone
-from typing import Any, Dict
 from urllib.parse import urlparse
+
+if sys.version_info >= (3, 8):
+    from typing import Any, Dict, Literal
+else:
+    from typing_extensions import Any, Dict, Literal
+
 
 from vtjson import (
     SchemaError,
@@ -619,6 +624,14 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object_ = {"b": 4, "c": 3}
             validate(schema, object_)
+        show(mc)
+
+    def test_Literal(self) -> None:
+        schema: object
+        schema = Literal["a", "b"]
+        validate(schema, "a")
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, "c")
         show(mc)
 
     def test_set_label(self) -> None:
