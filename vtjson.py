@@ -1575,11 +1575,14 @@ class filter:
 class _type(compiled_schema):
     schema: type
 
-    def __init__(self, schema: type | GenericAlias) -> None:
+    def __init__(self, schema: type | GenericAlias, math_numbers: bool = True) -> None:
         if isinstance(schema, GenericAlias):
             raise SchemaError("Parametrized generics are not supported!")
-        if schema == float:
-            setattr(self, "__validate__", self.__validate_float__)
+        if math_numbers:
+            if schema == float:
+                setattr(self, "__validate__", self.__validate_float__)
+            if schema == complex:
+                setattr(self, "__validate__", self.__validate_complex__)
         self.schema = schema
 
     def __validate__(
@@ -1611,6 +1614,19 @@ class _type(compiled_schema):
             return ""
         else:
             return _wrong_type_message(object_, name, "float")
+
+    def __validate_complex__(
+        self,
+        object_: object,
+        name: str = "object",
+        strict: bool = True,
+        subs: dict[str, object] = {},
+    ) -> str:
+        # consider int, float as subtypes of complex
+        if isinstance(object_, (int, float, complex)):
+            return ""
+        else:
+            return _wrong_type_message(object_, name, "complex")
 
     def __str__(self) -> str:
         return self.schema.__name__

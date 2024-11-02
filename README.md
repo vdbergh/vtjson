@@ -306,7 +306,8 @@ A schema can be, in order of precedence:
 
   This is an advanced feature which is used for the implementation of wrapper schemas. `__compile__()`, which is invoked by `compile()`, should produce an instance of `compiled_schema`. The optional argument `_deferred_compiles` is an opaque data structure for handling recursive schemas. It should be passed unmodified to any internal invocations of `compile()`. Please consult the source code of `vtjson` for more details.
 
-- A Python type. In that case validation is done by checking membership. By convention the schema `float` matches both floats and ints.
+- A Python type. In that case validation is done by checking membership. By convention the schema `float` matches both ints and floats. Similarly the schema `complex` matches
+ints and floats besides of course complex numbers.
 - A callable. Validation is done by applying the callable to the object. If applying the callable throws an exception then the corresponding message will be part of the non-validation message.
 - A `list` or a `tuple`. Validation is done by first checking membership of the corresponding types, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
 - A dictionary. Validation is done by first checking membership of the `dict` type, and then performing validation for each of the values of the object being validated against the corresponding values of the schema. Keys are themselves considered as schemas. E.g. `{str: str}` represents a dictionary whose keys and values are both strings. A more elaborate discussion of validation of dictionaries is given below.
