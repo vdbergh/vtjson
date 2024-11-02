@@ -14,7 +14,7 @@ Below is a simplified version of the schema of the run object in the mongodb dat
 import math
 from datetime import datetime
 from bson.objectid import ObjectId
-from vtjson import glob, ip_address, number, regex, url
+from vtjson import glob, ip_address, regex, url
 
 net_name = regex("nn-[a-z0-9]{12}.nnue", name="net_name")
 tc = regex(r"([1-9]\d*/)?\d+(\.\d+)?(\+\d+(\.\d+)?)?", name="tc")
@@ -40,7 +40,7 @@ worker_info_schema = {
     "unique_key": uuid,
     "modified": bool,
     "ARCH": str,
-    "nps": number,
+    "nps": float,
     "near_github_api_limit": bool,
     "remote_addr": ip_address,
     "country_code": union(country_code, "?"),
@@ -59,7 +59,7 @@ schema = {
     "_id?": ObjectId,
     "start_time": datetime,
     "last_updated": datetime,
-    "tc_base": number,
+    "tc_base": float,
     "base_same_as_master": bool,
     "rescheduled_from?": run_id,
     "approved": bool,
@@ -99,18 +99,18 @@ schema = {
         "username": str,
         "tests_repo": url,
         "auto_purge": bool,
-        "throughput": number,
-        "itp": number,
-        "priority": number,
+        "throughput": float,
+        "itp": float,
+        "priority": float,
         "adjudication": bool,
         "sprt?": {
             "alpha": 0.05,
             "beta": 0.05,
-            "elo0": number,
-            "elo1": number,
+            "elo0": float,
+            "elo1": float,
             "elo_model": "normalized",
             "state": union("", "accepted", "rejected"),
-            "llr": number,
+            "llr": float,
             "batch_size": int,
             "lower_bound": -math.log(19),
             "upper_bound": math.log(19),
@@ -119,38 +119,38 @@ schema = {
             "overshoot?": {
                 "last_update": int,
                 "skipped_updates": int,
-                "ref0": number,
-                "m0": number,
-                "sq0": number,
-                "ref1": number,
-                "m1": number,
-                "sq1": number,
+                "ref0": float,
+                "m0": float,
+                "sq0": float,
+                "ref1": float,
+                "m1": float,
+                "sq1": float,
             },
         },
         "spsa?": {
-            "A": number,
-            "alpha": number,
-            "gamma": number,
+            "A": float,
+            "alpha": float,
+            "gamma": float,
             "raw_params": str,
             "iter": int,
             "num_iter": int,
             "params": [
                 {
                     "name": str,
-                    "start": number,
-                    "min": number,
-                    "max": number,
-                    "c_end": number,
-                    "r_end": number,
-                    "c": number,
-                    "a_end": number,
-                    "a": number,
-                    "theta": number,
+                    "start": float,
+                    "min": float,
+                    "max": float,
+                    "c_end": float,
+                    "r_end": float,
+                    "c": float,
+                    "a_end": float,
+                    "a": float,
+                    "theta": float,
                 },
                 ...,
             ],
             "param_history?": [
-                [{"theta": number, "R": number, "c": number}, ...],
+                [{"theta": float, "R": float, "c": float}, ...],
                 ...,
             ],
         },
@@ -161,7 +161,7 @@ schema = {
             "active": bool,
             "last_updated": datetime,
             "start": int,
-            "residual?": number,
+            "residual?": float,
             "residual_color?": str,
             "bad?": True,
             "stats": results_schema,
@@ -175,7 +175,7 @@ schema = {
             "active": False,
             "last_updated": datetime,
             "start": int,
-            "residual": number,
+            "residual": float,
             "residual_color": str,
             "bad": True,
             "task_id": int,
@@ -231,7 +231,6 @@ Some built-ins take arguments. If no arguments are given then the parentheses ca
 - `glob(pattern, name=None)`. Unix style filename matching. This is implemented using `pathlib.PurePath().match()`.
 - `div(divisor, remainder=0, name=None)`. This matches the integers `x` such that `(x - remainder) % divisor` == 0.
 - `close_to(x, abs_tol=None, rel_tol=None)`. This matches the floats that are close to `x` in the sense of `math.isclose`.
-- `number`. Matches `int` and `float`.
 - `email`. Checks if the object is a valid email address. This uses the package `email_validator`. The `email` schema accepts the same options as `validate_email` in loc. cit.
 - `ip_address(version=None)`. Matches ip addresses of the specified version which can be 4, 6 or None.
 - `url`. Matches valid urls.
@@ -307,7 +306,7 @@ A schema can be, in order of precedence:
 
   This is an advanced feature which is used for the implementation of wrapper schemas. `__compile__()`, which is invoked by `compile()`, should produce an instance of `compiled_schema`. The optional argument `_deferred_compiles` is an opaque data structure for handling recursive schemas. It should be passed unmodified to any internal invocations of `compile()`. Please consult the source code of `vtjson` for more details.
 
-- A Python type. In that case validation is done by checking membership.
+- A Python type. In that case validation is done by checking membership. By convention the schema `float` matches both floats and ints.
 - A callable. Validation is done by applying the callable to the object. If applying the callable throws an exception then the corresponding message will be part of the non-validation message.
 - A `list` or a `tuple`. Validation is done by first checking membership of the corresponding types, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
 - A dictionary. Validation is done by first checking membership of the `dict` type, and then performing validation for each of the values of the object being validated against the corresponding values of the schema. Keys are themselves considered as schemas. E.g. `{str: str}` represents a dictionary whose keys and values are both strings. A more elaborate discussion of validation of dictionaries is given below.
