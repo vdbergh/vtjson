@@ -5,13 +5,21 @@ import re
 import sys
 import unittest
 from datetime import datetime, timezone
-from typing import Any, Dict, Literal, TypedDict
+from typing import Any, Dict
 from urllib.parse import urlparse
-
-# from typing_extensions import Any, Dict, Literal
 
 try:
     from typing import NotRequired
+except Exception:
+    pass
+
+try:
+    from typing import Literal
+except Exception:
+    pass
+
+try:
+    from typing import TypedDict
 except Exception:
     pass
 
