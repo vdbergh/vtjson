@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import json
 import re
-import sys
 import unittest
 from datetime import datetime, timezone
-from typing import Any, Dict
+from typing import Any, Dict, List
 from urllib.parse import urlparse
 
 import vtjson
@@ -1686,19 +1685,6 @@ class TestValidation(unittest.TestCase):
         object_ = 2.94 + 1e-10
         validate(schema, object_)
 
-    @unittest.skipUnless(
-        sys.version_info >= (3, 9),
-        "Parametrized types were introduced in Python 3.9",
-    )
-    def test_type(self) -> None:
-        schema: object
-        object_: object
-        with self.assertRaises(SchemaError) as cm_:
-            schema = list[str]
-            object_ = ["a", "b"]
-            validate(schema, object_)
-        show(cm_)
-
     def test_callable(self) -> None:
         schema: object
         object_: object
@@ -1733,6 +1719,17 @@ class TestValidation(unittest.TestCase):
         validate(schema, "a")
         with self.assertRaises(ValidationError) as mc:
             validate(schema, "c")
+        show(mc)
+
+    @unittest.skipUnless(
+        vtjson.supports_GenericAlias,
+        "GenericAliases did not work well in Pythin 3.7",
+    )
+    def test_List(self) -> None:
+        schema = List[str]
+        validate(schema, ["a", "b"])
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, [1])
         show(mc)
 
     @unittest.skipUnless(

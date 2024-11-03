@@ -39,6 +39,11 @@ try:
 except ImportError:
     supports_Annotated = False
 
+if hasattr(typing, "get_origin"):
+    supports_GenericAlias = True
+else:
+    supports_GenericAlias = False
+
 
 if sys.version_info >= (3, 8):
     from typing import Protocol
@@ -88,14 +93,6 @@ class ValidationError(Exception):
 
 class SchemaError(Exception):
     pass
-
-
-if sys.version_info >= (3, 9):
-    from types import GenericAlias
-else:
-
-    class GenericAlias:
-        pass
 
 
 __version__ = "2.0.11"
@@ -1002,6 +999,8 @@ def compile(
         ret = _validate_schema(schema)
     elif hasattr(schema, "__compile__"):
         ret = schema.__compile__(_deferred_compiles=_deferred_compiles)
+    elif supports_GenericAlias and typing.get_origin(schema) == list:
+        ret = _List(typing.get_args(schema)[0])
     elif supports_Literal and typing.get_origin(schema) == Literal:
         ret = _Literal(typing.get_args(schema))
     elif supports_Annotated and typing.get_origin(schema) == Annotated:
@@ -1011,7 +1010,7 @@ def compile(
         ret = _TypedDict(
             typing.get_type_hints(schema, include_extras=True), schema.__total__
         )
-    elif isinstance(schema, type) or isinstance(schema, GenericAlias):
+    elif isinstance(schema, type):
         ret = _type(schema)
     elif callable(schema):
         ret = _callable(schema)
@@ -1622,9 +1621,7 @@ class filter:
 class _type(compiled_schema):
     schema: type
 
-    def __init__(self, schema: type | GenericAlias, math_numbers: bool = True) -> None:
-        if isinstance(schema, GenericAlias):
-            raise SchemaError("Parametrized generics are not supported!")
+    def __init__(self, schema: type, math_numbers: bool = True) -> None:
         if math_numbers:
             if schema == float:
                 setattr(self, "__validate__", self.__validate_float__)
@@ -1961,6 +1958,11 @@ class _set(compiled_schema):
 class _Literal(compiled_schema):
     def __init__(self, schema: tuple[object]) -> None:
         setattr(self, "__validate__", _union(schema).__validate__)
+
+
+class _List(compiled_schema):
+    def __init__(self, schema: object) -> None:
+        setattr(self, "__validate__", _sequence([schema, ...]).__validate__)
 
 
 class _Annotated(compiled_schema):
