@@ -11,7 +11,7 @@ import typing
 import urllib.parse
 import warnings
 from collections.abc import Sequence, Sized
-from typing import Any, Callable
+from typing import Any, Callable, Type
 
 try:
     from typing import Literal
@@ -35,12 +35,11 @@ except ImportError:
 
 if sys.version_info >= (3, 11):
     import typing
-    from typing import Protocol, Type
+    from typing import Protocol
 else:
     import typing_extensions as typing
     from typing_extensions import (
         Protocol,
-        Type,
     )
 
 import dns.resolver
