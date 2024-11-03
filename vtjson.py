@@ -34,10 +34,8 @@ except ImportError:
 
 
 if sys.version_info >= (3, 11):
-    import typing
     from typing import Protocol
 else:
-    import typing_extensions as typing
     from typing_extensions import (
         Protocol,
     )
