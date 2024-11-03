@@ -1,12 +1,19 @@
+from __future__ import annotations
+
 import json
 import re
 import sys
 import unittest
 from datetime import datetime, timezone
-from typing import TypedDict
+from typing import Any, Dict, Literal, TypedDict
 from urllib.parse import urlparse
 
-from typing_extensions import Any, Dict, Literal, NotRequired
+# from typing_extensions import Any, Dict, Literal
+
+try:
+    from typing import NotRequired
+except Exception:
+    pass
 
 from vtjson import (
     SchemaError,
@@ -1722,6 +1729,24 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_TypedDict(self) -> None:
+        class dummy(TypedDict):
+            a: int
+            b: str
+
+        schema = dummy
+        validate(schema, {"a": 1, "b": "c"})
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, {"a": "b", "b": "c"})
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, {"a": 1, "b": 1})
+        show(mc)
+
+    @unittest.skipUnless(
+        sys.version_info.major == 3 and sys.version_info.minor >= 11,
+        "NotRequired was introduced in Python 3.11",
+    )
+    def test_NotRequired(self) -> None:
         class dummy(TypedDict):
             a: int
             b: NotRequired[str]

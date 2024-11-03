@@ -992,7 +992,9 @@ def compile(
         assert hasattr(schema, "__optional_keys__") and isinstance(
             schema.__optional_keys__, Iterable
         )
-        ret = _TypedDict(schema.__annotations__, schema.__optional_keys__)
+        ret = _TypedDict(
+            typing.get_type_hints(schema, include_extras=True), schema.__optional_keys__
+        )
     elif isinstance(schema, type) or isinstance(schema, GenericAlias):
         ret = _type(schema)
     elif callable(schema):
@@ -1957,9 +1959,10 @@ class _TypedDict(compiled_schema):
         for k, v in schema.items():
             v_ = v
             k_: str | optional_key = k
-            if typing.get_origin(v) in (Required, NotRequired):
+            value_type = typing.get_origin(v)
+            if value_type in (Required, NotRequired):
                 v_ = typing.get_args(v)[0]
-            if k in not_required:
+            if value_type == NotRequired:
                 k_ = optional_key(k)
             d[k_] = v_
         setattr(self, "__validate__", _dict(d).__validate__)
