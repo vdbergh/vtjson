@@ -13,16 +13,25 @@ from collections.abc import Sequence, Sized
 from typing import Literal
 
 if sys.version_info >= (3, 11):
+    from typing import NotRequired, Required
+else:
+
+    class Required:
+        pass
+
+    class NotRequired:
+        pass
+
+
+if sys.version_info >= (3, 11):
     import typing
-    from typing import Any, Callable, NotRequired, Protocol, Required, Type
+    from typing import Any, Callable, Protocol, Type
 else:
     import typing_extensions as typing
     from typing_extensions import (
         Any,
         Callable,
-        NotRequired,
         Protocol,
-        Required,
         Type,
     )
 
