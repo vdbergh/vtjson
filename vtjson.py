@@ -10,17 +10,25 @@ import types
 import urllib.parse
 import warnings
 from collections.abc import Sequence, Sized
-from typing import Literal
 
-if sys.version_info >= (3, 11):
-    from typing import NotRequired, Required
+try:
+    from typing import Literal
+
+    supports_Literal = True
+except ImportError:
+    supports_Literal = False
+
+if sys.version_info >= (3, 8):
+    supports_TypedDict = True
 else:
+    supports_TypedDict = False
 
-    class Required:
-        pass
+try:
+    from typing import NotRequired, Required
 
-    class NotRequired:
-        pass
+    supports_NotRequired = True
+except ImportError:
+    supports_NotRequired = False
 
 
 if sys.version_info >= (3, 11):
@@ -990,9 +998,9 @@ def compile(
         ret = _validate_schema(schema)
     elif hasattr(schema, "__compile__"):
         ret = schema.__compile__(_deferred_compiles=_deferred_compiles)
-    elif typing.get_origin(schema) == Literal:
+    elif supports_Literal and typing.get_origin(schema) == Literal:
         ret = _Literal(typing.get_args(schema))
-    elif typing.is_typeddict(schema):
+    elif supports_TypedDict and typing.is_typeddict(schema):
         ret = _TypedDict(typing.get_type_hints(schema, include_extras=True))
     elif isinstance(schema, type) or isinstance(schema, GenericAlias):
         ret = _type(schema)
@@ -1958,9 +1966,9 @@ class _TypedDict(compiled_schema):
             v_ = v
             k_: str | optional_key = k
             value_type = typing.get_origin(v)
-            if value_type in (Required, NotRequired):
+            if supports_NotRequired and value_type in (Required, NotRequired):
                 v_ = typing.get_args(v)[0]
-            if value_type == NotRequired:
+            if supports_NotRequired and value_type == NotRequired:
                 k_ = optional_key(k)
             d[k_] = v_
         setattr(self, "__validate__", _dict(d).__validate__)

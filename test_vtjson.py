@@ -694,7 +694,7 @@ class TestValidation(unittest.TestCase):
         validate(schema, 1.0 + 1e-14)
 
     @unittest.skipUnless(
-        sys.version_info.major == 3 and sys.version_info.minor >= 7,
+        sys.version_info >= (3, 7),
         "datetime.datetime.fromisoformat was introduced in Python 3.7",
     )
     def test_date_time(self) -> None:
@@ -729,7 +729,7 @@ class TestValidation(unittest.TestCase):
         validate(schema, object_)
 
     @unittest.skipUnless(
-        sys.version_info.major == 3 and sys.version_info.minor >= 7,
+        sys.version_info >= (3, 7),
         "datetime.date.fromisoformat was introduced in Python 3.7",
     )
     def test_date(self) -> None:
@@ -745,7 +745,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     @unittest.skipUnless(
-        sys.version_info.major == 3 and sys.version_info.minor >= 7,
+        sys.version_info >= (3, 7),
         "datetime.time.fromisoformat was introduced in Python 3.7",
     )
     def test_time(self) -> None:
@@ -1684,7 +1684,7 @@ class TestValidation(unittest.TestCase):
         validate(schema, object_)
 
     @unittest.skipUnless(
-        sys.version_info.major == 3 and sys.version_info.minor >= 9,
+        sys.version_info >= (3, 9),
         "Parametrized types were introduced in Python 3.9",
     )
     def test_type(self) -> None:
@@ -1721,6 +1721,10 @@ class TestValidation(unittest.TestCase):
             validate(schema, object_)
         show(mc)
 
+    @unittest.skipUnless(
+        sys.version_info >= (3, 8),
+        "Literal was introduced in Python 3.8",
+    )
     def test_Literal(self) -> None:
         schema = Literal["a", "b"]
         validate(schema, "a")
@@ -1728,6 +1732,10 @@ class TestValidation(unittest.TestCase):
             validate(schema, "c")
         show(mc)
 
+    @unittest.skipUnless(
+        sys.version_info >= (3, 8),
+        "TypedDict was introduced in Python 3.8",
+    )
     def test_TypedDict(self) -> None:
         class dummy(TypedDict):
             a: int
@@ -1743,7 +1751,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     @unittest.skipUnless(
-        sys.version_info.major == 3 and sys.version_info.minor >= 11,
+        sys.version_info >= (3, 11),
         "NotRequired was introduced in Python 3.11",
     )
     def test_NotRequired(self) -> None:
