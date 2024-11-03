@@ -998,7 +998,10 @@ def compile(
     elif supports_Literal and typing.get_origin(schema) == Literal:
         ret = _Literal(typing.get_args(schema))
     elif supports_TypedDict and typing.is_typeddict(schema):
-        ret = _TypedDict(typing.get_type_hints(schema, include_extras=True))
+        assert hasattr(schema, "__total__") and isinstance(schema.__total__, bool)
+        ret = _TypedDict(
+            typing.get_type_hints(schema, include_extras=True), schema.__total__
+        )
     elif isinstance(schema, type) or isinstance(schema, GenericAlias):
         ret = _type(schema)
     elif callable(schema):
@@ -1957,6 +1960,7 @@ class _TypedDict(compiled_schema):
     def __init__(
         self,
         schema: dict[str, object],
+        total: bool,
     ) -> None:
         d: dict[object, object] = {}
         for k, v in schema.items():
@@ -1965,7 +1969,9 @@ class _TypedDict(compiled_schema):
             value_type = typing.get_origin(v)
             if supports_NotRequired and value_type in (Required, NotRequired):
                 v_ = typing.get_args(v)[0]
-            if supports_NotRequired and value_type == NotRequired:
+            if total and supports_NotRequired and value_type == NotRequired:
+                k_ = optional_key(k)
+            elif not total and supports_NotRequired and value_type != Required:
                 k_ = optional_key(k)
             d[k_] = v_
         setattr(self, "__validate__", _dict(d).__validate__)

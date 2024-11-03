@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 import vtjson
 
 try:
-    from typing import NotRequired
+    from typing import NotRequired, Required
 except Exception:
     pass
 
@@ -1748,6 +1748,20 @@ class TestValidation(unittest.TestCase):
             validate(schema, {"a": 1, "b": 1})
         show(mc)
 
+        class dummy2(TypedDict, total=False):
+            a: int
+            b: str
+
+        schema2 = dummy2
+        validate(schema2, {})
+        validate(schema2, {"a": 1})
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema2, {"a": "b", "b": "c"})
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema2, {"a": 1, "b": 1})
+        show(mc)
+
     @unittest.skipUnless(
         vtjson.supports_NotRequired,
         "NotRequired was introduced in Python 3.11",
@@ -1765,6 +1779,20 @@ class TestValidation(unittest.TestCase):
         validate(schema, {"a": 1, "b": "c"})
         with self.assertRaises(ValidationError) as mc:
             validate(schema, {"a": 1, "b": 1})
+        show(mc)
+
+        class dummy2(TypedDict, total=False):
+            a: Required[int]
+            b: str
+
+        schema2 = dummy2
+        validate(schema2, {"a": 1})
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema2, {"a": "b"})
+        show(mc)
+        validate(schema2, {"a": 1, "b": "c"})
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema2, {"a": 1, "b": 1})
         show(mc)
 
 
