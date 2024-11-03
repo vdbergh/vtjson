@@ -3,13 +3,10 @@ import re
 import sys
 import unittest
 from datetime import datetime, timezone
+from typing import TypedDict
 from urllib.parse import urlparse
 
-if sys.version_info >= (3, 8):
-    from typing import Any, Dict, Literal
-else:
-    from typing_extensions import Any, Dict, Literal
-
+from typing_extensions import Any, Dict, Literal, NotRequired
 
 from vtjson import (
     SchemaError,
@@ -624,14 +621,6 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             object_ = {"b": 4, "c": 3}
             validate(schema, object_)
-        show(mc)
-
-    def test_Literal(self) -> None:
-        schema: object
-        schema = Literal["a", "b"]
-        validate(schema, "a")
-        with self.assertRaises(ValidationError) as mc:
-            validate(schema, "c")
         show(mc)
 
     def test_set_label(self) -> None:
@@ -1723,6 +1712,28 @@ class TestValidation(unittest.TestCase):
             schema = fails
             object_ = 0
             validate(schema, object_)
+        show(mc)
+
+    def test_Literal(self) -> None:
+        schema = Literal["a", "b"]
+        validate(schema, "a")
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, "c")
+        show(mc)
+
+    def test_TypedDict(self) -> None:
+        class dummy(TypedDict):
+            a: int
+            b: NotRequired[str]
+
+        schema = dummy
+        validate(schema, {"a": 1})
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, {"a": "b"})
+        show(mc)
+        validate(schema, {"a": 1, "b": "c"})
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, {"a": 1, "b": 1})
         show(mc)
 
 

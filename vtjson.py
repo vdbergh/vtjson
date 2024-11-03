@@ -9,14 +9,22 @@ import sys
 import types
 import urllib.parse
 import warnings
-from collections.abc import Sequence, Sized
+from collections.abc import Iterable, Sequence, Sized
 
-if sys.version_info >= (3, 8):
+if sys.version_info >= (3, 11):
     import typing
-    from typing import Any, Callable, Literal, Protocol, Type
+    from typing import Any, Callable, Literal, NotRequired, Protocol, Required, Type
 else:
     import typing_extensions as typing
-    from typing_extensions import Any, Callable, Literal, Protocol, Type
+    from typing_extensions import (
+        Any,
+        Callable,
+        Literal,
+        NotRequired,
+        Protocol,
+        Required,
+        Type,
+    )
 
 import dns.resolver
 import email_validator
@@ -977,6 +985,14 @@ def compile(
         # type narrowing
         assert hasattr(schema, "__args__") and isinstance(schema.__args__, tuple)
         ret = _Literal(schema.__args__)
+    elif typing.is_typeddict(schema):
+        assert hasattr(schema, "__annotations__") and isinstance(
+            schema.__annotations__, dict
+        )
+        assert hasattr(schema, "__optional_keys__") and isinstance(
+            schema.__optional_keys__, Iterable
+        )
+        ret = _TypedDict(schema.__annotations__, schema.__optional_keys__)
     elif isinstance(schema, type) or isinstance(schema, GenericAlias):
         ret = _type(schema)
     elif callable(schema):
@@ -1929,3 +1945,21 @@ class _Literal(compiled_schema):
     def __init__(self, schema: tuple[object]) -> None:
         u = _union(schema)
         setattr(self, "__validate__", u.__validate__)
+
+
+class _TypedDict(compiled_schema):
+    def __init__(
+        self,
+        schema: dict[str, object],
+        not_required: Iterable[object],
+    ) -> None:
+        d: dict[object, object] = {}
+        for k, v in schema.items():
+            v_ = v
+            k_: str | optional_key = k
+            if typing.get_origin(v) in (Required, NotRequired):
+                v_ = typing.get_args(v)[0]
+            if k in not_required:
+                k_ = optional_key(k)
+            d[k_] = v_
+        setattr(self, "__validate__", _dict(d).__validate__)
