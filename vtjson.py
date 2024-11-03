@@ -11,6 +11,7 @@ import typing
 import urllib.parse
 import warnings
 from collections.abc import Sequence, Sized
+from typing import Any, Callable
 
 try:
     from typing import Literal
@@ -34,12 +35,10 @@ except ImportError:
 
 if sys.version_info >= (3, 11):
     import typing
-    from typing import Any, Callable, Protocol, Type
+    from typing import Protocol, Type
 else:
     import typing_extensions as typing
     from typing_extensions import (
-        Any,
-        Callable,
         Protocol,
         Type,
     )
