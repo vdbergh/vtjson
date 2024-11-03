@@ -4,7 +4,7 @@ import json
 import re
 import unittest
 from datetime import datetime, timezone
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 from urllib.parse import urlparse
 
 import vtjson
@@ -1741,6 +1741,18 @@ class TestValidation(unittest.TestCase):
         validate(schema, "a")
         with self.assertRaises(ValidationError) as mc:
             validate(schema, "c")
+        show(mc)
+
+    @unittest.skipUnless(
+        vtjson.supports_GenericAlias,
+        "GenericAlias did not work well before 3.8",
+    )
+    def test_Union(self) -> None:
+        schema = Union[int, str]
+        validate(schema, "a")
+        validate(schema, 1)
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, 0.1)
         show(mc)
 
     @unittest.skipUnless(

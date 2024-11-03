@@ -11,7 +11,7 @@ import typing
 import urllib.parse
 import warnings
 from collections.abc import Sequence, Sized
-from typing import Any, Callable, Type
+from typing import Any, Callable, Type, Union
 
 try:
     from typing import Literal
@@ -986,6 +986,8 @@ def compile(
 
     # real work starts here
     ret: compiled_schema
+    if supports_GenericAlias:
+        origin = typing.get_origin(schema)
     if isinstance(schema, compiled_schema):
         ret = schema
     elif isinstance(schema, type) and issubclass(schema, compiled_schema):
@@ -999,11 +1001,13 @@ def compile(
         ret = _validate_schema(schema)
     elif hasattr(schema, "__compile__"):
         ret = schema.__compile__(_deferred_compiles=_deferred_compiles)
-    elif supports_GenericAlias and typing.get_origin(schema) == list:
+    elif supports_GenericAlias and origin == list:
         ret = _List(typing.get_args(schema)[0])
-    elif supports_Literal and typing.get_origin(schema) == Literal:
+    elif supports_GenericAlias and origin == Union:
+        ret = _Union(typing.get_args(schema))
+    elif supports_Literal and origin == Literal:
         ret = _Literal(typing.get_args(schema))
-    elif supports_Annotated and typing.get_origin(schema) == Annotated:
+    elif supports_Annotated and origin == Annotated:
         ret = _Annotated(typing.get_args(schema))
     elif supports_TypedDict and typing.is_typeddict(schema):
         assert hasattr(schema, "__total__") and isinstance(schema.__total__, bool)
@@ -1956,6 +1960,11 @@ class _set(compiled_schema):
 
 
 class _Literal(compiled_schema):
+    def __init__(self, schema: tuple[object]) -> None:
+        setattr(self, "__validate__", _union(schema).__validate__)
+
+
+class _Union(compiled_schema):
     def __init__(self, schema: tuple[object]) -> None:
         setattr(self, "__validate__", _union(schema).__validate__)
 
