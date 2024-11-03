@@ -991,9 +991,7 @@ def compile(
     elif hasattr(schema, "__compile__"):
         ret = schema.__compile__(_deferred_compiles=_deferred_compiles)
     elif typing.get_origin(schema) == Literal:
-        # type narrowing
-        assert hasattr(schema, "__args__") and isinstance(schema.__args__, tuple)
-        ret = _Literal(schema.__args__)
+        ret = _Literal(typing.get_args(schema))
     elif typing.is_typeddict(schema):
         ret = _TypedDict(typing.get_type_hints(schema, include_extras=True))
     elif isinstance(schema, type) or isinstance(schema, GenericAlias):
