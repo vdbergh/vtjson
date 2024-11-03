@@ -9,17 +9,17 @@ import sys
 import types
 import urllib.parse
 import warnings
-from collections.abc import Iterable, Sequence, Sized
+from collections.abc import Sequence, Sized
+from typing import Literal
 
 if sys.version_info >= (3, 11):
     import typing
-    from typing import Any, Callable, Literal, NotRequired, Protocol, Required, Type
+    from typing import Any, Callable, NotRequired, Protocol, Required, Type
 else:
     import typing_extensions as typing
     from typing_extensions import (
         Any,
         Callable,
-        Literal,
         NotRequired,
         Protocol,
         Required,
@@ -986,15 +986,7 @@ def compile(
         assert hasattr(schema, "__args__") and isinstance(schema.__args__, tuple)
         ret = _Literal(schema.__args__)
     elif typing.is_typeddict(schema):
-        assert hasattr(schema, "__annotations__") and isinstance(
-            schema.__annotations__, dict
-        )
-        assert hasattr(schema, "__optional_keys__") and isinstance(
-            schema.__optional_keys__, Iterable
-        )
-        ret = _TypedDict(
-            typing.get_type_hints(schema, include_extras=True), schema.__optional_keys__
-        )
+        ret = _TypedDict(typing.get_type_hints(schema, include_extras=True))
     elif isinstance(schema, type) or isinstance(schema, GenericAlias):
         ret = _type(schema)
     elif callable(schema):
@@ -1953,7 +1945,6 @@ class _TypedDict(compiled_schema):
     def __init__(
         self,
         schema: dict[str, object],
-        not_required: Iterable[object],
     ) -> None:
         d: dict[object, object] = {}
         for k, v in schema.items():
