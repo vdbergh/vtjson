@@ -7,6 +7,7 @@ import pathlib
 import re
 import sys
 import types
+import typing
 import urllib.parse
 import warnings
 from collections.abc import Sequence, Sized
@@ -18,7 +19,7 @@ try:
 except ImportError:
     supports_Literal = False
 
-if sys.version_info >= (3, 8):
+if hasattr(typing, "is_typeddict"):
     supports_TypedDict = True
 else:
     supports_TypedDict = False
