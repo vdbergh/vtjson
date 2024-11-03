@@ -33,7 +33,7 @@ except ImportError:
     supports_NotRequired = False
 
 
-if sys.version_info >= (3, 11):
+if sys.version_info >= (3, 8):
     from typing import Protocol
 else:
     from typing_extensions import (
