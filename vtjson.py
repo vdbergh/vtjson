@@ -32,6 +32,13 @@ try:
 except ImportError:
     supports_NotRequired = False
 
+try:
+    from typing import Annotated
+
+    supports_Annotated = True
+except ImportError:
+    supports_Annotated = False
+
 
 if sys.version_info >= (3, 8):
     from typing import Protocol
@@ -997,6 +1004,8 @@ def compile(
         ret = schema.__compile__(_deferred_compiles=_deferred_compiles)
     elif supports_Literal and typing.get_origin(schema) == Literal:
         ret = _Literal(typing.get_args(schema))
+    elif supports_Annotated and typing.get_origin(schema) == Annotated:
+        ret = _Annotated(typing.get_args(schema))
     elif supports_TypedDict and typing.is_typeddict(schema):
         assert hasattr(schema, "__total__") and isinstance(schema.__total__, bool)
         ret = _TypedDict(
@@ -1950,10 +1959,13 @@ class _set(compiled_schema):
 
 
 class _Literal(compiled_schema):
-
     def __init__(self, schema: tuple[object]) -> None:
-        u = _union(schema)
-        setattr(self, "__validate__", u.__validate__)
+        setattr(self, "__validate__", _union(schema).__validate__)
+
+
+class _Annotated(compiled_schema):
+    def __init__(self, schema: tuple[object]) -> None:
+        setattr(self, "__validate__", _intersect(schema).__validate__)
 
 
 class _TypedDict(compiled_schema):
@@ -1971,7 +1983,7 @@ class _TypedDict(compiled_schema):
                 v_ = typing.get_args(v)[0]
             if total and supports_NotRequired and value_type == NotRequired:
                 k_ = optional_key(k)
-            elif not total and supports_NotRequired and value_type != Required:
+            elif not total and (not supports_NotRequired or value_type != Required):
                 k_ = optional_key(k)
             d[k_] = v_
         setattr(self, "__validate__", _dict(d).__validate__)

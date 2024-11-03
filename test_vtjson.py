@@ -25,6 +25,11 @@ try:
 except Exception:
     pass
 
+try:
+    from typing import Annotated
+except Exception:
+    pass
+
 from vtjson import (
     SchemaError,
     ValidationError,
@@ -1725,6 +1730,17 @@ class TestValidation(unittest.TestCase):
     )
     def test_Literal(self) -> None:
         schema = Literal["a", "b"]
+        validate(schema, "a")
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, "c")
+        show(mc)
+
+    @unittest.skipUnless(
+        vtjson.supports_Annotated,
+        "Annotated was introduced in Python 3.9",
+    )
+    def test_Annotated(self) -> None:
+        schema = Annotated[str, "a"]
         validate(schema, "a")
         with self.assertRaises(ValidationError) as mc:
             validate(schema, "c")
