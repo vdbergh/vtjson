@@ -227,7 +227,7 @@ class _union(compiled_schema):
         _deferred_compiles: _mapping | None = None,
     ) -> None:
         self.schemas = [
-            compile(s, _deferred_compiles=_deferred_compiles) for s in schemas
+            _compile(s, _deferred_compiles=_deferred_compiles) for s in schemas
         ]
 
     def __validate__(
@@ -266,7 +266,7 @@ class _intersect(compiled_schema):
         _deferred_compiles: _mapping | None = None,
     ) -> None:
         self.schemas = [
-            compile(s, _deferred_compiles=_deferred_compiles) for s in schemas
+            _compile(s, _deferred_compiles=_deferred_compiles) for s in schemas
         ]
 
     def __validate__(
@@ -299,7 +299,7 @@ class _complement(compiled_schema):
     def __init__(
         self, schema: object, _deferred_compiles: _mapping | None = None
     ) -> None:
-        self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
+        self.schema = _compile(schema, _deferred_compiles=_deferred_compiles)
 
     def __validate__(
         self,
@@ -331,7 +331,7 @@ class _lax(compiled_schema):
     def __init__(
         self, schema: object, _deferred_compiles: _mapping | None = None
     ) -> None:
-        self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
+        self.schema = _compile(schema, _deferred_compiles=_deferred_compiles)
 
     def __validate__(
         self,
@@ -359,7 +359,7 @@ class _strict(compiled_schema):
     def __init__(
         self, schema: object, _deferred_compiles: _mapping | None = None
     ) -> None:
-        self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
+        self.schema = _compile(schema, _deferred_compiles=_deferred_compiles)
 
     def __validate__(
         self,
@@ -391,7 +391,7 @@ class _set_label(compiled_schema):
         debug: bool,
         _deferred_compiles: _mapping | None = None,
     ) -> None:
-        self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
+        self.schema = _compile(schema, _deferred_compiles=_deferred_compiles)
         self.labels = labels
         self.debug = debug
 
@@ -465,7 +465,7 @@ class _set_name(compiled_schema):
     def __init__(
         self, schema: object, name: str, _deferred_compiles: _mapping | None = None
     ) -> None:
-        self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
+        self.schema = _compile(schema, _deferred_compiles=_deferred_compiles)
         self.__name__ = name
 
     def __validate__(
@@ -997,7 +997,28 @@ class _validate_schema(compiled_schema):
         setattr(self, "__validate__", schema.__validate__)
 
 
-def compile(
+_compile_cache: dict[int, compiled_schema] = {}
+
+
+def clear_compile_cache() -> None:
+    global _compile_cache
+    _compile_cache = {}
+
+
+def compile(schema: object, compile_cache: bool = False) -> compiled_schema:
+    if compile_cache:
+        id_ = id(schema)
+        if id_ in _compile_cache:
+            c = _compile_cache[id_]
+        else:
+            c = _compile(schema, _deferred_compiles=None)
+            _compile_cache[id_] = c
+    else:
+        c = _compile(schema, _deferred_compiles=None)
+    return c
+
+
+def _compile(
     schema: object, _deferred_compiles: _mapping | None = None
 ) -> compiled_schema:
     if _deferred_compiles is None:
@@ -1068,8 +1089,11 @@ def _validate(
     name: str = "object",
     strict: bool = True,
     subs: dict[str, object] = {},
+    compile_cache: bool = False,
 ) -> str:
-    return compile(schema).__validate__(object_, name=name, strict=strict, subs=subs)
+    return compile(schema, compile_cache=compile_cache).__validate__(
+        object_, name=name, strict=strict, subs=subs
+    )
 
 
 def validate(
@@ -1078,8 +1102,16 @@ def validate(
     name: str = "object",
     strict: bool = True,
     subs: dict[str, object] = {},
+    compile_cache: bool = False,
 ) -> None:
-    message = _validate(schema, object_, name=name, strict=strict, subs=subs)
+    message = _validate(
+        schema,
+        object_,
+        name=name,
+        strict=strict,
+        subs=subs,
+        compile_cache=compile_cache,
+    )
     if message != "":
         raise ValidationError(message)
 
@@ -1438,10 +1470,10 @@ class _ifthen(compiled_schema):
         else_schema: object | None = None,
         _deferred_compiles: _mapping | None = None,
     ) -> None:
-        self.if_schema = compile(if_schema, _deferred_compiles=_deferred_compiles)
-        self.then_schema = compile(then_schema, _deferred_compiles=_deferred_compiles)
+        self.if_schema = _compile(if_schema, _deferred_compiles=_deferred_compiles)
+        self.then_schema = _compile(then_schema, _deferred_compiles=_deferred_compiles)
         if else_schema is not None:
-            self.else_schema = compile(
+            self.else_schema = _compile(
                 else_schema, _deferred_compiles=_deferred_compiles
             )
         else:
@@ -1504,8 +1536,8 @@ class _cond(compiled_schema):
         for c in args:
             self.conditions.append(
                 (
-                    compile(c[0], _deferred_compiles=_deferred_compiles),
-                    compile(c[1], _deferred_compiles=_deferred_compiles),
+                    _compile(c[0], _deferred_compiles=_deferred_compiles),
+                    _compile(c[1], _deferred_compiles=_deferred_compiles),
                 )
             )
 
@@ -1543,7 +1575,7 @@ class _fields(compiled_schema):
     ) -> None:
         self.d = {}
         for k, v in d.items():
-            self.d[k] = compile(v, _deferred_compiles=_deferred_compiles)
+            self.d[k] = _compile(v, _deferred_compiles=_deferred_compiles)
 
     def __validate__(
         self,
@@ -1590,7 +1622,7 @@ class _filter(compiled_schema):
         _deferred_compiles: _mapping | None = None,
     ) -> None:
         self.filter = filter
-        self.schema = compile(schema, _deferred_compiles=_deferred_compiles)
+        self.schema = _compile(schema, _deferred_compiles=_deferred_compiles)
         if filter_name is not None:
             self.filter_name = filter_name
         else:
@@ -1719,7 +1751,7 @@ class _sequence(compiled_schema):
     ) -> None:
         self.type_schema = type(schema)
         self.schema = [
-            compile(o, _deferred_compiles=_deferred_compiles)
+            _compile(o, _deferred_compiles=_deferred_compiles)
             for o in schema
             if o is not ...
         ]
@@ -1856,7 +1888,7 @@ class _dict(compiled_schema):
         self.other_keys = set()
         self.schema = {}
         for k in schema:
-            compiled_schema = compile(schema[k], _deferred_compiles=_deferred_compiles)
+            compiled_schema = _compile(schema[k], _deferred_compiles=_deferred_compiles)
             optional = True
             if isinstance(k, optional_key):
                 key = k.key
@@ -1865,7 +1897,7 @@ class _dict(compiled_schema):
             else:
                 optional = False
                 key = k
-            c = compile(key, _deferred_compiles=_deferred_compiles)
+            c = _compile(key, _deferred_compiles=_deferred_compiles)
             if isinstance(c, _const):
                 if not optional:
                     self.min_keys.add(key)
@@ -1934,7 +1966,7 @@ class _set(compiled_schema):
             self.schema = _const(set())
             setattr(self, "__validate__", self.__validate_empty_set__)
         elif len(schema) == 1:
-            self.schema = compile(
+            self.schema = _compile(
                 tuple(schema)[0], _deferred_compiles=_deferred_compiles
             )
             setattr(self, "__validate__", self.__validate_singleton__)
@@ -2036,7 +2068,7 @@ class _Annotated(compiled_schema):
         if len(collect_) == 0:
             c = anything()
         elif len(collect_) == 1:
-            c = compile(collect_[0], _deferred_compiles=_deferred_compiles)
+            c = _compile(collect_[0], _deferred_compiles=_deferred_compiles)
         else:
             c = _intersect(collect_, _deferred_compiles=_deferred_compiles)
         setattr(
