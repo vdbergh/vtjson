@@ -100,26 +100,26 @@ __version__ = "2.0.11"
 
 
 @dataclass
-class Options:
+class Apply:
     skip_first: bool | None = None
     name: str | None = None
     labels: list[str] | None = None
-    strict: bool | None = None
-    complement: bool = False
 
-    def __call__(self, schema: object) -> object:
-        ret = schema
-        if self.complement:
-            ret = complement(schema)
+    def __call__(self, schema: tuple[object, ...]) -> object:
+        if len(schema) == 0:
+            raise SchemaError("Called Apply with an empty tuple")
+        if self.skip_first:
+            schema = schema[1:]
+        if len(schema) == 0:
+            raise SchemaError("Called Apply with an empty tuple")
+        if len(schema) == 1:
+            ret = schema[0]
+        else:
+            ret = intersect(*schema)
         if self.labels is not None:
             ret = set_label(ret, *self.labels)
         if self.name is not None:
             ret = set_name(ret, self.name)
-        if self.strict is not None:
-            if not self.strict:
-                ret = lax(ret)
-            elif self.strict:
-                ret = strict(ret)
         return ret
 
 
