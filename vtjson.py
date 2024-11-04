@@ -1714,7 +1714,7 @@ class _sequence(compiled_schema):
 
     def __init__(
         self,
-        schema: list[object] | tuple[object],
+        schema: list[object] | tuple[object, ...],
         _deferred_compiles: _mapping | None = None,
     ) -> None:
         self.type_schema = type(schema)
@@ -1988,7 +1988,7 @@ class _set(compiled_schema):
 
 class _Literal(compiled_schema):
     def __init__(
-        self, schema: tuple[object], _deferred_compiles: _mapping | None = None
+        self, schema: tuple[object, ...], _deferred_compiles: _mapping | None = None
     ) -> None:
         setattr(
             self,
@@ -1999,7 +1999,7 @@ class _Literal(compiled_schema):
 
 class _Union(compiled_schema):
     def __init__(
-        self, schema: tuple[object], _deferred_compiles: _mapping | None = None
+        self, schema: tuple[object, ...], _deferred_compiles: _mapping | None = None
     ) -> None:
         setattr(
             self,
@@ -2023,7 +2023,7 @@ class _List(compiled_schema):
 
 class _Annotated(compiled_schema):
     def __init__(
-        self, schema: tuple[object], _deferred_compiles: _mapping | None = None
+        self, schema: tuple[object, ...], _deferred_compiles: _mapping | None = None
     ) -> None:
         setattr(
             self,
