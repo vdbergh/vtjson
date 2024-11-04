@@ -11,6 +11,7 @@ import typing
 import urllib.parse
 import warnings
 from collections.abc import Sequence, Sized
+from dataclasses import dataclass
 from typing import Any, Callable, Type, Union
 
 try:
@@ -96,6 +97,30 @@ class SchemaError(Exception):
 
 
 __version__ = "2.0.11"
+
+
+@dataclass
+class Options:
+    skip_first: bool | None = None
+    name: str | None = None
+    labels: list[str] | None = None
+    strict: bool | None = None
+    complement: bool = False
+
+    def __call__(self, schema: object) -> object:
+        ret = schema
+        if self.complement:
+            ret = complement(schema)
+        if self.labels is not None:
+            ret = set_label(ret, *self.labels)
+        if self.name is not None:
+            ret = set_name(ret, self.name)
+        if self.strict is not None:
+            if not self.strict:
+                ret = lax(ret)
+            elif self.strict:
+                ret = strict(ret)
+        return ret
 
 
 _dns_resolver: dns.resolver.Resolver | None = None
