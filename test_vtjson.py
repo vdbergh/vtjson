@@ -5,7 +5,7 @@ import re
 import sys
 import unittest
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Tuple, Union
 from urllib.parse import urlparse
 
 import vtjson
@@ -1750,6 +1750,24 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     @unittest.skipUnless(
+        vtjson.supports_GenericAlias,
+        "GenericAliases did not work well in Pythin 3.7",
+    )
+    def test_Tuple(self) -> None:
+        schema: object
+        schema = Tuple[str, ...]
+        validate(schema, ("a", "b"))
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, ["a", "b"])
+        show(mc)
+
+        schema = Tuple[str, int]
+        validate(schema, ("a", 1))
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, ("a", "b"))
+        show(mc)
+
+    @unittest.skipUnless(
         sys.version_info >= (3, 9),
         "Parametrized types were introduced in Python 3.9",
     )
@@ -1758,6 +1776,24 @@ class TestValidation(unittest.TestCase):
         validate(schema, ["a", "b"])
         with self.assertRaises(ValidationError) as mc:
             validate(schema, [1])
+        show(mc)
+
+    @unittest.skipUnless(
+        sys.version_info >= (3, 9),
+        "Parametrized types were introduced in Python 3.9",
+    )
+    def test_generic_tuple(self) -> None:
+        schema: object
+        schema = tuple[str, ...]
+        validate(schema, ("a", "b"))
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, ["a", "b"])
+        show(mc)
+
+        schema = tuple[str, int]
+        validate(schema, ("a", 1))
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, ("a", "b"))
         show(mc)
 
     @unittest.skipUnless(

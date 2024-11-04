@@ -1055,6 +1055,8 @@ def _compile(
         ret = schema.__compile__(_deferred_compiles=_deferred_compiles)
     elif supports_GenericAlias and origin == list:
         ret = _List(typing.get_args(schema)[0], _deferred_compiles=_deferred_compiles)
+    elif supports_GenericAlias and origin == tuple:
+        ret = _Tuple(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
     elif supports_GenericAlias and origin == Union:
         ret = _Union(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
     elif supports_Literal and origin == Literal:
@@ -2058,6 +2060,17 @@ class _List(compiled_schema):
             _sequence(
                 [schema, ...], _deferred_compiles=_deferred_compiles
             ).__validate__,
+        )
+
+
+class _Tuple(compiled_schema):
+    def __init__(
+        self, schema: tuple[object], _deferred_compiles: _mapping | None = None
+    ) -> None:
+        setattr(
+            self,
+            "__validate__",
+            _sequence(schema, _deferred_compiles=_deferred_compiles).__validate__,
         )
 
 
