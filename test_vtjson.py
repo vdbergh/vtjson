@@ -1798,6 +1798,28 @@ class TestValidation(unittest.TestCase):
         b = a((int,))
         self.assertTrue(isinstance(b, set_label))
 
+    def test_Annotated_Apply(self) -> None:
+        schema: object
+        skip_first = Apply(skip_first=True)
+        with self.assertRaises(SchemaError) as mc_:
+            schema = Annotated[int, skip_first, str]
+            compile(schema)
+        show(mc_)
+        schema = Annotated[int, str, skip_first]
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, 1)
+        show(mc)
+        validate(schema, "a")
+        with self.assertRaises(SchemaError) as mc_:
+            schema = Annotated[int, str, skip_first, skip_first]
+            compile(schema)
+        show(mc_)
+        schema = Annotated[int, str, skip_first, int, skip_first]
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, "a")
+        show(mc)
+        validate(schema, 1)
+
     @unittest.skipUnless(
         vtjson.supports_GenericAlias,
         "GenericAlias did not work well before 3.8",
