@@ -105,17 +105,17 @@ class Apply:
     name: str | None = None
     labels: list[str] | None = None
 
-    def __call__(self, schema: tuple[object, ...]) -> object:
-        if len(schema) == 0:
+    def __call__(self, schemas: tuple[object, ...]) -> object:
+        if len(schemas) == 0:
             raise SchemaError("Called Apply with an empty tuple")
         if self.skip_first:
-            schema = schema[1:]
-        if len(schema) == 0:
+            schemas = schemas[1:]
+        if len(schemas) == 0:
             raise SchemaError("Called Apply with an empty tuple")
-        if len(schema) == 1:
-            ret = schema[0]
+        if len(schemas) == 1:
+            ret = schemas[0]
         else:
-            ret = intersect(*schema)
+            ret = intersect(*schemas)
         if self.labels is not None:
             ret = set_label(ret, *self.labels)
         if self.name is not None:

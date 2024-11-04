@@ -31,6 +31,7 @@ except Exception:
     pass
 
 from vtjson import (
+    Apply,
     SchemaError,
     ValidationError,
     anything,
@@ -1769,6 +1770,33 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             validate(schema, "c")
         show(mc)
+
+    def test_Apply(self) -> None:
+        a = Apply()
+        with self.assertRaises(SchemaError) as mc_:
+            a(())
+        show(mc_)
+        b = a((int,))
+        self.assertTrue(b == int)
+        b = a((int, str))
+        self.assertTrue(isinstance(b, intersect))
+
+        a = Apply(skip_first=True)
+        with self.assertRaises(SchemaError) as mc_:
+            a((int,))
+        show(mc_)
+        b = a((int, str))
+        self.assertTrue(b == str)
+        b = a((int, str, int))
+        self.assertTrue(isinstance(b, intersect))
+
+        a = Apply(name="dummy")
+        b = a((int,))
+        self.assertTrue(isinstance(b, set_name))
+
+        a = Apply(labels=["dummy1", "dummy2"])
+        b = a((int,))
+        self.assertTrue(isinstance(b, set_label))
 
     @unittest.skipUnless(
         vtjson.supports_GenericAlias,
