@@ -1753,6 +1753,20 @@ class TestValidation(unittest.TestCase):
         vtjson.supports_GenericAlias,
         "GenericAliases did not work well in Pythin 3.7",
     )
+    def test_Dict(self) -> None:
+        schema = Dict[str, str]
+        validate(schema, {"a": "b"})
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, {"a": 1})
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, {1: "a"})
+        show(mc)
+
+    @unittest.skipUnless(
+        vtjson.supports_GenericAlias,
+        "GenericAliases did not work well in Pythin 3.7",
+    )
     def test_Tuple(self) -> None:
         schema: object
         schema = Tuple[str, ...]
@@ -1794,6 +1808,20 @@ class TestValidation(unittest.TestCase):
         validate(schema, ("a", 1))
         with self.assertRaises(ValidationError) as mc:
             validate(schema, ("a", "b"))
+        show(mc)
+
+    @unittest.skipUnless(
+        sys.version_info >= (3, 9),
+        "Parametrized types were introduced in Python 3.9",
+    )
+    def test_generic_dict(self) -> None:
+        schema = dict[str, str]
+        validate(schema, {"a": "b"})
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, {"a": 1})
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, {1: "a"})
         show(mc)
 
     @unittest.skipUnless(
