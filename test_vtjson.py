@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 import unittest
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Union
@@ -1727,6 +1728,17 @@ class TestValidation(unittest.TestCase):
     )
     def test_List(self) -> None:
         schema = List[str]
+        validate(schema, ["a", "b"])
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, [1])
+        show(mc)
+
+    @unittest.skipUnless(
+        sys.version_info >= (3, 9),
+        "Parametrized types were introduced in Python 3.9",
+    )
+    def test_generic_list(self) -> None:
+        schema = list[str]
         validate(schema, ["a", "b"])
         with self.assertRaises(ValidationError) as mc:
             validate(schema, [1])
