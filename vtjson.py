@@ -2025,10 +2025,24 @@ class _Annotated(compiled_schema):
     def __init__(
         self, schema: tuple[object, ...], _deferred_compiles: _mapping | None = None
     ) -> None:
+        collect: list[object] = []
+        for s in schema:
+            if not isinstance(s, Apply):
+                collect.append(s)
+            else:
+                collect = [s(tuple(collect))]
+        collect_ = tuple(collect)
+        c: compiled_schema
+        if len(collect_) == 0:
+            c = anything()
+        elif len(collect_) == 1:
+            c = compile(collect_[0], _deferred_compiles=_deferred_compiles)
+        else:
+            c = _intersect(collect_, _deferred_compiles=_deferred_compiles)
         setattr(
             self,
             "__validate__",
-            _intersect(schema, _deferred_compiles=_deferred_compiles).__validate__,
+            c.__validate__,
         )
 
 
