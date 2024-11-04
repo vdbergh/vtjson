@@ -1798,6 +1798,10 @@ class TestValidation(unittest.TestCase):
         b = a((int,))
         self.assertTrue(isinstance(b, set_label))
 
+    @unittest.skipUnless(
+        vtjson.supports_Annotated,
+        "Annotated was introduced in Python 3.9",
+    )
     def test_Annotated_Apply(self) -> None:
         schema: object
         skip_first = Apply(skip_first=True)
