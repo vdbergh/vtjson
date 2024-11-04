@@ -1833,6 +1833,18 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     @unittest.skipUnless(
+        vtjson.supports_UnionType,
+        "UnionTypes were introduced in 3.10",
+    )
+    def test_UnionType(self) -> None:
+        schema = int | str
+        validate(schema, "a")
+        validate(schema, 1)
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, 0.1)
+        show(mc)
+
+    @unittest.skipUnless(
         vtjson.supports_TypedDict,
         "TypedDict was introduced in Python 3.8",
     )

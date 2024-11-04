@@ -45,6 +45,12 @@ if hasattr(typing, "get_origin"):
 else:
     supports_GenericAlias = False
 
+try:
+    from types import UnionType
+
+    supports_UnionType = True
+except Exception:
+    supports_UnionType = False
 
 if sys.version_info >= (3, 8):
     from typing import Protocol
@@ -1062,6 +1068,8 @@ def _compile(
             schema.__total__,
             _deferred_compiles=_deferred_compiles,
         )
+    elif supports_UnionType and isinstance(schema, UnionType):
+        ret = _Union(schema.__args__, _deferred_compiles=_deferred_compiles)
     elif isinstance(schema, type):
         ret = _type(schema)
     elif callable(schema):
