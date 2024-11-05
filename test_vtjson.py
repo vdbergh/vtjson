@@ -789,11 +789,8 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_anything(self) -> None:
-        schema: object
-        object_: object
         schema = anything
-        object_ = "dummy"
-        validate(schema, object_)
+        validate(schema, "dummy")
 
     def test_set(self) -> None:
         schema: object
@@ -1976,6 +1973,10 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             validate(schema2, {"a": 1, "b": 1})
         show(mc)
+
+    def test_Any(self) -> None:
+        schema = Any
+        validate(schema, "dummy")
 
 
 if __name__ == "__main__":

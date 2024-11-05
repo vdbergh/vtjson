@@ -1053,6 +1053,8 @@ def _compile(
         ret = _validate_schema(schema)
     elif hasattr(schema, "__compile__"):
         ret = schema.__compile__(_deferred_compiles=_deferred_compiles)
+    elif schema == Any:
+        ret = anything()
     elif supports_GenericAlias and origin == list:
         ret = _List(typing.get_args(schema)[0], _deferred_compiles=_deferred_compiles)
     elif supports_GenericAlias and origin == tuple:
