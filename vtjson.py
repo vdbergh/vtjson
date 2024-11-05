@@ -12,7 +12,7 @@ import urllib.parse
 import warnings
 from collections.abc import Sequence, Sized
 from dataclasses import dataclass
-from typing import Any, Callable, Type, TypeVar, Union, cast
+from typing import Any, Callable, NewType, Type, TypeVar, Union, cast
 
 try:
     from typing import Literal
@@ -1062,6 +1062,13 @@ def _compile(
         ret = schema.__compile__(_deferred_compiles=_deferred_compiles)
     elif schema == Any:
         ret = anything()
+    elif (sys.version_info < (3, 10) and hasattr(schema, "__supertype__")) or (
+        sys.version_info >= (3, 10) and isinstance(schema, NewType)
+    ):
+        assert hasattr(schema, "__name__") and hasattr(schema, "__supertype__")
+        ret = _NewType(
+            schema.__supertype__, schema.__name__, _deferred_compiles=_deferred_compiles
+        )
     elif supports_GenericAlias and origin == list:
         ret = _List(typing.get_args(schema)[0], _deferred_compiles=_deferred_compiles)
     elif supports_GenericAlias and origin == tuple:
@@ -2094,6 +2101,18 @@ class _Dict(compiled_schema):
             self,
             "__validate__",
             _dict({k: v}, _deferred_compiles=_deferred_compiles).__validate__,
+        )
+
+
+class _NewType(compiled_schema):
+    def __init__(
+        self, schema: object, name: str, _deferred_compiles: _mapping | None = None
+    ) -> None:
+        c = _set_name(schema, name, _deferred_compiles=_deferred_compiles)
+        setattr(
+            self,
+            "__validate__",
+            c.__validate__,
         )
 
 

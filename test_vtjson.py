@@ -5,7 +5,7 @@ import re
 import sys
 import unittest
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, NewType, Tuple, Union
 from urllib.parse import urlparse
 
 import vtjson
@@ -1985,6 +1985,14 @@ class TestValidation(unittest.TestCase):
     def test_Any(self) -> None:
         schema = Any
         validate(schema, "dummy")
+
+    def test_NewType(self) -> None:
+        dummy = NewType("dummy", int)
+        validate(dummy, 1)
+        with self.assertRaises(ValidationError) as mc:
+            validate(dummy, "a")
+        show(mc)
+        self.assertTrue("dummy" in str(mc.exception))
 
     @unittest.skipUnless(
         vtjson.supports_GenericAlias,
