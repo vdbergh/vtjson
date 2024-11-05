@@ -30,6 +30,13 @@ try:
 except Exception:
     pass
 
+try:
+    from typing import reveal_type
+
+    has_reveal_type = True
+except Exception:
+    has_reveal_type = False
+
 from vtjson import (
     Apply,
     SchemaError,
@@ -69,6 +76,7 @@ from vtjson import (
     optional_key,
     quote,
     regex,
+    safe_cast,
     set_label,
     set_name,
     size,
@@ -1977,6 +1985,24 @@ class TestValidation(unittest.TestCase):
     def test_Any(self) -> None:
         schema = Any
         validate(schema, "dummy")
+
+    @unittest.skipUnless(
+        vtjson.supports_GenericAlias,
+        "GenericAlias did not work well before 3.8",
+    )
+    def test_safe_cast(self) -> None:
+        with self.assertRaises(ValidationError) as mc:
+            safe_cast(List[int], ["a", "b"])
+        show(mc)
+        a: object = [1, 2]
+        if has_reveal_type:
+            reveal_type(a)
+        b = safe_cast(List[int], a)
+        if has_reveal_type:
+            reveal_type(b)
+        with self.assertRaises(ValidationError) as mc:
+            safe_cast(List[str], a)
+        show(mc)
 
 
 if __name__ == "__main__":

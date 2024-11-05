@@ -12,7 +12,7 @@ import urllib.parse
 import warnings
 from collections.abc import Sequence, Sized
 from dataclasses import dataclass
-from typing import Any, Callable, Type, Union
+from typing import Any, Callable, Type, TypeVar, Union, cast
 
 try:
     from typing import Literal
@@ -62,6 +62,13 @@ else:
 import dns.resolver
 import email_validator
 import idna
+
+T = TypeVar("T")
+
+
+def safe_cast(t: Type[T], object_: Any) -> T:
+    validate(t, object_)
+    return cast(T, object_)
 
 
 class compiled_schema:
