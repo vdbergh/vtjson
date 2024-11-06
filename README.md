@@ -265,15 +265,13 @@ Mixins are built-ins that are usually combined with other schemas using `interse
 
 ## Pre-compiling a schema
 
-An object matches the schema `compile(schema)` if it matches `schema`. `vtjson` compiles a schema before performing a validation against it, so pre-compiling is not necessary but it gains a bit of performance as it needs to be done only once. Compiling is an idempotent operation. It does nothing for an already compiled schema.
+An object matches the schema `compile(schema)` if it matches `schema`. `vtjson` compiles a schema before using it for validation, so pre-compiling is not necessary. However for large schemas it may gain some of performance as it needs to be done only once. Compiling is an idempotent operation. It does nothing for an already compiled schema.
 
 The full signature of `compile()` is
 
 ```python
-compile(schema, _deferred_compiles=None)
+compile(schema)
 ```
-
-but the optional argument `_deferred_compiles` should not be set by the user.
 
 ## Schema format
 
@@ -304,8 +302,14 @@ A schema can be, in order of precedence:
   __compile__(_deferred_compiles=None)
   ```
 
-  This is an advanced feature which is used for the implementation of wrapper schemas. `__compile__()`, which is invoked by `compile()`, should produce an instance of `compiled_schema`. The optional argument `_deferred_compiles` is an opaque data structure for handling recursive schemas. It should be passed unmodified to any internal invocations of `compile()`. Please consult the source code of `vtjson` for more details.
+  This is an advanced feature which is used for the implementation of wrapper schemas. The function `compile`, which was discussed above, internally invokes
 
+  ```python
+  _compile(schema, _deferred_compiles=None)
+  ```
+
+  where the optional argument `_deferred_compiles`  is an opaque data structure used for handling recursive schemas. If appropriate, the function `_compile` internally invokes the method `schema.__compile__` and this should produce an instance of the class `compiled_schema`. The method `__compile__` may invoke the function `_compile` again. If this happens then the optional argument `_deferred_compiles` should be passed unmodified. Please consult the source code of `vtjson` for more details.
+- A Python type hint such as `list[str]`. This is discussed further below.
 - A Python type. In that case validation is done by checking membership. By convention the schema `float` matches both ints and floats. Similarly the schema `complex` matches ints and floats besides of course complex numbers.
 - A callable. Validation is done by applying the callable to the object. If applying the callable throws an exception then the corresponding message will be part of the non-validation message.
 - A `list` or a `tuple`. Validation is done by first checking membership of the corresponding types, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
@@ -326,6 +330,10 @@ For a dictionary schema containing only `const keys` (i.e. keys corresponding to
 - If the entire key list is consumed then the key fails validation.
 
 A consequence of this algorithm is that non-const keys are automatically optional. So applying the wrapper `optional_key` to them is meaningless and has no effect.
+
+## Type hints integration
+
+TO BE WRITTEN
 
 ## Creating types
 
@@ -386,18 +394,6 @@ A: Various reasons.
 Q: Why yet another Python validation framework?
 
 A: Good question! Initially `vtjson` consisted of home grown code for validating api calls and database accesses in the Fishtest framework. However the clear and concise schema format seemed to be of independent interest and so the code was refactored into the current self-contained package.
-
-Q: Why not use Python type hints as the basis for validation?
-
-A: Another good question! I guess the main reason for not using Python type hints is that they were designed for static validation. So run time validations (e.g. regular expressions) cannot be expressed in them. Even for types that can be conveniently expressed in the type hinting system (like `list[str]`) one can still not verify membership by using `isinstance`, so extra code is needed to support them. This being said, it is possible to use type hints at run time using an external library like [`typeguard`](https://pypi.org/project/typeguard/). E.g. to check membership of `list[str]` one could use the `vtjson` schema
-
-```python
-filter(lambda x: typeguard.check_type(x, list[str]), anything)
-```
-
-Note that, besides relying on a third party library,  this is more complicated than simply using the equivalent `vtjson` schema `[str, ...]`.
-
-In case you are wondering: the source code of `vtjson` is fully type hinted!
 
 Q: Why are there no variables in `vtjson` (see <https://opis.io/json-schema/2.x/variables.html>)?
 
