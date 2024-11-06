@@ -381,6 +381,34 @@ For example `dict[str, str]` is translated internally to the schema `{str: str}`
   Schema = Annotated[schema, compile(schema), skip_first]
   ```
 
+### Supported type hints
+
+Note that Python imposes strong restrictions on what constitutes a valid type hint but `vtjson` is much more lax about this. Enforcing the restrictions is left to the type checkers or the Python interpreter.
+
+- `TypedDict` A TypedDict type hint is translated into a `dict` schema. E.g.
+
+  ```python
+  class Movie(TypedDict):
+      title: str
+      price: float
+  ```
+
+  internally becomes `{"title": str, "price": float}`. `vtjson` supports the `total` option to `TypedDict` as well as the `Required` and `NotRequired` annotations of fields, if they are compatible with the Python version being used.
+
+- `Annotated` has already been discussed. It is translated into a suitable `intersect` schema. The handling of `Annotated` schemas can be influenced by `Apply` objects (see below).
+
+- `NewType` is translated in a `setname` schema. E.g. `NewType('Movie', str)` becomes `setname(str, 'Movie')`
+
+- `dict[...]` and `Dict[...]` are translated into the equivalent `dict` schemas. E.g. `dict[str, str]`  becomes `{str: str}`.
+
+- `tuple[...]` and `Tuple[...]` are translated into the equivalent `tuple` schemas.
+
+- `list[...]` and `List[...]` are translated into the equivalent `list` schemas.
+
+- `Union` and the `|` operator are translated into `union`.
+
+- `Literal` is also translated into `union`.
+
 ## Creating types
 
 A cool feature of `vtjson` is that one can transform a schema into a genuine Python type via

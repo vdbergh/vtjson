@@ -1,9 +1,10 @@
-personal_ws-1.1 en 24 
+personal_ws-1.1 en 25 
 Fishtest
 IDNA
 JSON
 Mixins
 NewType
+NotRequired
 Pre
 Schemas
 TypedDict
