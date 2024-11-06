@@ -1,4 +1,4 @@
-personal_ws-1.1 en 20 
+personal_ws-1.1 en 21 
 Fishtest
 IDNA
 JSON
@@ -14,6 +14,7 @@ isinstance
 loc
 lowerbound
 mongodb
+mypy
 pre
 schemas
 str

@@ -344,6 +344,22 @@ Tuple[...], Literal, NewType, TypedDict, Union (or the equivalent operator |).
 
 For example `dict[str, str]` is translated internally to the schema `{str: str}`. See below for more information.
 
+### Annotated
+
+- The way to make more general vtjson schemes work along Python type hints is to use `typing.Annotated`. The most naive way to do this is via
+
+  ```python
+  Annotated[type_hint, vtjson_schema, skip_first]
+  ```
+
+  For example
+
+  ```python
+  Annotated[list[object], [int, str, float], skip_first]
+  ```
+
+  A type checker such as `mypy` will only see the type hint (`list[object]` in the example), whereas vtjson will only see the vtjson schema (`[int, str, float]` in the example). `skip_first` is a built in short hand for `Apply(skip_first=True)` (see below) which direct vtjson to ignore the first argument of an `Annotated` construction.
+
 ## Creating types
 
 A cool feature of `vtjson` is that one can transform a schema into a genuine Python type via
