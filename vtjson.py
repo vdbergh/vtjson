@@ -1010,25 +1010,8 @@ class _validate_schema(compiled_schema):
         setattr(self, "__validate__", schema.__validate__)
 
 
-_compile_cache: dict[int, compiled_schema] = {}
-
-
-def clear_compile_cache() -> None:
-    global _compile_cache
-    _compile_cache = {}
-
-
-def compile(schema: object, compile_cache: bool = False) -> compiled_schema:
-    if compile_cache:
-        id_ = id(schema)
-        if id_ in _compile_cache:
-            c = _compile_cache[id_]
-        else:
-            c = _compile(schema, _deferred_compiles=None)
-            _compile_cache[id_] = c
-    else:
-        c = _compile(schema, _deferred_compiles=None)
-    return c
+def compile(schema: object) -> compiled_schema:
+    return _compile(schema, _deferred_compiles=None)
 
 
 def _compile(
@@ -1117,11 +1100,8 @@ def _validate(
     name: str = "object",
     strict: bool = True,
     subs: dict[str, object] = {},
-    compile_cache: bool = False,
 ) -> str:
-    return compile(schema, compile_cache=compile_cache).__validate__(
-        object_, name=name, strict=strict, subs=subs
-    )
+    return compile(schema).__validate__(object_, name=name, strict=strict, subs=subs)
 
 
 def validate(
@@ -1130,7 +1110,6 @@ def validate(
     name: str = "object",
     strict: bool = True,
     subs: dict[str, object] = {},
-    compile_cache: bool = False,
 ) -> None:
     message = _validate(
         schema,
@@ -1138,7 +1117,6 @@ def validate(
         name=name,
         strict=strict,
         subs=subs,
-        compile_cache=compile_cache,
     )
     if message != "":
         raise ValidationError(message)

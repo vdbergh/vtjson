@@ -44,7 +44,6 @@ from vtjson import (
     anything,
     at_least_one_of,
     at_most_one_of,
-    clear_compile_cache,
     close_to,
     compile,
     compiled_schema,
@@ -642,20 +641,6 @@ class TestValidation(unittest.TestCase):
 
         schema = compile(schema)
         validate(schema, object_)
-
-    def test_compile_cache(self) -> None:
-        schema: object
-        schema = ["a", "b"]
-        validate(schema, ["a", "b"], compile_cache=True)
-        schema.append("c")
-        validate(schema, ["a", "b"], compile_cache=True)
-        with self.assertRaises(ValidationError) as mc:
-            validate(schema, ["a", "b"])
-        show(mc)
-        clear_compile_cache()
-        with self.assertRaises(ValidationError) as mc:
-            validate(schema, ["a", "b"], compile_cache=True)
-        show(mc)
 
     def test_union(self) -> None:
         schema: object
