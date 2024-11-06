@@ -342,7 +342,7 @@ Annotated, dict[...], Dict[...], list[...], List[...], tuple[...],
 Tuple[...], Literal, NewType, TypedDict, Union (or the equivalent operator |).
 ```
 
-For example `dict[str, str]` is translated internally to the schema `{str: str}`. See below for more information.
+For example `dict[str, str]` is translated internally into the schema `{str: str}`. See below for more information.
 
 ### Annotated
 
@@ -397,7 +397,7 @@ Note that Python imposes strong restrictions on what constitutes a valid type hi
 
 - `Annotated` has already been discussed. It is translated into a suitable `intersect` schema. The handling of `Annotated` schemas can be influenced by `Apply` objects (see below).
 
-- `NewType` is translated into a `setname` schema. E.g. `NewType('Movie', str)` becomes `setname(str, 'Movie')`
+- `NewType` is translated into a `set_name` schema. E.g. `NewType('Movie', str)` becomes `set_name(str, 'Movie')`
 
 - `dict[...]` and `Dict[...]` are translated into the equivalent `dict` schemas. E.g. `dict[str, str]`  becomes `{str: str}`.
 
@@ -419,7 +419,7 @@ Note that Python imposes strong restrictions on what constitutes a valid type hi
 
   The optional `name` argument indicates that the corresponding `set_name` command should be applied to the previous arguments. The optional `labels` argument (a list if present) indicates that the corresponding `set_label` command should be applied to the previous arguments.
 
-- Multiple `Apply` objects are allowed. E.g. the following schema
+- Multiple `Apply` objects are allowed. E.g. the following contrived schema
 
   ```python
   Annotated[int, str, skip_first, float, skip_first]

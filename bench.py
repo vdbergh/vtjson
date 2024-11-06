@@ -509,26 +509,10 @@ print("")
 print(f"Compiling the runs_schema takes {1000*t1/N:.2f} ms")
 
 N = 100
-t1 = timeit("compile(runs_schema, compile_cache=True)", number=N, globals=globals())
-print("")
-print(f"Compiling the runs_schema with compile_cache=True takes {1000*t1/N:.2f} ms")
-
-N = 100
 t2 = timeit("validate(runs_schema, run_sprt_object)", number=N, globals=globals())
 print("")
 print(
     f"Validating an SPRT run with {total_tasks} tasks "
-    f"and {total_bad_tasks} bad task takes {1000*t2/N:.2f} ms"
-)
-N = 100
-t2 = timeit(
-    "validate(runs_schema, run_sprt_object, compile_cache=True)",
-    number=N,
-    globals=globals(),
-)
-print("")
-print(
-    f"Validating an SPRT run with compile_caching  with {total_tasks} tasks "
     f"and {total_bad_tasks} bad task takes {1000*t2/N:.2f} ms"
 )
 runs_schema_compiled = compile(runs_schema)

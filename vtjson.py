@@ -136,6 +136,8 @@ class Apply:
         return ret
 
 
+skip_first = Apply(skip_first=True)
+
 _dns_resolver: dns.resolver.Resolver | None = None
 
 
