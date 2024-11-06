@@ -346,7 +346,7 @@ For example `dict[str, str]` is translated internally to the schema `{str: str}`
 
 ### Annotated
 
-- More general vtjson schemas can work along Python type hints by using `typing.Annotated`. The most naive way to do this is via
+- More general vtjson schemas can work along Python type hints by using `typing.Annotated` contruct. The most naive way to do this is via
 
   ```python
   Annotated[type_hint, vtjson_schema, skip_first]
@@ -358,7 +358,7 @@ For example `dict[str, str]` is translated internally to the schema `{str: str}`
   Annotated[list[object], [int, str, float], skip_first]
   ```
 
-  A type checker such as `mypy` will only see the type hint (`list[object]` in the example), whereas vtjson will only see the vtjson schema (`[int, str, float]` in the example). `skip_first` is a built in short hand for `Apply(skip_first=True)` (see below) which directs vtjson to ignore the first argument of an `Annotated` construction.
+  A type checker such as `mypy` will only see the type hint (`list[object]` in the example), whereas vtjson will only see the vtjson schema (`[int, str, float]` in the example). `skip_first` is a built-in short hand for `Apply(skip_first=True)` (see below) which directs vtjson to ignore the first argument of an `Annotated` schema.
 - In some use cases a vtjon_schema will meaningfully refine a Python type or type hint. In that case one should not use `skip_first`. For example:
 
   ```python
@@ -397,7 +397,7 @@ Note that Python imposes strong restrictions on what constitutes a valid type hi
 
 - `Annotated` has already been discussed. It is translated into a suitable `intersect` schema. The handling of `Annotated` schemas can be influenced by `Apply` objects (see below).
 
-- `NewType` is translated in a `setname` schema. E.g. `NewType('Movie', str)` becomes `setname(str, 'Movie')`
+- `NewType` is translated into a `setname` schema. E.g. `NewType('Movie', str)` becomes `setname(str, 'Movie')`
 
 - `dict[...]` and `Dict[...]` are translated into the equivalent `dict` schemas. E.g. `dict[str, str]`  becomes `{str: str}`.
 
@@ -408,6 +408,34 @@ Note that Python imposes strong restrictions on what constitutes a valid type hi
 - `Union` and the `|` operator are translated into `union`.
 
 - `Literal` is also translated into `union`.
+
+### Apply objects
+
+- If the list of arguments of an Annotated schema includes Apply objects then those modify the treatement of the arguments that come before them. We already encountered `skip_first` which is a built-in alias for `Apply(skip_first=True)`. The full signature of `Apply` is
+
+  ```python
+  Apply(skip_first=False, name=None, labels=None)
+  ```
+
+  The optional `name` argument indicates that the corresponding `set_name` command should be applied to the previous arguments. The optional `labels` argument (a list if present) indicates that the corresponding `set_label` command should be applied to the previous arguments.
+
+- Multiple `Apply` objects are allowed. E.g. the following schema
+
+  ```python
+  Annotated[int, str, skip_first, float, skip_first]
+  ```
+
+  is equivalent to `float`.
+
+### Safe cast
+
+Vtjson includes the command
+
+```python
+safe_cast(schema, object)
+```
+
+(where `schema` should be a valid type hint) that functions exactly like `cast` except that it also verifies at run time that the given object matches the given schema.
 
 ## Creating types
 
@@ -493,7 +521,7 @@ Note that you can create an infinite recursion by validating a recursive object 
 
 Q: How to combine validations?
 
-A: Use `intersect`. For example the following schema validates positive integers but reject positive floats.
+A: Use `intersect` (or `Annotated` if applicable). For example the following schema validates positive integers but reject positive floats.
 
 ```python
 schema = intersect(int, interval(0, ...))
