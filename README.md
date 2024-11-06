@@ -346,7 +346,7 @@ For example `dict[str, str]` is translated internally to the schema `{str: str}`
 
 ### Annotated
 
-- The way to make more general vtjson schemes work along Python type hints is to use `typing.Annotated`. The most naive way to do this is via
+- More general vtjson schemas can work along Python type hints by using `typing.Annotated`. The most naive way to do this is via
 
   ```python
   Annotated[type_hint, vtjson_schema, skip_first]
@@ -358,7 +358,28 @@ For example `dict[str, str]` is translated internally to the schema `{str: str}`
   Annotated[list[object], [int, str, float], skip_first]
   ```
 
-  A type checker such as `mypy` will only see the type hint (`list[object]` in the example), whereas vtjson will only see the vtjson schema (`[int, str, float]` in the example). `skip_first` is a built in short hand for `Apply(skip_first=True)` (see below) which direct vtjson to ignore the first argument of an `Annotated` construction.
+  A type checker such as `mypy` will only see the type hint (`list[object]` in the example), whereas vtjson will only see the vtjson schema (`[int, str, float]` in the example). `skip_first` is a built in short hand for `Apply(skip_first=True)` (see below) which directs vtjson to ignore the first argument of an `Annotated` construction.
+- In some use cases a vtjon_schema will meaningfully refine a Python type or type hint. In that case one should not use `skip_first`. For example:
+
+  ```python
+  Annotated[datetime, fields({"tzinfo": timezone.utc})]
+  ```
+
+  defines a `datetime` object whose time zone is `utc`.
+
+  The built-in schemas already check that an object has the correct type. So for those one should use `skip_first`. For example:
+
+  ```python
+  Annotated[int, div(2), skip_first]
+  ```
+
+  matches even integers.
+- If one wants to pre-compile a schema and still use it as a type hint (assuming it is valid as such) then one can do:
+
+  ```python
+  schema = <schema definition>
+  Schema = Annotated[schema, compile(schema), skip_first]
+  ```
 
 ## Creating types
 

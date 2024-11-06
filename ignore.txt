@@ -1,4 +1,4 @@
-personal_ws-1.1 en 21 
+personal_ws-1.1 en 24 
 Fishtest
 IDNA
 JSON
@@ -10,6 +10,7 @@ TypedDict
 ValidationError
 api
 const
+datetime
 isinstance
 loc
 lowerbound
@@ -19,4 +20,6 @@ pre
 schemas
 str
 typeguard
+tzinfo
+utc
 vtjson
