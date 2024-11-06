@@ -333,7 +333,16 @@ A consequence of this algorithm is that non-const keys are automatically optiona
 
 ## Type hints integration
 
-TO BE WRITTEN
+### Type hints as schemas
+
+`vtjson` recognizes the following type hints as schemas.
+
+```python
+Annotated, dict[...], Dict[...], list[...], List[...], tuple[...],
+Tuple[...], Literal, NewType, TypedDict, Union (or the equivalent operator |).
+```
+
+For example `dict[str, str]` is translated internally to the schema `{str: str}`. See below for more information.
 
 ## Creating types
 
