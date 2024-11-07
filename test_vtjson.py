@@ -31,6 +31,11 @@ except Exception:
     pass
 
 try:
+    from typing import Protocol
+except Exception:
+    pass
+
+try:
     from typing import reveal_type
 
     has_reveal_type = True
@@ -1996,6 +2001,34 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             safe_cast(List[str], a)
         show(mc)
+
+    @unittest.skipUnless(
+        sys.version_info >= (3, 9), "Something is wrong with older versions"
+    )
+    def test_Protocol(self) -> None:
+        class a(Protocol):
+            b: int = 0
+            c: str = ""
+
+            def f(self, i: float) -> bool:
+                return i == i
+
+        class x:
+            b: str = ""
+            c: str = ""
+
+        with self.assertRaises(ValidationError) as mc:
+            validate(a, x())
+        show(mc)
+
+        class w:
+            b: int = 1
+            c: str = ""
+
+            def g(self) -> bool:
+                return True
+
+        validate(a, w())
 
 
 if __name__ == "__main__":

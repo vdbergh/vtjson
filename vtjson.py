@@ -1030,11 +1030,7 @@ def _compile(
 
     # real work starts here
     ret: compiled_schema
-    if supports_GenericAlias:
-        origin = typing.get_origin(schema)
-    if isinstance(schema, compiled_schema):
-        ret = schema
-    elif isinstance(schema, type) and issubclass(schema, compiled_schema):
+    if isinstance(schema, type) and issubclass(schema, compiled_schema):
         try:
             ret = schema()
         except Exception:
@@ -1045,48 +1041,70 @@ def _compile(
         ret = _validate_schema(schema)
     elif hasattr(schema, "__compile__"):
         ret = schema.__compile__(_deferred_compiles=_deferred_compiles)
-    elif schema == Any:
-        ret = anything()
-    elif (sys.version_info < (3, 10) and hasattr(schema, "__supertype__")) or (
-        sys.version_info >= (3, 10) and isinstance(schema, NewType)
-    ):
-        assert hasattr(schema, "__name__") and hasattr(schema, "__supertype__")
-        ret = _NewType(
-            schema.__supertype__, schema.__name__, _deferred_compiles=_deferred_compiles
-        )
-    elif supports_GenericAlias and origin == list:
-        ret = _List(typing.get_args(schema)[0], _deferred_compiles=_deferred_compiles)
-    elif supports_GenericAlias and origin == tuple:
-        ret = _Tuple(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
-    elif supports_GenericAlias and origin == dict:
-        ret = _Dict(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
-    elif supports_GenericAlias and origin == Union:
-        ret = _Union(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
-    elif supports_Literal and origin == Literal:
-        ret = _Literal(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
-    elif supports_Annotated and origin == Annotated:
-        ret = _Annotated(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
-    elif supports_TypedDict and typing.is_typeddict(schema):
-        assert hasattr(schema, "__total__") and isinstance(schema.__total__, bool)
-        ret = _TypedDict(
-            typing.get_type_hints(schema, include_extras=True),
-            schema.__total__,
-            _deferred_compiles=_deferred_compiles,
-        )
-    elif supports_UnionType and isinstance(schema, UnionType):
-        ret = _Union(schema.__args__, _deferred_compiles=_deferred_compiles)
-    elif isinstance(schema, type):
-        ret = _type(schema)
-    elif callable(schema):
-        ret = _callable(schema)
-    elif isinstance(schema, tuple) or isinstance(schema, list):
-        ret = _sequence(schema, _deferred_compiles=_deferred_compiles)
-    elif isinstance(schema, dict):
-        ret = _dict(schema, _deferred_compiles=_deferred_compiles)
-    elif isinstance(schema, set):
-        ret = _set(schema, _deferred_compiles=_deferred_compiles)
+    elif isinstance(schema, compiled_schema):
+        ret = schema
     else:
-        ret = _const(schema)
+        if supports_GenericAlias:
+            origin = typing.get_origin(schema)
+
+        type_hints = {}
+        if isinstance(schema, type) and hasattr(schema, "__annotations__"):
+            try:
+                type_hints = typing.get_type_hints(schema, include_extras=True)
+            except Exception:
+                pass
+        if supports_TypedDict and typing.is_typeddict(schema):
+            assert hasattr(schema, "__total__") and isinstance(schema.__total__, bool)
+            ret = _TypedDict(
+                type_hints,
+                schema.__total__,
+                _deferred_compiles=_deferred_compiles,
+            )
+        elif isinstance(schema, type) and hasattr(schema, "_is_protocol"):
+            ret = _fields(type_hints, _deferred_compiles=_deferred_compiles)
+        elif schema == Any:
+            ret = anything()
+        elif (sys.version_info < (3, 10) and hasattr(schema, "__supertype__")) or (
+            sys.version_info >= (3, 10) and isinstance(schema, NewType)
+        ):
+            assert hasattr(schema, "__name__") and hasattr(schema, "__supertype__")
+            ret = _NewType(
+                schema.__supertype__,
+                schema.__name__,
+                _deferred_compiles=_deferred_compiles,
+            )
+        elif supports_GenericAlias and origin == list:
+            ret = _List(
+                typing.get_args(schema)[0], _deferred_compiles=_deferred_compiles
+            )
+        elif supports_GenericAlias and origin == tuple:
+            ret = _Tuple(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
+        elif supports_GenericAlias and origin == dict:
+            ret = _Dict(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
+        elif supports_GenericAlias and origin == Union:
+            ret = _Union(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
+        elif supports_Literal and origin == Literal:
+            ret = _Literal(
+                typing.get_args(schema), _deferred_compiles=_deferred_compiles
+            )
+        elif supports_Annotated and origin == Annotated:
+            ret = _Annotated(
+                typing.get_args(schema), _deferred_compiles=_deferred_compiles
+            )
+        elif supports_UnionType and isinstance(schema, UnionType):
+            ret = _Union(schema.__args__, _deferred_compiles=_deferred_compiles)
+        elif isinstance(schema, type):
+            ret = _type(schema)
+        elif callable(schema):
+            ret = _callable(schema)
+        elif isinstance(schema, tuple) or isinstance(schema, list):
+            ret = _sequence(schema, _deferred_compiles=_deferred_compiles)
+        elif isinstance(schema, dict):
+            ret = _dict(schema, _deferred_compiles=_deferred_compiles)
+        elif isinstance(schema, set):
+            ret = _set(schema, _deferred_compiles=_deferred_compiles)
+        else:
+            ret = _const(schema)
 
     # back to updating the cache
     if _deferred_compiles.in_use(schema):
