@@ -338,15 +338,15 @@ A consequence of this algorithm is that non-const keys are automatically optiona
 `vtjson` recognizes the following type hints as schemas.
 
 ```python
-Annotated, dict[...], Dict[...], list[...], List[...], tuple[...], Protocol,
-Tuple[...], Literal, NewType, TypedDict, Union (or the equivalent operator |).
+Annotated, dict[...], Dict[...], list[...], List[...], tuple[...], Tuple[...],
+Protocol, Literal, NewType, TypedDict, Union (or the equivalent operator |).
 ```
 
 For example `dict[str, str]` is translated internally into the schema `{str: str}`. See below for more information.
 
 ### Annotated
 
-- More general vtjson schemas can work along Python type hints by using `typing.Annotated` contruct. The most naive way to do this is via
+- More general vtjson schemas can work along Python type hints by using the `typing.Annotated` contruct. The most naive way to do this is via
 
   ```python
   Annotated[type_hint, vtjson_schema, skip_first]
@@ -385,7 +385,7 @@ For example `dict[str, str]` is translated internally into the schema `{str: str
 
 Note that Python imposes strong restrictions on what constitutes a valid type hint but `vtjson` is much more lax about this. Enforcing the restrictions is left to the type checkers or the Python interpreter.
 
-- `TypedDict` A TypedDict type hint is translated into a `dict` schema. E.g.
+- `TypedDict`. A TypedDict type hint is translated into a `dict` schema. E.g.
 
   ```python
   class Movie(TypedDict):
@@ -395,7 +395,7 @@ Note that Python imposes strong restrictions on what constitutes a valid type hi
 
   internally becomes `{"title": str, "price": float}`. `vtjson` supports the `total` option to `TypedDict` as well as the `Required` and `NotRequired` annotations of fields, if they are compatible with the Python version being used.
 
-- `Protocol`. A class implementing a protocol is translated into a fields schemas. E.g.
+- `Protocol`. A class implementing a protocol is translated into a `fields` schema. E.g.
 
   ```python
   class Movie(Protocol):
@@ -417,7 +417,7 @@ Note that Python imposes strong restrictions on what constitutes a valid type hi
 
 - `Union` and the `|` operator are translated into `union`.
 
-- `Literal` is also translated into `union`.
+- `Literal` is	   also translated into `union`.
 
 ### Apply objects
 
