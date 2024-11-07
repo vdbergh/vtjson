@@ -31,6 +31,11 @@ except Exception:
     pass
 
 try:
+    from typing import Protocol
+except Exception:
+    pass
+
+try:
     from typing import reveal_type
 
     has_reveal_type = True
@@ -1880,7 +1885,7 @@ class TestValidation(unittest.TestCase):
 
     @unittest.skipUnless(
         vtjson.supports_GenericAlias,
-        "GenericAlias did not work well before 3.8",
+        "GenericAlias did not work well before Python 3.8",
     )
     def test_Union(self) -> None:
         schema = Union[int, str]
@@ -1892,7 +1897,7 @@ class TestValidation(unittest.TestCase):
 
     @unittest.skipUnless(
         vtjson.supports_UnionType,
-        "UnionTypes were introduced in 3.10",
+        "UnionTypes were introduced in Python 3.10",
     )
     def test_UnionType(self) -> None:
         schema = int | str
@@ -1981,7 +1986,7 @@ class TestValidation(unittest.TestCase):
 
     @unittest.skipUnless(
         vtjson.supports_GenericAlias,
-        "GenericAlias did not work well before 3.8",
+        "GenericAlias did not work well before Python 3.8",
     )
     def test_safe_cast(self) -> None:
         with self.assertRaises(ValidationError) as mc:
@@ -1996,6 +2001,35 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             safe_cast(List[str], a)
         show(mc)
+
+    @unittest.skipUnless(
+        vtjson.supports_extra_type_hints,
+        "get_type_hints(include_extras=True) appeared in Python 3.9",
+    )
+    def test_Protocol(self) -> None:
+        class a(Protocol):
+            b: int = 0
+            c: str = ""
+
+            def f(self, i: float) -> bool:
+                return i == i
+
+        class x:
+            b: str = ""
+            c: str = ""
+
+        with self.assertRaises(ValidationError) as mc:
+            validate(a, x())
+        show(mc)
+
+        class w:
+            b: int = 1
+            c: str = ""
+
+            def g(self) -> bool:
+                return True
+
+        validate(a, w())
 
 
 if __name__ == "__main__":
