@@ -338,7 +338,7 @@ A consequence of this algorithm is that non-const keys are automatically optiona
 `vtjson` recognizes the following type hints as schemas.
 
 ```python
-Annotated, dict[...], Dict[...], list[...], List[...], tuple[...],
+Annotated, dict[...], Dict[...], list[...], List[...], tuple[...], Protocol,
 Tuple[...], Literal, NewType, TypedDict, Union (or the equivalent operator |).
 ```
 
@@ -394,6 +394,16 @@ Note that Python imposes strong restrictions on what constitutes a valid type hi
   ```
 
   internally becomes `{"title": str, "price": float}`. `vtjson` supports the `total` option to `TypedDict` as well as the `Required` and `NotRequired` annotations of fields, if they are compatible with the Python version being used.
+
+- `Protocol`. A class implementing a protocol is translated into a fields schemas. E.g.
+
+  ```python
+  class Movie(Protocol):
+      title: str
+      price: float
+  ```
+
+  internally becomes `fields({"title": str, "price": float})`.
 
 - `Annotated` has already been discussed. It is translated into a suitable `intersect` schema. The handling of `Annotated` schemas can be influenced by `Apply` objects (see below).
 
