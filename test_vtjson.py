@@ -2003,7 +2003,8 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     @unittest.skipUnless(
-        sys.version_info >= (3, 9), "Something is wrong with older versions"
+        vtjson.supports_extra_type_hints,
+        "We need the full power of typing.get_type_hints",
     )
     def test_Protocol(self) -> None:
         class a(Protocol):

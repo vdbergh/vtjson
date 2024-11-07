@@ -46,6 +46,12 @@ else:
     supports_GenericAlias = False
 
 try:
+    typing.get_type_hints(int, include_extras=True)
+    supports_extra_type_hints = True
+except Exception:
+    supports_extra_type_hints = False
+
+try:
     from types import UnionType
 
     supports_UnionType = True
@@ -1048,11 +1054,12 @@ def _compile(
             origin = typing.get_origin(schema)
 
         type_hints = {}
-        if isinstance(schema, type) and hasattr(schema, "__annotations__"):
-            try:
-                type_hints = typing.get_type_hints(schema, include_extras=True)
-            except Exception:
-                pass
+        if (
+            supports_extra_type_hints
+            and isinstance(schema, type)
+            and hasattr(schema, "__annotations__")
+        ):
+            type_hints = typing.get_type_hints(schema, include_extras=True)
         if supports_TypedDict and typing.is_typeddict(schema):
             assert hasattr(schema, "__total__") and isinstance(schema.__total__, bool)
             ret = _TypedDict(
