@@ -4,7 +4,7 @@ A lightweight package for validating JSON like Python objects.
 
 ## Schemas
 
-Validation of JSON like Python objects is done according to a `schema` which is somewhat inspired by a typescript type. The format of a schema is more or less self explanatory as the following example shows.
+Validation of JSON like Python objects is done according to a `schema` which is somewhat inspired by a typescript type. The format of a schema is more or less self explanatory as the example below shows. Although not shown in the example, vtjson can also validate many Python type annotations at run time. This is discussed further below.
 
 ### Example
 
@@ -417,7 +417,7 @@ Note that Python imposes strong restrictions on what constitutes a valid type hi
 
 - `Union` and the `|` operator are translated into `union`.
 
-- `Literal` is	   also translated into `union`.
+- `Literal` is also translated into `union`.
 
 ### Apply objects
 
