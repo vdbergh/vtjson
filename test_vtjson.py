@@ -5,7 +5,7 @@ import re
 import sys
 import unittest
 from datetime import datetime, timezone
-from typing import Any, Dict, List, NewType, Tuple, Union, assert_type
+from typing import Any, Dict, List, NewType, Tuple, Union
 from urllib.parse import urlparse
 
 import vtjson
@@ -37,11 +37,11 @@ else:
 
 
 try:
-    from typing import reveal_type
+    from typing import assert_type
 
-    has_reveal_type = True
+    has_assert_type = True
 except Exception:
-    has_reveal_type = False
+    has_assert_type = False
 
 from vtjson import (
     Apply,
@@ -1994,9 +1994,11 @@ class TestValidation(unittest.TestCase):
             safe_cast(List[int], ["a", "b"])
         show(mc)
         a: object = [1, 2]
-        assert_type(a, List[int])
+        if has_assert_type:
+            assert_type(a, object)
         b = safe_cast(List[int], a)
-        assert_type(b, List[int])
+        if has_assert_type:
+            assert_type(b, List[int])
         with self.assertRaises(ValidationError) as mc:
             safe_cast(List[str], a)
         show(mc)
