@@ -1734,8 +1734,8 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     @unittest.skipUnless(
-        vtjson.supports_GenericAlias,
-        "GenericAliases did not work well in Pythin 3.7",
+        vtjson.supports_Generics,
+        "Generics did not work well in Pythin 3.7",
     )
     def test_List(self) -> None:
         schema = List[str]
@@ -1745,8 +1745,8 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     @unittest.skipUnless(
-        vtjson.supports_GenericAlias,
-        "GenericAliases did not work well in Pythin 3.7",
+        vtjson.supports_Generics,
+        "Generics did not work well in Pythin 3.7",
     )
     def test_Dict(self) -> None:
         schema = Dict[str, str]
@@ -1759,8 +1759,8 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     @unittest.skipUnless(
-        vtjson.supports_GenericAlias,
-        "GenericAliases did not work well in Pythin 3.7",
+        vtjson.supports_Generics,
+        "Generics did not work well in Pythin 3.7",
     )
     def test_Tuple(self) -> None:
         schema: object
@@ -1884,8 +1884,8 @@ class TestValidation(unittest.TestCase):
         validate(schema, 1)
 
     @unittest.skipUnless(
-        vtjson.supports_GenericAlias,
-        "GenericAlias did not work well before Python 3.8",
+        vtjson.supports_Generics,
+        "Generics did not work well in Python 3.7",
     )
     def test_Union(self) -> None:
         schema = Union[int, str]
@@ -1985,8 +1985,8 @@ class TestValidation(unittest.TestCase):
         self.assertTrue("dummy" in str(mc.exception))
 
     @unittest.skipUnless(
-        vtjson.supports_GenericAlias,
-        "GenericAlias did not work well before Python 3.8",
+        vtjson.supports_Generics,
+        "Generics did not work well in Python 3.7",
     )
     def test_safe_cast(self) -> None:
         with self.assertRaises(ValidationError) as mc:
