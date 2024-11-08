@@ -5,7 +5,7 @@ import re
 import sys
 import unittest
 from datetime import datetime, timezone
-from typing import Any, Dict, List, NewType, Tuple, Union
+from typing import Any, Dict, List, NewType, Tuple, Union, assert_type
 from urllib.parse import urlparse
 
 import vtjson
@@ -30,10 +30,11 @@ try:
 except Exception:
     pass
 
-try:
+if sys.version_info >= (3, 8):
     from typing import Protocol
-except Exception:
-    pass
+else:
+    from typing_extensions import Protocol
+
 
 try:
     from typing import reveal_type
@@ -1993,19 +1994,13 @@ class TestValidation(unittest.TestCase):
             safe_cast(List[int], ["a", "b"])
         show(mc)
         a: object = [1, 2]
-        if has_reveal_type:
-            reveal_type(a)
+        assert_type(a, List[int])
         b = safe_cast(List[int], a)
-        if has_reveal_type:
-            reveal_type(b)
+        assert_type(b, List[int])
         with self.assertRaises(ValidationError) as mc:
             safe_cast(List[str], a)
         show(mc)
 
-    @unittest.skipUnless(
-        vtjson.supports_structural,
-        "get_type_hints(include_extras=True) appeared in Python 3.9",
-    )
     def test_Protocol(self) -> None:
         class a(Protocol):
             b: int = 0
@@ -2017,6 +2012,12 @@ class TestValidation(unittest.TestCase):
         class x:
             b: str = ""
             c: str = ""
+
+        if not vtjson.supports_structural:
+            with self.assertRaises(SchemaError) as mc_:
+                compile(a)
+            show(mc_)
+        return
 
         with self.assertRaises(ValidationError) as mc:
             validate(a, x())
