@@ -12,7 +12,7 @@ import urllib.parse
 import warnings
 from collections.abc import Sequence, Sized
 from dataclasses import dataclass
-from typing import Any, Callable, NewType, Type, TypeVar, Union, cast
+from typing import Any, Callable, Type, TypeVar, Union, cast
 
 try:
     from typing import Literal
@@ -1048,6 +1048,8 @@ def _compile(
     # real work starts here
     if supports_Generics:
         origin = typing.get_origin(schema)
+    else:
+        origin = object()
 
     ret: compiled_schema
     if isinstance(schema, type) and issubclass(schema, compiled_schema):
@@ -1072,22 +1074,18 @@ def _compile(
         ret = _compile(structural(schema), _deferred_compiles=_deferred_compiles)
     elif schema == Any:
         ret = anything()
-    elif (sys.version_info < (3, 10) and hasattr(schema, "__supertype__")) or (
-        sys.version_info >= (3, 10) and isinstance(schema, NewType)
-    ):
-        assert hasattr(schema, "__name__") and hasattr(schema, "__supertype__")
+    elif hasattr(schema, "__name__") and hasattr(schema, "__supertype__"):
         ret = _NewType(
-            schema.__supertype__,
-            schema.__name__,
+            schema,
             _deferred_compiles=_deferred_compiles,
         )
-    elif supports_Generics and origin == list:
+    elif origin == list:
         ret = _List(typing.get_args(schema)[0], _deferred_compiles=_deferred_compiles)
-    elif supports_Generics and origin == tuple:
+    elif origin == tuple:
         ret = _Tuple(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
-    elif supports_Generics and origin == dict:
+    elif origin == dict:
         ret = _Dict(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
-    elif supports_Generics and origin == Union:
+    elif origin == Union:
         ret = _Union(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
     elif supports_Literal and origin == Literal:
         ret = _Literal(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
@@ -2118,9 +2116,12 @@ class _Dict(compiled_schema):
 
 class _NewType(compiled_schema):
     def __init__(
-        self, schema: object, name: str, _deferred_compiles: _mapping | None = None
+        self, schema: object, _deferred_compiles: _mapping | None = None
     ) -> None:
-        c = _set_name(schema, name, _deferred_compiles=_deferred_compiles)
+        assert hasattr(schema, "__name__") and hasattr(schema, "__supertype__")
+        c = _set_name(
+            schema.__supertype__, schema.__name__, _deferred_compiles=_deferred_compiles
+        )
         setattr(
             self,
             "__validate__",
