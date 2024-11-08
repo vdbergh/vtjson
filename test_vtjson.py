@@ -2003,7 +2003,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     @unittest.skipUnless(
-        vtjson.supports_extra_type_hints,
+        vtjson.supports_structural,
         "get_type_hints(include_extras=True) appeared in Python 3.9",
     )
     def test_Protocol(self) -> None:

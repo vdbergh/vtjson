@@ -47,9 +47,9 @@ else:
 
 try:
     typing.get_type_hints(int, include_extras=True)
-    supports_extra_type_hints = True
+    supports_structural = True
 except Exception:
-    supports_extra_type_hints = False
+    supports_structural = False
 
 try:
     from types import UnionType
@@ -1035,6 +1035,9 @@ def _compile(
     _deferred_compiles[schema] = _deferred(_deferred_compiles, schema)
 
     # real work starts here
+    if supports_GenericAlias:
+        origin = typing.get_origin(schema)
+
     ret: compiled_schema
     if isinstance(schema, type) and issubclass(schema, compiled_schema):
         try:
@@ -1050,25 +1053,13 @@ def _compile(
     elif isinstance(schema, compiled_schema):
         ret = schema
     else:
-        if supports_GenericAlias:
-            origin = typing.get_origin(schema)
-
-        type_hints = {}
-        if (
-            supports_extra_type_hints
-            and isinstance(schema, type)
-            and hasattr(schema, "__annotations__")
-        ):
-            type_hints = typing.get_type_hints(schema, include_extras=True)
         if supports_TypedDict and typing.is_typeddict(schema):
-            assert hasattr(schema, "__total__") and isinstance(schema.__total__, bool)
             ret = _TypedDict(
-                type_hints,
-                schema.__total__,
+                schema,
                 _deferred_compiles=_deferred_compiles,
             )
         elif isinstance(schema, type) and hasattr(schema, "_is_protocol"):
-            ret = _fields(type_hints, _deferred_compiles=_deferred_compiles)
+            ret = structural(schema).__compile__(_deferred_compiles=_deferred_compiles)
         elif schema == Any:
             ret = anything()
         elif (sys.version_info < (3, 10) and hasattr(schema, "__supertype__")) or (
@@ -2051,6 +2042,24 @@ class _set(compiled_schema):
         return str(self.schema_)
 
 
+class structural:
+    type_hists: dict[str, object]
+
+    def __init__(self, schema: object):
+        if not supports_structural:  # TODO: replace by supports_structural
+            raise SchemaError(
+                "Structural subtyping in not supported in this " "Python version"
+            )
+        self.type_hints = {}
+        if isinstance(schema, type) and hasattr(schema, "__annotations__"):
+            self.type_hints = typing.get_type_hints(schema, include_extras=True)
+
+    def __compile__(
+        self, _deferred_compiles: _mapping | None = None
+    ) -> compiled_schema:
+        return _fields(self.type_hints, _deferred_compiles=_deferred_compiles)
+
+
 class _Literal(compiled_schema):
     def __init__(
         self, schema: tuple[object, ...], _deferred_compiles: _mapping | None = None
@@ -2149,12 +2158,20 @@ class _Annotated(compiled_schema):
 class _TypedDict(compiled_schema):
     def __init__(
         self,
-        schema: dict[str, object],
-        total: bool,
+        schema: object,
         _deferred_compiles: _mapping | None = None,
     ) -> None:
+        type_hints = {}
+        if (
+            supports_structural
+            and isinstance(schema, type)
+            and hasattr(schema, "__annotations__")
+        ):
+            type_hints = typing.get_type_hints(schema, include_extras=True)
+        assert hasattr(schema, "__total__") and isinstance(schema.__total__, bool)
+        total = schema.__total__
         d: dict[object, object] = {}
-        for k, v in schema.items():
+        for k, v in type_hints.items():
             v_ = v
             k_: str | optional_key = k
             value_type = typing.get_origin(v)
