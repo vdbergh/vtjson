@@ -4,7 +4,7 @@ A lightweight package for validating JSON like Python objects.
 
 ## Schemas
 
-Validation of JSON like Python objects is done according to a `schema` which is somewhat inspired by a typescript type. The format of a schema is more or less self explanatory. As an [`example`](docs/ty7example1.md) one may consult the schema of the run object in the mongodb database underlying the Fishtest web application <https://tests.stockfishchess.org/tests>.
+Validation of JSON like Python objects is done according to a `schema` which is somewhat inspired by a typescript type. The format of a schema is more or less self explanatory. As an [`example`](docs/example1.md) one may consult the schema of the run object in the mongodb database underlying the Fishtest web application <https://tests.stockfishchess.org/tests>.
 
 The following conventions are used:
 

@@ -25,10 +25,9 @@ from vtjson import (
     one_of,
     quote,
     regex,
+    skip_first,
     url,
 )
-
-skip_first = Apply(skip_first=True)
 
 username = Annotated[str, regex(r"[!-~][ -~]{0,30}[!-~]", name="username"), skip_first]
 net_name = Annotated[str, regex("nn-[a-f0-9]{12}.nnue", name="net_name"), skip_first]
