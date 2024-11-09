@@ -4,14 +4,14 @@ A lightweight package for validating JSON like Python objects.
 
 ## Schemas
 
-Validation of JSON like Python objects is done according to a `schema` which is somewhat inspired by a typescript type. The format of a schema is more or less self explanatory. As an [`example`](docs/example1.md) one may consult the schema of the run object in the mongodb database underlying the Fishtest web application <https://tests.stockfishchess.org/tests>.
+Validation of JSON like Python objects is done according to a `schema` which is somewhat inspired by a typescript type. The format of a schema is more or less self explanatory. As an [example](https://raw.githubusercontent.com/vdbergh/vtjson/refs/heads/main/docs/example1.md) one may consult the schema of the run object in the mongodb database underlying the Fishtest web application <https://tests.stockfishchess.org/tests>.
 
 The following conventions are used:
 
 - As in typescript, a (string) key ending in `?` represents an optional key. The corresponding schema (the item the key points to) will only be used for validation when the key is present in the object that should be validated. A key can also be made optional by wrapping it as `optional_key(key)`.
 - If in a list/tuple the last entry is `...` (ellipsis) it means that the next to last entry will be repeated zero or more times. In this way generic types can be created. For example the schema `[str, ...]` represents a list of strings.
 
-As of version 2.1, a suitable adapted `vtjson` schema can be used as a Python type hint. Here is the above [example](docs/example2.md) rewritten in a way that is compatible with type hints. E.g. if one wants to ensure that a run object obtained via an api has the correct type one can do
+As of version 2.1, a suitable adapted `vtjson` schema can be used as a Python type hint. Here is the above [example](https://github.com/vdbergh/vtjson/blob/main/docs/example2.md) rewritten in a way that is compatible with type hints. E.g. if one wants to ensure that a run object obtained via an api has the correct type one can do
 
 ```python
 from typing import assert_type
