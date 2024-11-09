@@ -4,193 +4,24 @@ A lightweight package for validating JSON like Python objects.
 
 ## Schemas
 
-Validation of JSON like Python objects is done according to a `schema` which is somewhat inspired by a typescript type. The format of a schema is more or less self explanatory as the example below shows. Although not shown in the example, vtjson can also validate many Python type annotations at run time. This is discussed further below.
+Validation of JSON like Python objects is done according to a `schema` which is somewhat inspired by a typescript type. The format of a schema is more or less self explanatory. As an [`example`](docs/ty7example1.md) one may consult the schema of the run object in the mongodb database underlying the Fishtest web application <https://tests.stockfishchess.org/tests>.
 
-### Example
-
-Below is a simplified version of the schema of the run object in the mongodb database underlying the Fishtest web application <https://tests.stockfishchess.org/tests>
-
-```python
-import math
-from datetime import datetime
-from bson.objectid import ObjectId
-from vtjson import glob, ip_address, regex, url
-
-net_name = regex("nn-[a-z0-9]{12}.nnue", name="net_name")
-tc = regex(r"([1-9]\d*/)?\d+(\.\d+)?(\+\d+(\.\d+)?)?", name="tc")
-str_int = regex(r"[1-9]\d*", name="str_int")
-sha = regex(r"[a-f0-9]{40}", name="sha")
-country_code = regex(r"[A-Z][A-Z]", name="country_code")
-run_id = regex(r"[a-f0-9]{24}", name="run_id")
-uuid = regex(r"[0-9a-zA-Z]{2,}(-[a-f0-9]{4}){3}-[a-f0-9]{12}", name="uuid")
-epd_file = glob("*.epd", name="epd_file")
-pgn_file = glob("*.pgn", name="pgn_file")
-
-worker_info_schema = {
-    "uname": str,
-    "architecture": [str, str],
-    "concurrency": int,
-    "max_memory": int,
-    "min_threads": int,
-    "username": str,
-    "version": int,
-    "python_version": [int, int, int],
-    "gcc_version": [int, int, int],
-    "compiler": union("clang++", "g++"),
-    "unique_key": uuid,
-    "modified": bool,
-    "ARCH": str,
-    "nps": float,
-    "near_github_api_limit": bool,
-    "remote_addr": ip_address,
-    "country_code": union(country_code, "?"),
-}
-
-results_schema = {
-    "wins": int,
-    "losses": int,
-    "draws": int,
-    "crashes": int,
-    "time_losses": int,
-    "pentanomial": [int, int, int, int, int],
-}
-
-schema = {
-    "_id?": ObjectId,
-    "start_time": datetime,
-    "last_updated": datetime,
-    "tc_base": float,
-    "base_same_as_master": bool,
-    "rescheduled_from?": run_id,
-    "approved": bool,
-    "approver": str,
-    "finished": bool,
-    "deleted": bool,
-    "failed": bool,
-    "is_green": bool,
-    "is_yellow": bool,
-    "workers": int,
-    "cores": int,
-    "results": results_schema,
-    "results_info?": {
-        "style": str,
-        "info": [str, ...],
-    },
-    "args": {
-        "base_tag": str,
-        "new_tag": str,
-        "base_nets": [net_name, ...],
-        "new_nets": [net_name, ...],
-        "num_games": int,
-        "tc": tc,
-        "new_tc": tc,
-        "book": union(epd_file, pgn_file),
-        "book_depth": str_int,
-        "threads": int,
-        "resolved_base": sha,
-        "resolved_new": sha,
-        "msg_base": str,
-        "msg_new": str,
-        "base_options": str,
-        "new_options": str,
-        "info": str,
-        "base_signature": str_int,
-        "new_signature": str_int,
-        "username": str,
-        "tests_repo": url,
-        "auto_purge": bool,
-        "throughput": float,
-        "itp": float,
-        "priority": float,
-        "adjudication": bool,
-        "sprt?": {
-            "alpha": 0.05,
-            "beta": 0.05,
-            "elo0": float,
-            "elo1": float,
-            "elo_model": "normalized",
-            "state": union("", "accepted", "rejected"),
-            "llr": float,
-            "batch_size": int,
-            "lower_bound": -math.log(19),
-            "upper_bound": math.log(19),
-            "lost_samples?": int,
-            "illegal_update?": int,
-            "overshoot?": {
-                "last_update": int,
-                "skipped_updates": int,
-                "ref0": float,
-                "m0": float,
-                "sq0": float,
-                "ref1": float,
-                "m1": float,
-                "sq1": float,
-            },
-        },
-        "spsa?": {
-            "A": float,
-            "alpha": float,
-            "gamma": float,
-            "raw_params": str,
-            "iter": int,
-            "num_iter": int,
-            "params": [
-                {
-                    "name": str,
-                    "start": float,
-                    "min": float,
-                    "max": float,
-                    "c_end": float,
-                    "r_end": float,
-                    "c": float,
-                    "a_end": float,
-                    "a": float,
-                    "theta": float,
-                },
-                ...,
-            ],
-            "param_history?": [
-                [{"theta": float, "R": float, "c": float}, ...],
-                ...,
-            ],
-        },
-    },
-    "tasks": [
-        {
-            "num_games": int,
-            "active": bool,
-            "last_updated": datetime,
-            "start": int,
-            "residual?": float,
-            "residual_color?": str,
-            "bad?": True,
-            "stats": results_schema,
-            "worker_info": worker_info_schema,
-        },
-        ...,
-    ],
-    "bad_tasks?": [
-        {
-            "num_games": int,
-            "active": False,
-            "last_updated": datetime,
-            "start": int,
-            "residual": float,
-            "residual_color": str,
-            "bad": True,
-            "task_id": int,
-            "stats": results_schema,
-            "worker_info": worker_info_schema,
-        },
-        ...,
-    ],
-}
-```
-
-## Conventions
+The following conventions are used:
 
 - As in typescript, a (string) key ending in `?` represents an optional key. The corresponding schema (the item the key points to) will only be used for validation when the key is present in the object that should be validated. A key can also be made optional by wrapping it as `optional_key(key)`.
 - If in a list/tuple the last entry is `...` (ellipsis) it means that the next to last entry will be repeated zero or more times. In this way generic types can be created. For example the schema `[str, ...]` represents a list of strings.
+
+As of version 2.1, a suitable adapted `vtjson` schema can be used as a Python type hint. Here is the above [example](docs/example2.md) rewritten in a way that is compatible with type hints. E.g. if one wants to ensure that a run object obtained via an api has the correct type one can do
+
+```python
+from typing import assert_type
+
+def f(run_from_api: object, ...) -> ...:
+    run = safe_cast(runs_schema, run_from_api)
+    assert_type(run, runs_schema)   # Confirm that run has indeed the correct type now
+```
+
+If the cast succeeds then it means that the `run_from_api` object has been validated against the `runs_schema` and its type has been changed accordingly.
 
 ## Usage
 

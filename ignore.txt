@@ -1,4 +1,4 @@
-personal_ws-1.1 en 25 
+personal_ws-1.1 en 26 
 Fishtest
 IDNA
 JSON
@@ -15,6 +15,7 @@ datetime
 isinstance
 loc
 lowerbound
+md
 mongodb
 mypy
 pre
