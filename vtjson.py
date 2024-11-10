@@ -2093,10 +2093,11 @@ class structural:
     __name__: str
 
     def __init__(self, schema: object, dict: bool = False):
+        if not isinstance(dict, bool):
+            raise SchemaError("bool flag is not a bool")
         type_hints = _get_type_hints(schema)
-        if dict:
-            self.dict = True
-        total = False
+        self.dict = dict
+        total = True
         if hasattr(schema, "__total__") and isinstance(schema.__total__, bool):
             total = schema.__total__
         self.type_dict = _to_dict(type_hints, total=total)

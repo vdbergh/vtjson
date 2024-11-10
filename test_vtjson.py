@@ -86,6 +86,7 @@ from vtjson import (
     set_name,
     size,
     strict,
+    structural,
     time,
     union,
     url,
@@ -2028,7 +2029,7 @@ class TestValidation(unittest.TestCase):
             with self.assertRaises(SchemaError) as mc_:
                 compile(dummy)
             show(mc_)
-        return
+            return
 
         with self.assertRaises(ValidationError) as mc:
             validate(dummy, x())
@@ -2043,6 +2044,47 @@ class TestValidation(unittest.TestCase):
                 return True
 
         validate(dummy, w())
+
+    def test_structural(self) -> None:
+        class dummy:
+            b: int = 0
+            c: str = ""
+
+            def f(self, i: float) -> bool:
+                return i == i
+
+        if not vtjson.supports_structural:
+            with self.assertRaises(SchemaError) as mc_:
+                schema = structural(dummy)
+            show(mc_)
+            return
+
+        schema = structural(dummy)
+
+        class x:
+            b: str = ""
+            c: str = ""
+
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, x())
+        show(mc)
+        self.assertTrue("dummy" in str(mc.exception))
+
+        class w:
+            b: int = 1
+            c: str = ""
+
+            def g(self) -> bool:
+                return True
+
+        validate(schema, w())
+
+        schema = structural(dummy, dict=True)
+        validate(schema, {"b": 1, "c": ""})
+
+        with self.assertRaises(ValidationError):
+            validate(schema, w())
+        show(mc)
 
 
 if __name__ == "__main__":
