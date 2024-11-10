@@ -158,6 +158,24 @@ def _get_type_hints(schema: object) -> dict[str, object]:
     return type_hints
 
 
+def _to_dict(type_hints: dict[str, object], total: bool = True) -> dict[object, object]:
+    d: dict[object, object] = {}
+    if not supports_Generics:
+        raise SchemaError("Generic types are not supported")
+    for k, v in type_hints.items():
+        v_ = v
+        k_: str | optional_key = k
+        value_type = typing.get_origin(v)
+        if supports_NotRequired and value_type in (Required, NotRequired):
+            v_ = typing.get_args(v)[0]
+        if total and supports_NotRequired and value_type == NotRequired:
+            k_ = optional_key(k)
+        elif not total and (not supports_NotRequired or value_type != Required):
+            k_ = optional_key(k)
+        d[k_] = v_
+    return d
+
+
 def _get_dns_resolver() -> dns.resolver.Resolver:
     global _dns_resolver
     if _dns_resolver is not None:
@@ -2163,18 +2181,7 @@ class _TypedDict(compiled_schema):
         type_hints = _get_type_hints(schema)
         assert hasattr(schema, "__total__") and isinstance(schema.__total__, bool)
         total = schema.__total__
-        d: dict[object, object] = {}
-        for k, v in type_hints.items():
-            v_ = v
-            k_: str | optional_key = k
-            value_type = typing.get_origin(v)
-            if supports_NotRequired and value_type in (Required, NotRequired):
-                v_ = typing.get_args(v)[0]
-            if total and supports_NotRequired and value_type == NotRequired:
-                k_ = optional_key(k)
-            elif not total and (not supports_NotRequired or value_type != Required):
-                k_ = optional_key(k)
-            d[k_] = v_
+        d = _to_dict(type_hints, total)
         setattr(
             self,
             "__validate__",
