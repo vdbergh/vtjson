@@ -2063,15 +2063,17 @@ class _set(compiled_schema):
 
 
 class structural:
-    type_hists: dict[str, object]
+    type_dict: dict[object, object]
 
     def __init__(self, schema: object):
-        self.type_hints = _get_type_hints(schema)
+        type_hints = _get_type_hints(schema)
+        self.type_dict = _to_dict(type_hints)
 
     def __compile__(
         self, _deferred_compiles: _mapping | None = None
     ) -> compiled_schema:
-        return _fields(self.type_hints, _deferred_compiles=_deferred_compiles)
+        type_dict_ = cast(dict[str, object], self.type_dict)
+        return _fields(type_dict_, _deferred_compiles=_deferred_compiles)
 
 
 class _Literal(compiled_schema):
