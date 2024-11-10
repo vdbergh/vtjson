@@ -1084,9 +1084,8 @@ def _compile(
     elif isinstance(schema, compiled_schema):
         ret = schema
     elif supports_TypedDict and typing.is_typeddict(schema):
-        ret = _TypedDict(
-            schema,
-            _deferred_compiles=_deferred_compiles,
+        ret = _compile(
+            structural(schema, dict=True), _deferred_compiles=_deferred_compiles
         )
     elif isinstance(schema, type) and hasattr(schema, "_is_protocol"):
         ret = _compile(structural(schema), _deferred_compiles=_deferred_compiles)
@@ -2064,16 +2063,25 @@ class _set(compiled_schema):
 
 class structural:
     type_dict: dict[object, object]
+    dict: bool
 
-    def __init__(self, schema: object):
+    def __init__(self, schema: object, dict: bool = False):
         type_hints = _get_type_hints(schema)
-        self.type_dict = _to_dict(type_hints)
+        if dict:
+            self.dict = True
+        total = False
+        if hasattr(schema, "__total__") and isinstance(schema.__total__, bool):
+            total = schema.__total__
+        self.type_dict = _to_dict(type_hints, total=total)
 
     def __compile__(
         self, _deferred_compiles: _mapping | None = None
     ) -> compiled_schema:
-        type_dict_ = cast(dict[str, object], self.type_dict)
-        return _fields(type_dict_, _deferred_compiles=_deferred_compiles)
+        if not self.dict:
+            type_dict_ = cast(dict[str, object], self.type_dict)
+            return _fields(type_dict_, _deferred_compiles=_deferred_compiles)
+        else:
+            return _dict(self.type_dict, _deferred_compiles=_deferred_compiles)
 
 
 class _Literal(compiled_schema):
@@ -2171,21 +2179,4 @@ class _Annotated(compiled_schema):
             self,
             "__validate__",
             c.__validate__,
-        )
-
-
-class _TypedDict(compiled_schema):
-    def __init__(
-        self,
-        schema: object,
-        _deferred_compiles: _mapping | None = None,
-    ) -> None:
-        type_hints = _get_type_hints(schema)
-        assert hasattr(schema, "__total__") and isinstance(schema.__total__, bool)
-        total = schema.__total__
-        d = _to_dict(type_hints, total)
-        setattr(
-            self,
-            "__validate__",
-            _dict(d, _deferred_compiles=_deferred_compiles).__validate__,
         )
