@@ -885,22 +885,27 @@ class TestValidation(unittest.TestCase):
 
     def test_set_name(self) -> None:
         schema: object
-        object_: object
         schema = set_name("a", "dummy")
         c: Any = compile(schema)
         self.assertTrue(c.__name__ == "dummy")
 
         with self.assertRaises(ValidationError) as mc:
-            object_ = "b"
-            validate(schema, object_)
+            validate(schema, "b")
         show(mc)
+        self.assertTrue("dummy" in str(mc.exception))
 
-        object_ = "a"
-        validate(schema, object_)
+        validate(schema, "a")
 
         with self.assertRaises(SchemaError) as mc_:
             schema = set_name("a", {})  # type: ignore
         show(mc_)
+
+        schema = set_name(datetime, "dummy", reason=True)
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, "12-34-56")
+        show(mc)
+        self.assertTrue("datetime" in str(mc.exception))
+        self.assertTrue("dummy" in str(mc.exception))
 
     def test_lax(self) -> None:
         schema: object
