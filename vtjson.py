@@ -206,9 +206,16 @@ def _c(s: object) -> str:
 
 
 def _wrong_type_message(
-    object_: object, name: str, type_name: str, explanation: str | None = None
+    object_: object,
+    name: str,
+    type_name: str,
+    explanation: str | None = None,
+    skip_value: bool = False,
 ) -> str:
-    message = f"{name} (value:{_c(object_)}) is not of type '{type_name}'"
+    if not skip_value:
+        message = f"{name} (value:{_c(object_)}) is not of type '{type_name}'"
+    else:
+        message = f"{name} is not of type '{type_name}'"
     if explanation is not None:
         message += f": {explanation}"
     return message
@@ -509,14 +516,20 @@ class quote(compiled_schema):
 
 
 class _set_name(compiled_schema):
+    reason: bool
     schema: compiled_schema
     __name__: str
 
     def __init__(
-        self, schema: object, name: str, _deferred_compiles: _mapping | None = None
+        self,
+        schema: object,
+        name: str,
+        reason: bool = False,
+        _deferred_compiles: _mapping | None = None,
     ) -> None:
         self.schema = _compile(schema, _deferred_compiles=_deferred_compiles)
         self.__name__ = name
+        self.reason = reason
 
     def __validate__(
         self,
@@ -527,22 +540,34 @@ class _set_name(compiled_schema):
     ) -> str:
         message = self.schema.__validate__(object_, name=name, strict=strict, subs=subs)
         if message != "":
-            return _wrong_type_message(object_, name, self.__name__)
+            if not self.reason:
+                return _wrong_type_message(object_, name, self.__name__)
+            else:
+                return _wrong_type_message(
+                    object_, name, self.__name__, explanation=message, skip_value=True
+                )
         return ""
 
 
 class set_name:
+    reason: bool
     schema: object
     name: str
 
-    def __init__(self, schema: object, name: str) -> None:
+    def __init__(self, schema: object, name: str, reason: bool = False) -> None:
         if not isinstance(name, str):
             raise SchemaError(f"The name {_c(name)} is not a string")
         self.schema = schema
         self.name = name
+        self.reason = reason
 
     def __compile__(self, _deferred_compiles: _mapping | None = None) -> _set_name:
-        return _set_name(self.schema, self.name, _deferred_compiles=_deferred_compiles)
+        return _set_name(
+            self.schema,
+            self.name,
+            reason=self.reason,
+            _deferred_compiles=_deferred_compiles,
+        )
 
 
 class regex(compiled_schema):
@@ -1088,6 +1113,7 @@ def _compile(
             structural(schema, dict=True), _deferred_compiles=_deferred_compiles
         )
     elif isinstance(schema, type) and hasattr(schema, "_is_protocol"):
+        assert hasattr(schema, "__name__") and isinstance(schema.__name__, str)
         ret = _compile(structural(schema), _deferred_compiles=_deferred_compiles)
     elif schema == Any:
         ret = anything()
@@ -2064,6 +2090,7 @@ class _set(compiled_schema):
 class structural:
     type_dict: dict[object, object]
     dict: bool
+    __name__: str
 
     def __init__(self, schema: object, dict: bool = False):
         type_hints = _get_type_hints(schema)
@@ -2073,15 +2100,27 @@ class structural:
         if hasattr(schema, "__total__") and isinstance(schema.__total__, bool):
             total = schema.__total__
         self.type_dict = _to_dict(type_hints, total=total)
+        assert hasattr(schema, "__name__") and isinstance(schema.__name__, str)
+        self.__name__ = schema.__name__
 
     def __compile__(
         self, _deferred_compiles: _mapping | None = None
     ) -> compiled_schema:
         if not self.dict:
             type_dict_ = cast(dict[str, object], self.type_dict)
-            return _fields(type_dict_, _deferred_compiles=_deferred_compiles)
+            return _set_name(
+                fields(type_dict_),
+                self.__name__,
+                reason=True,
+                _deferred_compiles=_deferred_compiles,
+            )
         else:
-            return _dict(self.type_dict, _deferred_compiles=_deferred_compiles)
+            return _set_name(
+                dict(self.type_dict),
+                self.__name__,
+                reason=True,
+                _deferred_compiles=_deferred_compiles,
+            )
 
 
 class _Literal(compiled_schema):

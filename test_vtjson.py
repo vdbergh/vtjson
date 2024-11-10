@@ -1922,9 +1922,11 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             validate(schema, {"a": "b", "b": "c"})
         show(mc)
+        self.assertTrue("dummy" in str(mc.exception))
         with self.assertRaises(ValidationError) as mc:
             validate(schema, {"a": 1, "b": 1})
         show(mc)
+        self.assertTrue("dummy" in str(mc.exception))
 
         class dummy2(TypedDict, total=False):
             a: int
@@ -1936,9 +1938,11 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             validate(schema2, {"a": "b", "b": "c"})
         show(mc)
+        self.assertTrue("dummy2" in str(mc.exception))
         with self.assertRaises(ValidationError) as mc:
             validate(schema2, {"a": 1, "b": 1})
         show(mc)
+        self.assertTrue("dummy2" in str(mc.exception))
 
     @unittest.skipUnless(
         vtjson.supports_NotRequired,
@@ -2004,7 +2008,7 @@ class TestValidation(unittest.TestCase):
         show(mc)
 
     def test_Protocol(self) -> None:
-        class a(Protocol):
+        class dummy(Protocol):
             b: int = 0
             c: str = ""
 
@@ -2017,13 +2021,14 @@ class TestValidation(unittest.TestCase):
 
         if not vtjson.supports_structural:
             with self.assertRaises(SchemaError) as mc_:
-                compile(a)
+                compile(dummy)
             show(mc_)
         return
 
         with self.assertRaises(ValidationError) as mc:
-            validate(a, x())
+            validate(dummy, x())
         show(mc)
+        self.assertTrue("dummy" in str(mc.exception))
 
         class w:
             b: int = 1
@@ -2032,7 +2037,7 @@ class TestValidation(unittest.TestCase):
             def g(self) -> bool:
                 return True
 
-        validate(a, w())
+        validate(dummy, w())
 
 
 if __name__ == "__main__":
