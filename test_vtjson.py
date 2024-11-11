@@ -5,7 +5,7 @@ import re
 import sys
 import unittest
 from datetime import datetime, timezone
-from typing import Any, Dict, List, NewType, Tuple, Union
+from typing import Any, Dict, List, NamedTuple, NewType, Tuple, Union
 from urllib.parse import urlparse
 
 import vtjson
@@ -2037,6 +2037,38 @@ class TestValidation(unittest.TestCase):
         self.assertTrue("dummy" in str(mc.exception))
 
         class w:
+            b: int = 1
+            c: str = ""
+
+            def g(self) -> bool:
+                return True
+
+        validate(dummy, w())
+
+    def test_NamedTuple(self) -> None:
+        class dummy(NamedTuple):
+            b: int = 0
+            c: str = ""
+
+            def f(self, i: float) -> bool:
+                return i == i
+
+        class x(NamedTuple):
+            b: str = ""
+            c: str = ""
+
+        if not vtjson.supports_structural:
+            with self.assertRaises(SchemaError) as mc_:
+                compile(dummy)
+            show(mc_)
+            return
+
+        with self.assertRaises(ValidationError) as mc:
+            validate(dummy, x())
+        show(mc)
+        self.assertTrue("dummy" in str(mc.exception))
+
+        class w(NamedTuple):
             b: int = 1
             c: str = ""
 

@@ -1116,6 +1116,14 @@ def _compile(
     elif isinstance(schema, type) and hasattr(schema, "_is_protocol"):
         assert hasattr(schema, "__name__") and isinstance(schema.__name__, str)
         ret = _compile(protocol(schema), _deferred_compiles=_deferred_compiles)
+    elif (
+        isinstance(schema, type)
+        and issubclass(schema, tuple)
+        and hasattr(schema, "_fields")
+    ):
+        ret = _compile(
+            intersect(tuple, protocol(schema)), _deferred_compiles=_deferred_compiles
+        )
     elif schema == Any:
         ret = anything()
     elif hasattr(schema, "__name__") and hasattr(schema, "__supertype__"):
