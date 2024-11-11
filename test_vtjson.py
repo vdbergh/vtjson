@@ -2094,6 +2094,20 @@ class TestValidation(unittest.TestCase):
             validate(schema, w())
         show(mc)
 
+        class dummy2:
+            # oh, horror
+            a: {"b": int}  # type: ignore # noqa: F821
+
+        class u:
+            def __init__(self, v: object) -> None:
+                self.a = {"b": v}
+
+        validate(structural(dummy2), u(5))
+
+        with self.assertRaises(ValidationError) as mc:
+            validate(structural(dummy2), u(""))
+        show(mc)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
