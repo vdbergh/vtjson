@@ -170,7 +170,7 @@ A consequence of this algorithm is that non-const keys are automatically optiona
 
 ```python
 Annotated, dict[...], Dict[...], list[...], List[...], tuple[...], Tuple[...],
-Protocol, Literal, NewType, TypedDict, Union (or the equivalent operator |).
+Protocol, NamedTuple, Literal, NewType, TypedDict, Union (or the equivalent operator |).
 ```
 
 For example `dict[str, str]` is translated internally into the schema `{str: str}`. See below for more information.
@@ -235,6 +235,16 @@ Note that Python imposes strong restrictions on what constitutes a valid type hi
   ```
 
   internally becomes `fields({"title": str, "price": float})`.
+
+- `NamedTuple`. A `NamedTuple` class is translated as the intersection of a `tuple` schema and a fields schema. E.g.
+
+  ```python
+  class Movie(NamedTuple):
+      title: str
+      price: float
+  ```
+
+  internally becomes `intersect(tuple, fields({"title": str, "price": float}))`.
 
 - `Annotated` has already been discussed. It is translated into a suitable `intersect` schema. The handling of `Annotated` schemas can be influenced by `Apply` objects (see below).
 
