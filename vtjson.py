@@ -1111,11 +1111,11 @@ def _compile(
         ret = schema
     elif supports_TypedDict and typing.is_typeddict(schema):
         ret = _compile(
-            structural(schema, dict=True), _deferred_compiles=_deferred_compiles
+            protocol(schema, dict=True), _deferred_compiles=_deferred_compiles
         )
     elif isinstance(schema, type) and hasattr(schema, "_is_protocol"):
         assert hasattr(schema, "__name__") and isinstance(schema.__name__, str)
-        ret = _compile(structural(schema), _deferred_compiles=_deferred_compiles)
+        ret = _compile(protocol(schema), _deferred_compiles=_deferred_compiles)
     elif schema == Any:
         ret = anything()
     elif hasattr(schema, "__name__") and hasattr(schema, "__supertype__"):
@@ -2088,7 +2088,7 @@ class _set(compiled_schema):
         return str(self.schema_)
 
 
-class structural:
+class protocol:
     type_dict: dict[object, object]
     dict: bool
     __name__: str

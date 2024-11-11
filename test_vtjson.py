@@ -79,6 +79,7 @@ from vtjson import (
     number,
     one_of,
     optional_key,
+    protocol,
     quote,
     regex,
     safe_cast,
@@ -86,7 +87,6 @@ from vtjson import (
     set_name,
     size,
     strict,
-    structural,
     time,
     union,
     url,
@@ -2045,7 +2045,7 @@ class TestValidation(unittest.TestCase):
 
         validate(dummy, w())
 
-    def test_structural(self) -> None:
+    def test_protocol(self) -> None:
         class dummy:
             b: int = 0
             c: str = ""
@@ -2055,19 +2055,19 @@ class TestValidation(unittest.TestCase):
 
         if not vtjson.supports_structural:
             with self.assertRaises(SchemaError) as mc_:
-                schema = structural(dummy)
+                schema = protocol(dummy)
             show(mc_)
             return
 
         with self.assertRaises(SchemaError) as mc_:
-            schema = structural(dummy, dict=None)  # type: ignore
+            schema = protocol(dummy, dict=None)  # type: ignore
         show(mc_)
 
         with self.assertRaises(SchemaError) as mc_:
-            schema = structural({})
+            schema = protocol({})
         show(mc_)
 
-        schema = structural(dummy)
+        schema = protocol(dummy)
 
         class x:
             b: str = ""
@@ -2087,7 +2087,7 @@ class TestValidation(unittest.TestCase):
 
         validate(schema, w())
 
-        schema = structural(dummy, dict=True)
+        schema = protocol(dummy, dict=True)
         validate(schema, {"b": 1, "c": ""})
 
         with self.assertRaises(ValidationError):
@@ -2104,10 +2104,10 @@ class TestValidation(unittest.TestCase):
                 def __init__(self, v: object) -> None:
                     self.a = {"b": v}
 
-            validate(structural(dummy2), u(5))
+            validate(protocol(dummy2), u(5))
 
             with self.assertRaises(ValidationError) as mc:
-                validate(structural(dummy2), u(""))
+                validate(protocol(dummy2), u(""))
             show(mc)
 
 
