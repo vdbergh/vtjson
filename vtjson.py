@@ -2102,8 +2102,10 @@ class structural:
         if hasattr(schema, "__total__") and isinstance(schema.__total__, bool):
             total = schema.__total__
         self.type_dict = _to_dict(type_hints, total=total)
-        assert hasattr(schema, "__name__") and isinstance(schema.__name__, str)
-        self.__name__ = schema.__name__
+        if hasattr(schema, "__name__") and isinstance(schema.__name__, str):
+            self.__name__ = schema.__name__
+        else:
+            self.__name__ = "schema"
 
     def __compile__(
         self, _deferred_compiles: _mapping | None = None
