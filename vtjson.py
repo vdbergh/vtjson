@@ -152,9 +152,10 @@ def _get_type_hints(schema: object) -> dict[str, object]:
         raise SchemaError(
             "Structural subtyping in not supported in this " "Python version"
         )
-    type_hints = {}
     if isinstance(schema, type) and hasattr(schema, "__annotations__"):
         type_hints = typing.get_type_hints(schema, include_extras=True)
+    else:
+        raise SchemaError("The schema does not have type hints")
     return type_hints
 
 

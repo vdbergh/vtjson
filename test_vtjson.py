@@ -2059,6 +2059,14 @@ class TestValidation(unittest.TestCase):
             show(mc_)
             return
 
+        with self.assertRaises(SchemaError) as mc_:
+            schema = structural(dummy, dict=None)  # type: ignore
+        show(mc_)
+
+        with self.assertRaises(SchemaError) as mc_:
+            schema = structural({})
+        show(mc_)
+
         schema = structural(dummy)
 
         class x:
