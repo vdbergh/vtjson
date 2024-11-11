@@ -50,7 +50,7 @@ A wrapper takes one or more schemas as arguments and produces a new schema.
 - An object matches the schema `complement(schema)` if it does not match `schema`.
 - An object matches the schema `lax(schema)` if it matches `schema` when validated with `strict=False`.
 - An object matches the schema `strict(schema)` if it matches `schema` when validated with `strict=True`.
-- An object matches the schema `set_name(schema, name)` if it matches `schema`. But the `name` argument will be used in non-validation messages.
+- An object matches the schema `set_name(schema, name, reason=False)` if it matches `schema`, but the `name` argument will be used in non-validation messages. Unless `reason` is `True` the original non-validation message will be suppressed.
 - An object matches the schema `quote(schema)` if it is equal to `schema`. For example the schema `str` matches strings but the schema `quote(str)` matches the object `str`.
 - An object matches the schema `set_label(schema, label1, ..., labelN, debug=False)` if it matches `schema`, unless the schema is replaced by a different one via the `subs` argument to `validate`. If the optional argument `debug` is `True` then a message will be printed on the console if the schema was changed.
 
