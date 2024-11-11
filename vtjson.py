@@ -1149,7 +1149,7 @@ def _compile(
         ret = _type(schema)
     elif callable(schema):
         ret = _callable(schema)
-    elif isinstance(schema, tuple) or isinstance(schema, list):
+    elif isinstance(schema, Sequence) and not isinstance(schema, str):
         ret = _sequence(schema, _deferred_compiles=_deferred_compiles)
     elif isinstance(schema, dict):
         ret = _dict(schema, _deferred_compiles=_deferred_compiles)
@@ -1824,7 +1824,7 @@ class _sequence(compiled_schema):
 
     def __init__(
         self,
-        schema: list[object] | tuple[object, ...],
+        schema: Sequence[object],
         _deferred_compiles: _mapping | None = None,
     ) -> None:
         self.type_schema = type(schema)
