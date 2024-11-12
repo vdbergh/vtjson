@@ -4,8 +4,9 @@ import json
 import re
 import sys
 import unittest
+from collections.abc import Sequence
 from datetime import datetime, timezone
-from typing import Any, Dict, List, NamedTuple, NewType, Tuple, Union
+from typing import Any, Dict, List, NamedTuple, NewType, Tuple, Union, overload
 from urllib.parse import urlparse
 
 import vtjson
@@ -1063,6 +1064,53 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             schema = ["a", int, ...]
             object_ = ["a", "c", 1]
+            validate(schema, object_)
+        show(mc)
+
+    def test_Sequence(self) -> None:
+        class dummy[T](Sequence[T]):
+            L: Sequence[T]
+
+            def __init__(self, L: Sequence[T] = ()) -> None:
+                self.L = L
+
+            @overload
+            def __getitem__(self, index: int) -> T: ...
+
+            @overload
+            def __getitem__(self, index: slice) -> dummy[T]: ...
+
+            def __getitem__(self, index: int | slice) -> T | dummy[T]:
+                if isinstance(index, int):
+                    return self.L[index]
+                return dummy(self.L[index])
+
+            def __len__(self) -> int:
+                return len(self.L)
+
+        schema: object
+        object_: object
+
+        object_ = dummy((1, 2))
+        schema = dummy((1, 2))
+        validate(schema, object_)
+
+        schema = dummy([1, 2])
+        validate(schema, object_)
+
+        with self.assertRaises(ValidationError) as mc:
+            object_ = dummy(["a", "b"])
+            validate(schema, object_)
+        show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
+            object_ = dummy(["a", "b", None, "c"])
+            validate(schema, object_)
+        show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
+            schema = dummy(["a", int, ...])
+            object_ = dummy(["a", "c", 1])
             validate(schema, object_)
         show(mc)
 

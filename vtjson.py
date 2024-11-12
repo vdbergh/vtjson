@@ -1850,7 +1850,7 @@ class _sequence(compiled_schema):
         subs: dict[str, object] = {},
     ) -> str:
         if not isinstance(object_, self.type_schema):
-            return _wrong_type_message(object_, name, type(self.schema).__name__)
+            return _wrong_type_message(object_, name, self.type_schema.__name__)
         ls = len(self.schema)
         lo = len(object_)
         if strict:
