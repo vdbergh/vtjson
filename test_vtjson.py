@@ -6,7 +6,7 @@ import sys
 import unittest
 from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
-from typing import Any, Dict, List, NamedTuple, NewType, Tuple, Union, overload
+from typing import Any, Dict, List, NamedTuple, NewType, Tuple, TypeVar, Union, overload
 from urllib.parse import urlparse
 
 import vtjson
@@ -1067,8 +1067,15 @@ class TestValidation(unittest.TestCase):
             validate(schema, object_)
         show(mc)
 
+    @unittest.skipUnless(
+        vtjson.supports_Generic_ABC,
+        "Generic base classes were introduced in Pythin 3.9",
+    )
     def test_Sequence(self) -> None:
-        class dummy[T](Sequence[T]):
+
+        T = TypeVar("T")
+
+        class dummy(Sequence[T]):
             L: Sequence[T]
 
             def __init__(self, L: Sequence[T] = ()) -> None:

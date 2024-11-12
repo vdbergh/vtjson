@@ -46,6 +46,12 @@ else:
     supports_Generics = False
 
 try:
+    Sequence[str]
+    supports_Generic_ABC = True
+except Exception:
+    supports_Generic_ABC = False
+
+try:
     typing.get_type_hints(int, include_extras=True)
     supports_structural = True
 except Exception:
