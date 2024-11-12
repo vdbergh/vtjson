@@ -122,7 +122,7 @@ __version__ = "2.1.4"
 class Apply:
     skip_first: bool | None = None
     name: str | None = None
-    labels: list[str] | None = None
+    labels: Sequence[str] | None = None
 
     def __call__(self, schemas: tuple[object, ...]) -> object:
         if len(schemas) == 0:
