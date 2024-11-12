@@ -1141,8 +1141,12 @@ def _compile(
             type_schema=origin,
             _deferred_compiles=_deferred_compiles,
         )
-    elif origin == dict:
-        ret = _Dict(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
+    elif isinstance(origin, type) and issubclass(origin, Mapping):
+        ret = _Dict(
+            typing.get_args(schema),
+            type_schema=origin,
+            _deferred_compiles=_deferred_compiles,
+        )
     elif origin == Union:
         ret = _Union(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
     elif supports_Literal and origin == Literal:
@@ -1157,7 +1161,7 @@ def _compile(
         ret = _callable(schema)
     elif isinstance(schema, Sequence) and not isinstance(schema, str):
         ret = _sequence(schema, _deferred_compiles=_deferred_compiles)
-    elif isinstance(schema, dict):
+    elif isinstance(schema, Mapping):
         ret = _dict(schema, _deferred_compiles=_deferred_compiles)
     elif isinstance(schema, set):
         ret = _set(schema, _deferred_compiles=_deferred_compiles)
@@ -1965,12 +1969,18 @@ class _dict(compiled_schema):
     const_keys: set[object]
     other_keys: set[compiled_schema]
     schema: dict[object, compiled_schema]
+    type_schema: Type[Mapping[object, object]]
 
     def __init__(
         self,
         schema: Mapping[object, object],
+        type_schema: type | None = None,
         _deferred_compiles: _mapping | None = None,
     ) -> None:
+        if type_schema is None:
+            self.type_schema = type(schema)
+        else:
+            self.type_schema = type_schema
         self.min_keys = set()
         self.const_keys = set()
         self.other_keys = set()
@@ -2002,8 +2012,8 @@ class _dict(compiled_schema):
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, Mapping):
-            return _wrong_type_message(object_, name, "Mapping")
+        if not isinstance(object_, self.type_schema):
+            return _wrong_type_message(object_, name, self.type_schema.__name__)
 
         for k in self.min_keys:
             if k not in object_:
@@ -2197,13 +2207,18 @@ class _Tuple(compiled_schema):
 
 class _Dict(compiled_schema):
     def __init__(
-        self, schema: tuple[object, ...], _deferred_compiles: _mapping | None = None
+        self,
+        schema: tuple[object, ...],
+        type_schema: type | None = None,
+        _deferred_compiles: _mapping | None = None,
     ) -> None:
         k, v = schema
         setattr(
             self,
             "__validate__",
-            _dict({k: v}, _deferred_compiles=_deferred_compiles).__validate__,
+            _dict(
+                {k: v}, type_schema=type_schema, _deferred_compiles=_deferred_compiles
+            ).__validate__,
         )
 
 
