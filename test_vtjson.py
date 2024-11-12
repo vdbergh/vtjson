@@ -4,7 +4,7 @@ import json
 import re
 import sys
 import unittest
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
 from typing import Any, Dict, List, NamedTuple, NewType, Tuple, Union, overload
 from urllib.parse import urlparse
@@ -1171,7 +1171,7 @@ class TestValidation(unittest.TestCase):
                 object_: object,
                 name: str,
                 strict: bool,
-                subs: Dict[str, object],
+                subs: Mapping[str, object],
             ) -> str:
                 if not isinstance(object_, str):
                     return f"{name} (value:{object_}) is not of type str"

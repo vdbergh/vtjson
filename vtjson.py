@@ -12,7 +12,7 @@ import urllib.parse
 import warnings
 from collections.abc import Sequence, Sized
 from dataclasses import dataclass
-from typing import Any, Callable, Type, TypeVar, Union, cast
+from typing import Any, Callable, Mapping, Type, TypeVar, Union, cast
 
 try:
     from typing import Literal
@@ -83,7 +83,7 @@ class compiled_schema:
         object_: object,
         name: str,
         strict: bool,
-        subs: dict[str, object],
+        subs: Mapping[str, object],
     ) -> str:
         return ""
 
@@ -159,7 +159,9 @@ def _get_type_hints(schema: object) -> dict[str, object]:
     return type_hints
 
 
-def _to_dict(type_hints: dict[str, object], total: bool = True) -> dict[object, object]:
+def _to_dict(
+    type_hints: Mapping[str, object], total: bool = True
+) -> dict[object, object]:
     d: dict[object, object] = {}
     if not supports_Generics:
         raise SchemaError("Generic types are not supported")
@@ -225,7 +227,7 @@ def _wrong_type_message(
 class _validate_meta(type):
     __schema__: object
     __strict__: bool
-    __subs__: dict[str, object]
+    __subs__: Mapping[str, object]
     __dbg__: bool
 
     def __instancecheck__(cls, object_: object) -> bool:
@@ -242,7 +244,7 @@ def make_type(
     name: str | None = None,
     strict: bool = True,
     debug: bool = False,
-    subs: dict[str, object] = {},
+    subs: Mapping[str, object] = {},
 ) -> _validate_meta:
     if name is None:
         if hasattr(schema, "__name__"):
@@ -293,7 +295,7 @@ class _union(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         messages = []
         for schema in self.schemas:
@@ -332,7 +334,7 @@ class _intersect(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         for schema in self.schemas:
             message = schema.__validate__(object_, name=name, strict=strict, subs=subs)
@@ -364,7 +366,7 @@ class _complement(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         message = self.schema.__validate__(object_, name=name, strict=strict, subs=subs)
         if message != "":
@@ -396,7 +398,7 @@ class _lax(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         return self.schema.__validate__(object_, name=name, strict=False, subs=subs)
 
@@ -424,7 +426,7 @@ class _strict(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         return self.schema.__validate__(object_, name=name, strict=True, subs=subs)
 
@@ -458,7 +460,7 @@ class _set_label(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         common_labels = tuple(set(subs.keys()).intersection(self.labels))
         if len(common_labels) >= 2:
@@ -511,7 +513,7 @@ class quote(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         return self.schema.__validate__(object_, name=name, strict=strict, subs=subs)
 
@@ -537,7 +539,7 @@ class _set_name(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         message = self.schema.__validate__(object_, name=name, strict=strict, subs=subs)
         if message != "":
@@ -608,7 +610,7 @@ class regex(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, str):
             return _wrong_type_message(object_, name, self.__name__)
@@ -647,7 +649,7 @@ class glob(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, str):
             return _wrong_type_message(object_, name, self.__name__)
@@ -683,7 +685,7 @@ class magic(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, (str, bytes)):
             return _wrong_type_message(object_, name, self.__name__)
@@ -732,7 +734,7 @@ class div(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, int):
             return _wrong_type_message(object_, name, "int")
@@ -779,7 +781,7 @@ class close_to(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, (float, int)):
             return _wrong_type_message(object_, name, "number")
@@ -809,7 +811,7 @@ class gt(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         try:
             if self.lb < object_:
@@ -840,7 +842,7 @@ class ge(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         try:
             if self.lb <= object_:
@@ -871,7 +873,7 @@ class lt(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         try:
             if self.ub > object_:
@@ -902,7 +904,7 @@ class le(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         try:
             if self.ub >= object_:
@@ -1006,7 +1008,7 @@ class size(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, Sized):
             return f"{name} (value:{_c(object_)}) has no len()"
@@ -1029,7 +1031,7 @@ class _deferred(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if self.key not in self.collection:
             raise ValidationError(f"{name}: key {self.key} is unknown")
@@ -1175,7 +1177,7 @@ def _validate(
     object_: object,
     name: str = "object",
     strict: bool = True,
-    subs: dict[str, object] = {},
+    subs: Mapping[str, object] = {},
 ) -> str:
     return compile(schema).__validate__(object_, name=name, strict=strict, subs=subs)
 
@@ -1185,7 +1187,7 @@ def validate(
     object_: object,
     name: str = "object",
     strict: bool = True,
-    subs: dict[str, object] = {},
+    subs: Mapping[str, object] = {},
 ) -> None:
     message = _validate(
         schema,
@@ -1214,7 +1216,7 @@ class number(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if isinstance(object_, (int, float)):
             return ""
@@ -1237,7 +1239,7 @@ class email(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, str):
             return _wrong_type_message(
@@ -1274,7 +1276,7 @@ class ip_address(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, (int, str, bytes)):
             return _wrong_type_message(object_, name, self.__name__)
@@ -1291,7 +1293,7 @@ class url(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, str):
             return _wrong_type_message(object_, name, "url")
@@ -1317,7 +1319,7 @@ class date_time(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, str):
             return _wrong_type_message(object_, name, self.__name__)
@@ -1340,7 +1342,7 @@ class date(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, str):
             return _wrong_type_message(object_, name, "date")
@@ -1357,7 +1359,7 @@ class time(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, str):
             return _wrong_type_message(object_, name, "date")
@@ -1374,7 +1376,7 @@ class nothing(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         return _wrong_type_message(object_, name, "nothing")
 
@@ -1385,7 +1387,7 @@ class anything(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         return ""
 
@@ -1416,7 +1418,7 @@ class domain_name(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, str):
             return _wrong_type_message(object_, name, self.__name__)
@@ -1452,9 +1454,9 @@ class at_least_one_of(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, dict):
+        if not isinstance(object_, Mapping):
             return _wrong_type_message(object_, name, self.__name__)
         try:
             if any([a in object_ for a in self.args]):
@@ -1479,9 +1481,9 @@ class at_most_one_of(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, dict):
+        if not isinstance(object_, Mapping):
             return _wrong_type_message(object_, name, self.__name__)
         try:
             if sum([a in object_ for a in self.args]) <= 1:
@@ -1506,9 +1508,9 @@ class one_of(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, dict):
+        if not isinstance(object_, Mapping):
             return _wrong_type_message(object_, name, self.__name__)
         try:
             if sum([a in object_ for a in self.args]) == 1:
@@ -1530,10 +1532,10 @@ class keys(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, dict):
-            return _wrong_type_message(object_, name, "dict")  # TODO: __name__
+        if not isinstance(object_, Mapping):
+            return _wrong_type_message(object_, name, "Mapping")  # TODO: __name__
         for k in self.args:
             if k not in object_:
                 return f"{name}[{repr(k)}] is missing"
@@ -1566,7 +1568,7 @@ class _ifthen(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if (
             self.if_schema.__validate__(object_, name=name, strict=strict, subs=subs)
@@ -1628,7 +1630,7 @@ class _cond(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         for c in self.conditions:
             if c[0].__validate__(object_, name=name, strict=strict, subs=subs) == "":
@@ -1653,7 +1655,7 @@ class _fields(compiled_schema):
     d: dict[str, compiled_schema]
 
     def __init__(
-        self, d: dict[str, object], _deferred_compiles: _mapping | None = None
+        self, d: Mapping[str, object], _deferred_compiles: _mapping | None = None
     ) -> None:
         self.d = {}
         for k, v in d.items():
@@ -1664,7 +1666,7 @@ class _fields(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         for k, v in self.d.items():
             name_ = f"{name}.{k}"
@@ -1680,8 +1682,8 @@ class _fields(compiled_schema):
 
 class fields:
     def __init__(self, d: object) -> None:
-        if not isinstance(d, dict):
-            raise SchemaError(f"{repr(d)} is not a dictionary")
+        if not isinstance(d, Mapping):
+            raise SchemaError(f"{repr(d)} is not a Mapping")
         for k in d:
             if not isinstance(k, str):
                 raise SchemaError(f"key {repr(k)} in {repr(d)} is not a string")
@@ -1720,7 +1722,7 @@ class _filter(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         try:
             object_ = self.filter(object_)
@@ -1779,7 +1781,7 @@ class _type(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         try:
             if self.schema == float and isinstance(object_, int):
@@ -1796,7 +1798,7 @@ class _type(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         # consider int as a subtype of float
         if isinstance(object_, (int, float)):
@@ -1809,7 +1811,7 @@ class _type(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         # consider int, float as subtypes of complex
         if isinstance(object_, (int, float, complex)):
@@ -1855,7 +1857,7 @@ class _sequence(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, self.type_schema):
             return _wrong_type_message(object_, name, self.type_schema.__name__)
@@ -1878,7 +1880,7 @@ class _sequence(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, self.type_schema):
             return _wrong_type_message(object_, name, type(self.schema).__name__)
@@ -1918,7 +1920,7 @@ class _const(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if object_ != self.schema:
             return self.message(name, object_)
@@ -1944,7 +1946,7 @@ class _callable(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         try:
             if self.schema(object_):
@@ -1966,7 +1968,7 @@ class _dict(compiled_schema):
 
     def __init__(
         self,
-        schema: dict[object, object],
+        schema: Mapping[object, object],
         _deferred_compiles: _mapping | None = None,
     ) -> None:
         self.min_keys = set()
@@ -1998,10 +2000,10 @@ class _dict(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, dict):
-            return _wrong_type_message(object_, name, "dict")
+        if not isinstance(object_, Mapping):
+            return _wrong_type_message(object_, name, "Mapping")
 
         for k in self.min_keys:
             if k not in object_:
@@ -2064,7 +2066,7 @@ class _set(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         return self.schema.__validate__(object_, name=name, strict=True, subs=subs)
 
@@ -2073,7 +2075,7 @@ class _set(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, set):
             return _wrong_type_message(object_, name, "set")
@@ -2089,7 +2091,7 @@ class _set(compiled_schema):
         object_: object,
         name: str = "object",
         strict: bool = True,
-        subs: dict[str, object] = {},
+        subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, set):
             return _wrong_type_message(object_, name, "set")
@@ -2127,9 +2129,8 @@ class protocol:
         self, _deferred_compiles: _mapping | None = None
     ) -> compiled_schema:
         if not self.dict:
-            type_dict_ = cast(dict[str, object], self.type_dict)
             return _set_name(
-                fields(type_dict_),
+                fields(self.type_dict),
                 self.__name__,
                 reason=True,
                 _deferred_compiles=_deferred_compiles,
