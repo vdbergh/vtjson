@@ -1114,6 +1114,15 @@ class TestValidation(unittest.TestCase):
             validate(schema, object_)
         show(mc)
 
+        schema = dummy[str]
+        object_ = dummy(("a", "b"))
+        validate(schema, object_)
+
+        with self.assertRaises(ValidationError) as mc:
+            object_ = dummy((1, 2))
+            validate(schema, object_)
+        show(mc)
+
     def test_validate(self) -> None:
         schema: object
         object_: object

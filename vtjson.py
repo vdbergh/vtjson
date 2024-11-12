@@ -1131,10 +1131,14 @@ def _compile(
             schema,
             _deferred_compiles=_deferred_compiles,
         )
-    elif origin == list:
-        ret = _List(typing.get_args(schema)[0], _deferred_compiles=_deferred_compiles)
     elif origin == tuple:
         ret = _Tuple(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
+    elif isinstance(origin, type) and issubclass(origin, Sequence):
+        ret = _List(
+            typing.get_args(schema)[0],
+            type_schema=origin,
+            _deferred_compiles=_deferred_compiles,
+        )
     elif origin == dict:
         ret = _Dict(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
     elif origin == Union:
@@ -1825,9 +1829,13 @@ class _sequence(compiled_schema):
     def __init__(
         self,
         schema: Sequence[object],
+        type_schema: type | None = None,
         _deferred_compiles: _mapping | None = None,
     ) -> None:
-        self.type_schema = type(schema)
+        if type_schema is None:
+            self.type_schema = type(schema)
+        else:
+            self.type_schema = type_schema
         self.schema = [
             _compile(o, _deferred_compiles=_deferred_compiles)
             for o in schema
@@ -2159,13 +2167,18 @@ class _Union(compiled_schema):
 
 class _List(compiled_schema):
     def __init__(
-        self, schema: object, _deferred_compiles: _mapping | None = None
+        self,
+        schema: object,
+        type_schema: type | None = None,
+        _deferred_compiles: _mapping | None = None,
     ) -> None:
         setattr(
             self,
             "__validate__",
             _sequence(
-                [schema, ...], _deferred_compiles=_deferred_compiles
+                [schema, ...],
+                type_schema=type_schema,
+                _deferred_compiles=_deferred_compiles,
             ).__validate__,
         )
 
