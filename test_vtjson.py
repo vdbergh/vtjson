@@ -1095,6 +1095,9 @@ class TestValidation(unittest.TestCase):
             def __len__(self) -> int:
                 return len(self.L)
 
+        class dummy_ex(dummy[T]):
+            pass
+
         schema: object
         object_: object
 
@@ -1104,6 +1107,13 @@ class TestValidation(unittest.TestCase):
 
         schema = dummy([1, 2])
         validate(schema, object_)
+
+        with self.assertRaises(ValidationError) as mc:
+            object_ = [1, 2]
+            validate(schema, object_)
+        show(mc)
+
+        validate(schema, dummy_ex([1, 2]))
 
         with self.assertRaises(ValidationError) as mc:
             object_ = dummy(["a", "b"])
@@ -1121,14 +1131,31 @@ class TestValidation(unittest.TestCase):
             validate(schema, object_)
         show(mc)
 
+        with self.assertRaises(ValidationError) as mc:
+            schema = dummy_ex((1, 2))
+            object_ = dummy((1, 2))
+            validate(schema, object_)
+        show(mc)
+        self.assertTrue("dummy_ex" in str(mc.exception))
+
         schema = dummy[str]
         object_ = dummy(("a", "b"))
+        validate(schema, object_)
+
+        object_ = dummy_ex(("a", "b"))
         validate(schema, object_)
 
         with self.assertRaises(ValidationError) as mc:
             object_ = dummy((1, 2))
             validate(schema, object_)
         show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
+            schema = dummy_ex[str]
+            object_ = dummy(("a", "b"))
+            validate(schema, object_)
+        show(mc)
+        self.assertTrue("dummy_ex" in str(mc.exception))
 
     def test_validate(self) -> None:
         schema: object
