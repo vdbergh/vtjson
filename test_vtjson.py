@@ -6,7 +6,18 @@ import sys
 import unittest
 from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
-from typing import Any, Dict, List, NamedTuple, NewType, Tuple, TypeVar, Union, overload
+from typing import (
+    Any,
+    Dict,
+    Generator,
+    List,
+    NamedTuple,
+    NewType,
+    Tuple,
+    TypeVar,
+    Union,
+    overload,
+)
 from urllib.parse import urlparse
 
 import vtjson
@@ -1153,6 +1164,90 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             schema = dummy_ex[str]
             object_ = dummy(("a", "b"))
+            validate(schema, object_)
+        show(mc)
+        self.assertTrue("dummy_ex" in str(mc.exception))
+
+    @unittest.skipUnless(
+        vtjson.supports_Generic_ABC,
+        "Generic base classes were introduced in Pythin 3.9",
+    )
+    def test_Mapping(self) -> None:
+
+        S = TypeVar("S")
+        T = TypeVar("T")
+
+        class dummy(Mapping[S, T]):
+            L: Mapping[S, T]
+
+            def __init__(self, L: Mapping[S, T] = {}) -> None:
+                self.L = L
+
+            def __getitem__(self, key: S) -> T:
+                return self.L[key]
+
+            def __iter__(self) -> Generator[S]:
+                for key in self.L:
+                    yield key
+
+            def __len__(self) -> int:
+                return len(self.L)
+
+        class dummy_ex(dummy[S, T]):
+            pass
+
+        schema: object
+        object_: object
+
+        schema = dummy({1: 2})
+        object_ = dummy({1: 2})
+        validate(schema, object_)
+
+        with self.assertRaises(ValidationError) as mc:
+            object_ = [1, 2]
+            validate(schema, object_)
+        show(mc)
+
+        validate(schema, dummy_ex({1: 2}))
+
+        with self.assertRaises(ValidationError) as mc:
+            object_ = dummy(["a", "b"])  # type: ignore
+            validate(schema, object_)
+        show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
+            object_ = dummy({1: "b"})
+            validate(schema, object_)
+        show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
+            schema = dummy({"a": int})
+            object_ = dummy({"a": "c"})
+            validate(schema, object_)
+        show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
+            schema = dummy_ex({1: 2})
+            object_ = dummy({1: 2})
+            validate(schema, object_)
+        show(mc)
+        self.assertTrue("dummy_ex" in str(mc.exception))
+
+        schema = dummy[str, str]
+        object_ = dummy({"a": "b"})
+        validate(schema, object_)
+
+        object_ = dummy_ex({"a": "b"})
+        validate(schema, object_)
+
+        with self.assertRaises(ValidationError) as mc:
+            object_ = dummy({1: 2})
+            validate(schema, object_)
+        show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
+            schema = dummy_ex[str, str]
+            object_ = dummy({"a": "b"})
             validate(schema, object_)
         show(mc)
         self.assertTrue("dummy_ex" in str(mc.exception))
