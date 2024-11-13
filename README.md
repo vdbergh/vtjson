@@ -148,11 +148,11 @@ A schema can be, in order of precedence:
 - A `set`. A set validates an object if the object is a set and the elements of the object are validated by an element of the schema.
 - An arbitrary Python object. Validation is done by checking equality of the schema and the object, except when the schema is `float`, in which case `math.isclose` is used. Below we call such an object a `const schema`.
 
-## Validating dictionaries
+## Validating Mapping
 
-For a dictionary schema containing only `const keys` (i.e. keys corresponding to a `const schema`) the interpretation is obvious (see the introductory example above). Below we discuss the validation of an object against a dictionary schema in the general case.
+For a Mapping schema containing only `const keys` (i.e. keys corresponding to a `const schema`) the interpretation is obvious (see the introductory example above). Below we discuss the validation of an object against a Mapping schema in the general case.
 
-- First we verify that the object is also a dictionary. If not then validation fails.
+- First we verify that the type of the object is a subtype of the type of the schema. If not then validation fails.
 - We verify that all non-optional const keys of the schema are also keys of the object. If this is not the case then validation fails.
 - Now we make a list of all the keys of the schema (both optional and non-optional). The result will be called the `key list` below.
 - The object will pass validation if all its keys pass validation. We next discuss how to validate a particular key of the object.
