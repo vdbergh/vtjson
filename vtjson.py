@@ -2261,11 +2261,18 @@ class _Container(compiled_schema):
         if not isinstance(object_, self.type_schema):
             return _wrong_type_message(object_, name, self.type_schema.__name__)
 
-        for i, o in enumerate(object_):
-            _name = f"{name}[{i}]"
-            message = self.schema.__validate__(o, name=_name, strict=strict, subs=subs)
-            if message != "":
-                return message
+        try:
+            for i, o in enumerate(object_):
+                _name = f"{name}[{i}]"
+                message = self.schema.__validate__(
+                    o, name=_name, strict=strict, subs=subs
+                )
+                if message != "":
+                    return message
+        except Exception as e:
+            return _wrong_type_message(
+                object_, name, self.type_schema.__name__, explanation=str(e)
+            )
 
         return ""
 
