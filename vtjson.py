@@ -10,7 +10,7 @@ import types
 import typing
 import urllib.parse
 import warnings
-from collections.abc import Sequence, Sized
+from collections.abc import Sequence, Set, Sized
 from dataclasses import dataclass
 from typing import Any, Callable, Mapping, Type, TypeVar, Union, cast
 
@@ -1169,7 +1169,7 @@ def _compile(
         ret = _sequence(schema, _deferred_compiles=_deferred_compiles)
     elif isinstance(schema, Mapping):
         ret = _dict(schema, _deferred_compiles=_deferred_compiles)
-    elif isinstance(schema, set):
+    elif isinstance(schema, Set):
         ret = _set(schema, _deferred_compiles=_deferred_compiles)
     else:
         ret = _const(schema)
@@ -2060,10 +2060,10 @@ class _dict(compiled_schema):
 
 class _set(compiled_schema):
     schema: compiled_schema
-    schema_: set[object]
+    schema_: Set[object]
 
     def __init__(
-        self, schema: set[object], _deferred_compiles: _mapping | None = None
+        self, schema: Set[object], _deferred_compiles: _mapping | None = None
     ) -> None:
         self.schema_ = schema
         if len(schema) == 0:
