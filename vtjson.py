@@ -1141,6 +1141,12 @@ def _compile(
         )
     elif origin == tuple:
         ret = _Tuple(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
+    elif isinstance(origin, type) and issubclass(origin, Mapping):
+        ret = _Mapping(
+            typing.get_args(schema),
+            type_schema=origin,
+            _deferred_compiles=_deferred_compiles,
+        )
     elif isinstance(origin, type) and issubclass(origin, Sequence):
         ret = _List(
             typing.get_args(schema)[0],
@@ -1150,12 +1156,6 @@ def _compile(
     elif isinstance(origin, type) and issubclass(origin, Set):
         ret = _Set(
             typing.get_args(schema)[0],
-            type_schema=origin,
-            _deferred_compiles=_deferred_compiles,
-        )
-    elif isinstance(origin, type) and issubclass(origin, Mapping):
-        ret = _Dict(
-            typing.get_args(schema),
             type_schema=origin,
             _deferred_compiles=_deferred_compiles,
         )
@@ -2246,21 +2246,45 @@ class _Tuple(compiled_schema):
         )
 
 
-class _Dict(compiled_schema):
+class _Mapping(compiled_schema):
+    type_schema: Type[Mapping[object, object]]
+    key: compiled_schema
+    value: compiled_schema
+
     def __init__(
         self,
         schema: tuple[object, ...],
-        type_schema: type | None = None,
+        type_schema: type,
         _deferred_compiles: _mapping | None = None,
     ) -> None:
+        if len(schema) != 2:
+            raise SchemaError("Number of arguments of mapping is not two")
         k, v = schema
-        setattr(
-            self,
-            "__validate__",
-            _dict(
-                {k: v}, type_schema=type_schema, _deferred_compiles=_deferred_compiles
-            ).__validate__,
-        )
+        self.key = _compile(k, _deferred_compiles=_deferred_compiles)
+        self.value = _compile(v, _deferred_compiles=_deferred_compiles)
+        self.type_schema = type_schema
+
+    def __validate__(
+        self,
+        object_: object,
+        name: str = "object",
+        strict: bool = True,
+        subs: Mapping[str, object] = {},
+    ) -> str:
+
+        if not isinstance(object_, self.type_schema):
+            return _wrong_type_message(object_, name, self.type_schema.__name__)
+
+        for k, v in object_.items():
+            _name = f"{name}[{repr(k)}]"
+            message = self.key.__validate__(k, name=str(k), strict=strict, subs=subs)
+            if message != "":
+                return f"{_name} is not in the schema"
+            message = self.value.__validate__(v, name=_name, strict=strict, subs=subs)
+            if message != "":
+                return message
+
+        return ""
 
 
 class _NewType(compiled_schema):
