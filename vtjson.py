@@ -1841,13 +1841,10 @@ class _sequence(compiled_schema):
     def __init__(
         self,
         schema: Sequence[object],
-        type_schema: type | None = None,
+        #        type_schema: type | None = None,
         _deferred_compiles: _mapping | None = None,
     ) -> None:
-        if type_schema is None:
-            self.type_schema = type(schema)
-        else:
-            self.type_schema = type_schema
+        self.type_schema = type(schema)
         self.schema = [
             _compile(o, _deferred_compiles=_deferred_compiles)
             for o in schema
