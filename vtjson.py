@@ -1148,7 +1148,7 @@ def _compile(
             _deferred_compiles=_deferred_compiles,
         )
     elif isinstance(origin, type) and issubclass(origin, Container):
-        ret = _Generic(
+        ret = _Container(
             typing.get_args(schema),
             type_schema=origin,
             _deferred_compiles=_deferred_compiles,
@@ -1977,13 +1977,9 @@ class _dict(compiled_schema):
     def __init__(
         self,
         schema: Mapping[object, object],
-        type_schema: type | None = None,
         _deferred_compiles: _mapping | None = None,
     ) -> None:
-        if type_schema is None:
-            self.type_schema = type(schema)
-        else:
-            self.type_schema = type_schema
+        self.type_schema = type(schema)
         self.min_keys = set()
         self.const_keys = set()
         self.other_keys = set()
@@ -2063,13 +2059,9 @@ class _set(compiled_schema):
     def __init__(
         self,
         schema: Set[object],
-        type_schema: type | None = None,
         _deferred_compiles: _mapping | None = None,
     ) -> None:
-        if type_schema is None:
-            self.type_schema = type(schema)
-        else:
-            self.type_schema = type_schema
+        self.type_schema = type(schema)
         self.schema_ = schema
         if len(schema) == 0:
             setattr(self, "__validate__", self.__validate_empty_set__)
@@ -2242,7 +2234,7 @@ class _Mapping(compiled_schema):
         return ""
 
 
-class _Generic(compiled_schema):
+class _Container(compiled_schema):
     type_schema: Type[Mapping[object, object]]
     schema: compiled_schema
     value: compiled_schema
