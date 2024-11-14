@@ -12,7 +12,7 @@ import urllib.parse
 import warnings
 from collections.abc import Sequence, Set, Sized
 from dataclasses import dataclass
-from typing import Any, Callable, Mapping, Type, TypeVar, Union, cast
+from typing import Any, Callable, Container, Mapping, Type, TypeVar, Union, cast
 
 try:
     from typing import Literal
@@ -1147,15 +1147,9 @@ def _compile(
             type_schema=origin,
             _deferred_compiles=_deferred_compiles,
         )
-    elif isinstance(origin, type) and issubclass(origin, Sequence):
-        ret = _List(
-            typing.get_args(schema)[0],
-            type_schema=origin,
-            _deferred_compiles=_deferred_compiles,
-        )
-    elif isinstance(origin, type) and issubclass(origin, Set):
-        ret = _Set(
-            typing.get_args(schema)[0],
+    elif isinstance(origin, type) and issubclass(origin, Container):
+        ret = _Generic(
+            typing.get_args(schema),
             type_schema=origin,
             _deferred_compiles=_deferred_compiles,
         )
@@ -2199,42 +2193,6 @@ class _Union(compiled_schema):
         )
 
 
-class _List(compiled_schema):
-    def __init__(
-        self,
-        schema: object,
-        type_schema: type | None = None,
-        _deferred_compiles: _mapping | None = None,
-    ) -> None:
-        setattr(
-            self,
-            "__validate__",
-            _sequence(
-                [schema, ...],
-                type_schema=type_schema,
-                _deferred_compiles=_deferred_compiles,
-            ).__validate__,
-        )
-
-
-class _Set(compiled_schema):
-    def __init__(
-        self,
-        schema: object,
-        type_schema: type | None = None,
-        _deferred_compiles: _mapping | None = None,
-    ) -> None:
-        setattr(
-            self,
-            "__validate__",
-            _set(
-                {schema},
-                type_schema=type_schema,
-                _deferred_compiles=_deferred_compiles,
-            ).__validate__,
-        )
-
-
 class _Tuple(compiled_schema):
     def __init__(
         self, schema: tuple[object, ...], _deferred_compiles: _mapping | None = None
@@ -2281,6 +2239,42 @@ class _Mapping(compiled_schema):
             if message != "":
                 return f"{_name} is not in the schema"
             message = self.value.__validate__(v, name=_name, strict=strict, subs=subs)
+            if message != "":
+                return message
+
+        return ""
+
+
+class _Generic(compiled_schema):
+    type_schema: Type[Mapping[object, object]]
+    schema: compiled_schema
+    value: compiled_schema
+
+    def __init__(
+        self,
+        schema: tuple[object, ...],
+        type_schema: type,
+        _deferred_compiles: _mapping | None = None,
+    ) -> None:
+        if len(schema) != 1:
+            raise SchemaError("Number of arguments of Generic type is not one")
+        self.schema = _compile(schema[0], _deferred_compiles=_deferred_compiles)
+        self.type_schema = type_schema
+
+    def __validate__(
+        self,
+        object_: object,
+        name: str = "object",
+        strict: bool = True,
+        subs: Mapping[str, object] = {},
+    ) -> str:
+
+        if not isinstance(object_, self.type_schema):
+            return _wrong_type_message(object_, name, self.type_schema.__name__)
+
+        for i, o in enumerate(object_):
+            _name = f"{name}[{i}]"
+            message = self.schema.__validate__(o, name=_name, strict=strict, subs=subs)
             if message != "":
                 return message
 
