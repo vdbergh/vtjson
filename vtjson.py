@@ -2081,7 +2081,6 @@ class _set(compiled_schema):
             self.type_schema = type_schema
         self.schema_ = schema
         if len(schema) == 0:
-            self.schema = _const(set())
             setattr(self, "__validate__", self.__validate_empty_set__)
         elif len(schema) == 1:
             self.schema = _compile(
@@ -2098,7 +2097,11 @@ class _set(compiled_schema):
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        return self.schema.__validate__(object_, name=name, strict=True, subs=subs)
+        if not isinstance(object_, self.type_schema):
+            return _wrong_type_message(object_, name, self.type_schema.__name__)
+        if len(object_) != 0:
+            return f"{name} (value:{_c(object_)}) is not empty"
+        return ""
 
     def __validate_singleton__(
         self,
@@ -2108,7 +2111,7 @@ class _set(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(object_, set):
-            return _wrong_type_message(object_, name, "set")
+            return _wrong_type_message(object_, name, self.type_schema.__name__)
         for i, o in enumerate(object_):
             name_ = f"{name}{{{i}}}"
             v = self.schema.__validate__(o, name=name_, strict=True, subs=subs)
