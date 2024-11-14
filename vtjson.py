@@ -1147,6 +1147,12 @@ def _compile(
             type_schema=origin,
             _deferred_compiles=_deferred_compiles,
         )
+    elif isinstance(origin, type) and issubclass(origin, Set):
+        ret = _Set(
+            typing.get_args(schema)[0],
+            type_schema=origin,
+            _deferred_compiles=_deferred_compiles,
+        )
     elif isinstance(origin, type) and issubclass(origin, Mapping):
         ret = _Dict(
             typing.get_args(schema),
@@ -2059,12 +2065,20 @@ class _dict(compiled_schema):
 
 
 class _set(compiled_schema):
+    type_schema: Type[Set[object]]
     schema: compiled_schema
     schema_: Set[object]
 
     def __init__(
-        self, schema: Set[object], _deferred_compiles: _mapping | None = None
+        self,
+        schema: Set[object],
+        type_schema: type | None = None,
+        _deferred_compiles: _mapping | None = None,
     ) -> None:
+        if type_schema is None:
+            self.type_schema = type(schema)
+        else:
+            self.type_schema = type_schema
         self.schema_ = schema
         if len(schema) == 0:
             self.schema = _const(set())
@@ -2109,8 +2123,8 @@ class _set(compiled_schema):
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, set):
-            return _wrong_type_message(object_, name, "set")
+        if not isinstance(object_, self.type_schema):
+            return _wrong_type_message(object_, name, self.type_schema.__name__)
         for i, o in enumerate(object_):
             name_ = f"{name}{{{i}}}"
             v = self.schema.__validate__(o, name=name_, strict=True, subs=subs)
@@ -2194,6 +2208,24 @@ class _List(compiled_schema):
             "__validate__",
             _sequence(
                 [schema, ...],
+                type_schema=type_schema,
+                _deferred_compiles=_deferred_compiles,
+            ).__validate__,
+        )
+
+
+class _Set(compiled_schema):
+    def __init__(
+        self,
+        schema: object,
+        type_schema: type | None = None,
+        _deferred_compiles: _mapping | None = None,
+    ) -> None:
+        setattr(
+            self,
+            "__validate__",
+            _set(
+                {schema},
                 type_schema=type_schema,
                 _deferred_compiles=_deferred_compiles,
             ).__validate__,
