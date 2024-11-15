@@ -2237,7 +2237,6 @@ class _Mapping(compiled_schema):
 class _Container(compiled_schema):
     type_schema: Type[Mapping[object, object]]
     schema: compiled_schema
-    value: compiled_schema
 
     def __init__(
         self,
