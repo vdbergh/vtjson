@@ -1084,6 +1084,14 @@ class TestValidation(unittest.TestCase):
         "Generic base classes were introduced in Pythin 3.9",
     )
     def test_Container(self) -> None:
+        schema: object
+        object_: object
+
+        schema = Container[Container[int]]
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, [[1, 2], 3])
+        show(mc)
+        validate(schema, [[1, 2], [3, 4]])
 
         T = TypeVar("T")
 
@@ -1129,9 +1137,6 @@ class TestValidation(unittest.TestCase):
 
         class dummy_ex(dummy[T]):
             pass
-
-        schema: object
-        object_: object
 
         object_ = dummy((1, 2))
         schema = dummy((1, 2))
