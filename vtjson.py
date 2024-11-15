@@ -153,6 +153,16 @@ skip_first = Apply(skip_first=True)
 _dns_resolver: dns.resolver.Resolver | None = None
 
 
+def _generic_name(origin: type, args: tuple[object, ...]) -> str:
+    def to_name(c: object) -> str:
+        if hasattr(c, "__name__"):
+            return str(c.__name__)
+        else:
+            return str(c)
+
+    return to_name(origin) + "[" + ",".join([to_name(arg) for arg in args]) + "]"
+
+
 def _get_type_hints(schema: object) -> dict[str, object]:
     if not supports_structural:
         raise SchemaError(
@@ -2197,6 +2207,7 @@ class _Mapping(compiled_schema):
     type_schema: Type[Mapping[object, object]]
     key: compiled_schema
     value: compiled_schema
+    __name__: str
 
     def __init__(
         self,
@@ -2210,6 +2221,7 @@ class _Mapping(compiled_schema):
         self.key = _compile(k, _deferred_compiles=_deferred_compiles)
         self.value = _compile(v, _deferred_compiles=_deferred_compiles)
         self.type_schema = type_schema
+        self.__name__ = _generic_name(type_schema, schema)
 
     def __validate__(
         self,
@@ -2220,7 +2232,7 @@ class _Mapping(compiled_schema):
     ) -> str:
 
         if not isinstance(object_, self.type_schema):
-            return _wrong_type_message(object_, name, self.type_schema.__name__)
+            return _wrong_type_message(object_, name, self.__name__)
 
         for k, v in object_.items():
             _name = f"{name}[{repr(k)}]"
@@ -2237,6 +2249,7 @@ class _Mapping(compiled_schema):
 class _Container(compiled_schema):
     type_schema: Type[Mapping[object, object]]
     schema: compiled_schema
+    __name__: str
 
     def __init__(
         self,
@@ -2248,6 +2261,7 @@ class _Container(compiled_schema):
             raise SchemaError("Number of arguments of Generic type is not one")
         self.schema = _compile(schema[0], _deferred_compiles=_deferred_compiles)
         self.type_schema = type_schema
+        self.__name__ = _generic_name(type_schema, schema)
 
     def __validate__(
         self,
@@ -2269,9 +2283,7 @@ class _Container(compiled_schema):
                 if message != "":
                     return message
         except Exception as e:
-            return _wrong_type_message(
-                object_, name, self.type_schema.__name__, explanation=str(e)
-            )
+            return _wrong_type_message(object_, name, self.__name__, explanation=str(e))
 
         return ""
 

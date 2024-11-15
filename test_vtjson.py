@@ -8,6 +8,7 @@ from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
 from typing import (
     Any,
+    Container,
     Dict,
     Generator,
     List,
@@ -1082,9 +1083,29 @@ class TestValidation(unittest.TestCase):
         vtjson.supports_Generic_ABC,
         "Generic base classes were introduced in Pythin 3.9",
     )
-    def test_Sequence(self) -> None:
+    def test_Container(self) -> None:
 
         T = TypeVar("T")
+
+        class dumb(Container):  # type: ignore
+            def __contains__(a):  # type: ignore
+                return True
+
+            def __str__(b):  # type: ignore
+                return "dumb Container"
+
+        with self.assertRaises(ValidationError) as mc:
+            validate(Container[str], dumb())
+        show(mc)
+
+        if vtjson.supports_UnionType:
+            with self.assertRaises(ValidationError) as mc:
+                validate(Container[int | str], dumb())
+            show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
+            validate(Container[Union[int, str]], dumb())
+        show(mc)
 
         class dummy(Sequence[T]):
             L: Sequence[T]
@@ -1974,6 +1995,11 @@ class TestValidation(unittest.TestCase):
         "Parametrized types were introduced in Python 3.9",
     )
     def test_generic_list(self) -> None:
+        schema: object
+        with self.assertRaises(SchemaError) as mc_:
+            schema = list[str, str]  # type: ignore
+            validate(schema, "")
+        show(mc_)
         schema = list[str]
         validate(schema, ["a", "b"])
         with self.assertRaises(ValidationError) as mc:
