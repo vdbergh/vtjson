@@ -1,4 +1,4 @@
-personal_ws-1.1 en 27 
+personal_ws-1.1 en 28 
 Fishtest
 IDNA
 JSON
@@ -22,6 +22,7 @@ mypy
 pre
 schemas
 str
+subtypes
 typeguard
 tzinfo
 utc

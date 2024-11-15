@@ -169,11 +169,12 @@ A consequence of this algorithm is that non-const keys are automatically optiona
 `vtjson` recognizes the following type hints as schemas.
 
 ```python
-Annotated, dict[...], Dict[...], list[...], List[...], tuple[...], Tuple[...],
-Protocol, NamedTuple, Literal, NewType, TypedDict, Union (or the equivalent operator |).
+Annotated, Mapping[...,...] and subtypes, Container[...] and subtypes,
+tuple[...], Tuple[...], Protocol, NamedTuple, Literal, NewType, TypedDict,
+Union (or the equivalent operator |), Any.
 ```
 
-For example `dict[str, str]` is translated internally into the schema `{str: str}`. See below for more information.
+For example `Mapping[str, str]` is translated internally into the schema `{str: str}`. See below for more information.
 
 ### Annotated
 
@@ -250,15 +251,17 @@ Note that Python imposes strong restrictions on what constitutes a valid type hi
 
 - `NewType` is translated into a `set_name` schema. E.g. `NewType('Movie', str)` becomes `set_name(str, 'Movie')`
 
-- `dict[...]` and `Dict[...]` are translated into the equivalent `dict` schemas. E.g. `dict[str, str]`  becomes `{str: str}`.
-
 - `tuple[...]` and `Tuple[...]` are translated into the equivalent `tuple` schemas.
 
-- `list[...]` and `List[...]` are translated into the equivalent `list` schemas.
+- `Mapping[..., ...]` and subtypes are translated into the equivalent `dict` schemas combined with a membership check of the origin type. E.g. `dict[str, str]`  becomes `{str: str}`.
+
+- `Container[str]` and subtypes are translated into the equivalent `list` schema combined with a membership check of the origin type.
 
 - `Union` and the `|` operator are translated into `union`.
 
 - `Literal` is also translated into `union`.
+
+- `Any` is translated into `anything`.
 
 ### Apply objects
 
