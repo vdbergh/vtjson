@@ -174,7 +174,7 @@ tuple[...], Tuple[...], Protocol, NamedTuple, Literal, NewType, TypedDict,
 Union (or the equivalent operator |), Any.
 ```
 
-For example `Mapping[str, str]` is translated internally into the schema `{str: str}`. See below for more information.
+For example `dict[str, str]` is translated internally into the schema `{str: str}`. See below for more information.
 
 ### Annotated
 
