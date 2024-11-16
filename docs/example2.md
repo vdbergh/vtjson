@@ -10,7 +10,6 @@ from typing import Annotated, Literal, NotRequired, TypedDict
 from bson.objectid import ObjectId
 
 from vtjson import (
-    Apply,
     at_most_one_of,
     div,
     fields,
