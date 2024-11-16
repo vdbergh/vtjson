@@ -4,14 +4,14 @@ A lightweight package for validating JSON like Python objects.
 
 ## Schemas
 
-Validation of JSON like Python objects is done according to a `schema` which is somewhat inspired by a typescript type. The format of a schema is more or less self explanatory. As an [example](https://raw.githubusercontent.com/vdbergh/vtjson/refs/heads/main/docs/example1.md) one may consult the schema of the run object in the mongodb database underlying the Fishtest web application <https://tests.stockfishchess.org/tests>.
+Validation of JSON like Python objects is done according to a `schema` which is somewhat inspired by a typescript type. The format of a schema is more or less self explanatory. As an example  one may consult the [schema of the run object](https://raw.githubusercontent.com/vdbergh/vtjson/refs/heads/main/docs/example1.md) in the mongodb database underlying the Fishtest web application <https://tests.stockfishchess.org/tests>.
 
 The following conventions are used:
 
 - As in typescript, a (string) key ending in `?` represents an optional key. The corresponding schema (the item the key points to) will only be used for validation when the key is present in the object that should be validated. A key can also be made optional by wrapping it as `optional_key(key)`.
 - If in a list/tuple the last entry is `...` (ellipsis) it means that the next to last entry will be repeated zero or more times. In this way generic types can be created. For example the schema `[str, ...]` represents a list of strings.
 
-As of version 2.1, a suitable adapted `vtjson` schema can be used as a Python type annotation. Here is the above [example](https://raw.githubusercontent.com/vdbergh/vtjson/refs/heads/main/docs/example2.md) rewritten in a way that is compatible with type annotations. E.g. if one wants to ensure that a run object obtained via an api has the correct type one can do
+As of version 2.1, a suitable adapted `vtjson` schema can be used as a Python type annotation. Here is the above example rewritten in a way that is [compatible with type annotations](https://raw.githubusercontent.com/vdbergh/vtjson/refs/heads/main/docs/example2.md). E.g. if one wants to ensure that a run object obtained via an api has the correct type one can do
 
 ```python
 from typing import assert_type
@@ -253,9 +253,9 @@ Note that Python imposes strong restrictions on what constitutes a valid type an
 
 - `tuple[...]` and `Tuple[...]` are translated into the equivalent `tuple` schemas.
 
-- `Mapping[..., ...]` and subtypes are translated into the equivalent `dict` schemas combined with a membership check of the origin type. E.g. `dict[str, str]`  becomes `{str: str}`.
+- `Mapping[S, T]` and subtypes validate those objects that are members of the origin type (a subclass of `Mapping`) and whose (key, value) pairs match `(S, T)`.
 
-- `Container[str]` and subtypes are translated into the equivalent `list` schema combined with a membership check of the origin type.
+- `Container[T]` and subtypes validate those objects that are members of the origin type (a subclass of `Container`) and whose elements match `T`.
 
 - `Union` and the `|` operator are translated into `union`.
 
