@@ -11,7 +11,7 @@ The following conventions are used:
 - As in typescript, a (string) key ending in `?` represents an optional key. The corresponding schema (the item the key points to) will only be used for validation when the key is present in the object that should be validated. A key can also be made optional by wrapping it as `optional_key(key)`.
 - If in a list/tuple the last entry is `...` (ellipsis) it means that the next to last entry will be repeated zero or more times. In this way generic types can be created. For example the schema `[str, ...]` represents a list of strings.
 
-As of version 2.1, a suitable adapted `vtjson` schema can be used as a Python type hint. Here is the above [example](https://raw.githubusercontent.com/vdbergh/vtjson/refs/heads/main/docs/example2.md) rewritten in a way that is compatible with type hints. E.g. if one wants to ensure that a run object obtained via an api has the correct type one can do
+As of version 2.1, a suitable adapted `vtjson` schema can be used as a Python type annotation. Here is the above [example](https://raw.githubusercontent.com/vdbergh/vtjson/refs/heads/main/docs/example2.md) rewritten in a way that is compatible with type annotations. E.g. if one wants to ensure that a run object obtained via an api has the correct type one can do
 
 ```python
 from typing import assert_type
@@ -140,7 +140,7 @@ A schema can be, in order of precedence:
   ```
 
   where the optional argument `_deferred_compiles`  is an opaque data structure used for handling recursive schemas. If appropriate, the function `_compile` internally invokes the method `schema.__compile__` and this should produce an instance of the class `compiled_schema`. The method `__compile__` may invoke the function `_compile` again. If this happens then the optional argument `_deferred_compiles` should be passed unmodified. Please consult the source code of `vtjson` for more details.
-- A Python type hint such as `list[str]`. This is discussed further below.
+- A Python type annotation such as `list[str]`. This is discussed further below.
 - A Python type. In that case validation is done by checking membership. By convention the schema `float` matches both ints and floats. Similarly the schema `complex` matches ints and floats besides of course complex numbers.
 - A callable. Validation is done by applying the callable to the object. If applying the callable throws an exception then the corresponding message will be part of the non-validation message.
 - An instance of `Sequence` that is not an instance of `str` (e.g a `list` or a `tuple`). Validation is done by first checking membership of the schema type, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
@@ -162,11 +162,11 @@ For a Mapping schema containing only `const keys` (i.e. keys corresponding to a 
 
 A consequence of this algorithm is that non-const keys are automatically optional. So applying the wrapper `optional_key` to them is meaningless and has no effect.
 
-## Type hints integration
+## Type annotations integration
 
-### Type hints as schemas
+### Type annotations as schemas
 
-`vtjson` recognizes the following type hints as schemas.
+`vtjson` recognizes the following type annotations as schemas.
 
 ```python
 Annotated, Mapping[...,...] and subtypes, Container[...] and subtypes,
@@ -178,10 +178,10 @@ For example `Mapping[str, str]` is translated internally into the schema `{str: 
 
 ### Annotated
 
-- More general vtjson schemas can work along Python type hints by using the `typing.Annotated` contruct. The most naive way to do this is via
+- More general vtjson schemas can work along Python type annotations by using the `typing.Annotated` contruct. The most naive way to do this is via
 
   ```python
-  Annotated[type_hint, vtjson_schema, skip_first]
+  Annotated[type_annotation, vtjson_schema, skip_first]
   ```
 
   For example
@@ -190,8 +190,8 @@ For example `Mapping[str, str]` is translated internally into the schema `{str: 
   Annotated[list[object], [int, str, float], skip_first]
   ```
 
-  A type checker such as `mypy` will only see the type hint (`list[object]` in the example), whereas vtjson will only see the vtjson schema (`[int, str, float]` in the example). `skip_first` is a built-in short hand for `Apply(skip_first=True)` (see below) which directs vtjson to ignore the first argument of an `Annotated` schema.
-- In some use cases a vtjon_schema will meaningfully refine a Python type or type hint. In that case one should not use `skip_first`. For example:
+  A type checker such as `mypy` will only see the type annotation (`list[object]` in the example), whereas vtjson will only see the vtjson schema (`[int, str, float]` in the example). `skip_first` is a built-in short hand for `Apply(skip_first=True)` (see below) which directs vtjson to ignore the first argument of an `Annotated` schema.
+- In some use cases a vtjon_schema will meaningfully refine a Python type or type annotation. In that case one should not use `skip_first`. For example:
 
   ```python
   Annotated[datetime, fields({"tzinfo": timezone.utc})]
@@ -206,18 +206,18 @@ For example `Mapping[str, str]` is translated internally into the schema `{str: 
   ```
 
   matches even integers.
-- If one wants to pre-compile a schema and still use it as a type hint (assuming it is valid as such) then one can do:
+- If one wants to pre-compile a schema and still use it as a type annotation (assuming it is valid as such) then one can do:
 
   ```python
   schema = <schema definition>
   Schema = Annotated[schema, compile(schema), skip_first]
   ```
 
-### Supported type hints
+### Supported type annotations
 
-Note that Python imposes strong restrictions on what constitutes a valid type hint but `vtjson` is much more lax about this. Enforcing the restrictions is left to the type checkers or the Python interpreter.
+Note that Python imposes strong restrictions on what constitutes a valid type annotation but `vtjson` is much more lax about this. Enforcing the restrictions is left to the type checkers or the Python interpreter.
 
-- `TypedDict`. A TypedDict type hint is translated into a `dict` schema. E.g.
+- `TypedDict`. A TypedDict type annotation is translated into a `dict` schema. E.g.
 
   ```python
   class Movie(TypedDict):
@@ -289,7 +289,7 @@ Vtjson includes the command
 safe_cast(schema, object)
 ```
 
-(where `schema` should be a valid type hint) that functions exactly like `cast` except that it also verifies at run time that the given object matches the given schema.
+(where `schema` should be a valid type annotation) that functions exactly like `cast` except that it also verifies at run time that the given object matches the given schema.
 
 ## Creating types
 
