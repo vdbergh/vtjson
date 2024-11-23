@@ -11,17 +11,16 @@ The following conventions are used:
 - As in typescript, a (string) key ending in `?` represents an optional key. The corresponding schema (the item the key points to) will only be used for validation when the key is present in the object that should be validated. A key can also be made optional by wrapping it as `optional_key(key)`.
 - If in a list/tuple the last entry is `...` (ellipsis) it means that the next to last entry will be repeated zero or more times. In this way generic types can be created. For example the schema `[str, ...]` represents a list of strings.
 
-As of version 2.1, a suitable adapted `vtjson` schema can be used as a Python type annotation. Here is the above example rewritten in a way that is [compatible with type annotations](https://raw.githubusercontent.com/vdbergh/vtjson/refs/heads/main/docs/example2.md). E.g. if one wants to ensure that a run object obtained via an api has the correct type one can do
+As of version 2.1, a suitable written `vtjson` schema can be used as a Python type annotation. As an illustration, [here](https://raw.githubusercontent.com/vdbergh/vtjson/refs/heads/main/docs/example2.md) is the above example rewritten in a way that is compatible with type annotations. E.g. if one wants to ensure that a run object obtained via an api has the correct type one can do
 
 ```python
 from typing import assert_type
 
-def f(run_from_api: object, ...) -> ...:
-    run = safe_cast(runs_schema, run_from_api)
-    assert_type(run, runs_schema)   # Confirm that run has indeed the correct type now
+run = safe_cast(runs_schema, run_from_api)
+assert_type(run, runs_schema)   # Confirm that run has indeed the correct type now
 ```
 
-If the cast succeeds then it means that the `run_from_api` object has been validated against the `runs_schema` and its type has been changed accordingly.
+If the safe cast does not throw a `ValidationError` then it means that the `run_from_api` object has been validated against the `runs_schema` and its Python type, as inferred by type checkers such as `mypy`, has been changed accordingly.
 
 ## Usage
 
