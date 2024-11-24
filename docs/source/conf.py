@@ -9,7 +9,7 @@
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-
+add_module_names = False
 
 project = 'Vtjson'
 copyright = '2024, Michel Van den Bergh'

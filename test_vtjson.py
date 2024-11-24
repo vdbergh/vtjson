@@ -370,7 +370,7 @@ class TestValidation(unittest.TestCase):
         schema: object
         with self.assertRaises(SchemaError) as mc_:
             schema = close_to
-            validate(schema, 1.0)
+            compile(schema)
         show(mc_)
         with self.assertRaises(SchemaError) as mc_:
             schema = close_to({})  # type: ignore
@@ -1359,8 +1359,7 @@ class TestValidation(unittest.TestCase):
 
         with self.assertRaises(SchemaError) as cm_:
             schema = regex
-            object_ = "a"
-            validate(schema, object_)
+            compile(schema)
         show(cm_)
 
         ip_address = regex(r"(?:[\d]+\.){3}(?:[\d]+)", name="ip_address")
@@ -1422,32 +1421,22 @@ class TestValidation(unittest.TestCase):
         object_: object
         with self.assertRaises(SchemaError) as mc_:
             schema = size("a", "b")  # type: ignore
-            object_ = "a"
-            validate(schema, object_)
         show(mc_)
 
         with self.assertRaises(SchemaError) as mc_:
             schema = size(-1, 0)
-            object_ = "a"
-            validate(schema, object_)
         show(mc_)
 
         with self.assertRaises(SchemaError) as mc_:
             schema = size(1, 0)
-            object_ = "a"
-            validate(schema, object_)
         show(mc_)
 
         with self.assertRaises(SchemaError) as mc_:
             schema = size(..., 1)  # type: ignore
-            object_ = "a"
-            validate(schema, object_)
         show(mc_)
 
         with self.assertRaises(SchemaError) as mc_:
             schema = size(1, "10")  # type: ignore
-            object_ = "a"
-            validate(schema, object_)
         show(mc_)
 
         schema = size(1, 2)
@@ -1501,8 +1490,7 @@ class TestValidation(unittest.TestCase):
         object_: object
         with self.assertRaises(SchemaError) as mc_:
             schema = gt
-            object_ = "a"
-            validate(schema, object_)
+            compile(schema)
         show(mc_)
 
         with self.assertRaises(ValidationError) as mc:
@@ -1525,8 +1513,7 @@ class TestValidation(unittest.TestCase):
         object_: object
         with self.assertRaises(SchemaError) as mc_:
             schema = ge
-            object_ = "a"
-            validate(schema, object_)
+            compile(schema)
         show(mc_)
 
         with self.assertRaises(ValidationError) as mc:
@@ -1549,8 +1536,7 @@ class TestValidation(unittest.TestCase):
         object_: object
         with self.assertRaises(SchemaError) as mc_:
             schema = lt
-            object_ = "a"
-            validate(schema, object_)
+            compile(schema)
         show(mc_)
 
         with self.assertRaises(ValidationError) as mc:
@@ -1573,8 +1559,7 @@ class TestValidation(unittest.TestCase):
         object_: object
         with self.assertRaises(SchemaError) as mc_:
             schema = le
-            object_ = "a"
-            validate(schema, object_)
+            compile(schema)
         show(mc_)
 
         with self.assertRaises(ValidationError) as mc:
@@ -1597,8 +1582,7 @@ class TestValidation(unittest.TestCase):
         object_: object
         with self.assertRaises(SchemaError) as mc_:
             schema = interval
-            object_ = "a"
-            validate(schema, object_)
+            compile(schema)
         show(mc_)
 
         with self.assertRaises(ValidationError) as mc:
@@ -2003,7 +1987,7 @@ class TestValidation(unittest.TestCase):
         schema: object
         with self.assertRaises(SchemaError) as mc_:
             schema = list[str, str]  # type: ignore
-            validate(schema, "")
+            compile(schema)
         show(mc_)
         schema = list[str]
         validate(schema, ["a", "b"])

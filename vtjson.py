@@ -84,6 +84,8 @@ def safe_cast(t: Type[T], obj: Any) -> T:
 
 
 class compiled_schema:
+    """The result of compiling a schema."""
+
     def __validate__(
         self,
         obj: object,
@@ -91,6 +93,17 @@ class compiled_schema:
         strict: bool,
         subs: Mapping[str, object],
     ) -> str:
+        """
+        Validates the given object against the given schema.
+
+        :param schema: the given schema
+        :param obj: the object to be validated
+        :param name: common name for the object to be validated; used in non-validation messages
+        :param strict: indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema
+        :param subs: a dictionary whose keys are labels and whose values are substitution schemas for schemas with those labels
+        :return: an empty string if validation succeeds; otherwise an explanation about what went wrong
+        """
+
         return ""
 
 
@@ -114,10 +127,18 @@ except Exception:
 
 
 class ValidationError(Exception):
+    """
+    Raised if validation fails. The associated message explains what went wrong.
+    """
+
     pass
 
 
 class SchemaError(Exception):
+    """
+    Raised if a schema contains an error.
+    """
+
     pass
 
 
@@ -1214,8 +1235,8 @@ def validate(
 
     :param schema: the given schema
     :param obj: the object to be validated
-    :param name: common name for the object to be validated
-    :param strict: indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
+    :param name: common name for the object to be validated; used in non-validation messages
+    :param strict: indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema
     :param subs: a dictionary whose keys are labels and whose values are substitution schemas for schemas with those labels
     :raises ValidationError: exception thrown when the object does not validate; the exception message contains an explanation about what went wrong
     :raises SchemaError: exception thrown when the schema definition is found to contain an error
@@ -1273,9 +1294,7 @@ class email(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, str):
-            return _wrong_type_message(
-                obj, name, "email", f"{_c(obj)} is not a string"
-            )
+            return _wrong_type_message(obj, name, "email", f"{_c(obj)} is not a string")
         try:
             email_validator.validate_email(obj, **self.kw)
             return ""
@@ -1601,10 +1620,7 @@ class _ifthen(compiled_schema):
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if (
-            self.if_schema.__validate__(obj, name=name, strict=strict, subs=subs)
-            == ""
-        ):
+        if self.if_schema.__validate__(obj, name=name, strict=strict, subs=subs) == "":
             return self.then_schema.__validate__(
                 obj, name=name, strict=strict, subs=subs
             )
@@ -1763,9 +1779,7 @@ class _filter(compiled_schema):
                 f"(value: {_c(obj)}) failed: {str(e)}"
             )
         name = f"{self.filter_name}({name})"
-        return self.schema.__validate__(
-            obj, name="object", strict=strict, subs=subs
-        )
+        return self.schema.__validate__(obj, name="object", strict=strict, subs=subs)
 
 
 class filter:
