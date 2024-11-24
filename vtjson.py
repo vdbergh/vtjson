@@ -78,15 +78,15 @@ import idna
 T = TypeVar("T")
 
 
-def safe_cast(t: Type[T], object_: Any) -> T:
-    validate(t, object_)
-    return cast(T, object_)
+def safe_cast(t: Type[T], obj: Any) -> T:
+    validate(t, obj)
+    return cast(T, obj)
 
 
 class compiled_schema:
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str,
         strict: bool,
         subs: Mapping[str, object],
@@ -225,14 +225,14 @@ def _c(s: object) -> str:
 
 
 def _wrong_type_message(
-    object_: object,
+    obj: object,
     name: str,
     type_name: str,
     explanation: str | None = None,
     skip_value: bool = False,
 ) -> str:
     if not skip_value:
-        message = f"{name} (value:{_c(object_)}) is not of type '{type_name}'"
+        message = f"{name} (value:{_c(obj)}) is not of type '{type_name}'"
     else:
         message = f"{name} is not of type '{type_name}'"
     if explanation is not None:
@@ -246,9 +246,9 @@ class _validate_meta(type):
     __subs__: Mapping[str, object]
     __dbg__: bool
 
-    def __instancecheck__(cls, object_: object) -> bool:
+    def __instancecheck__(cls, obj: object) -> bool:
         valid = _validate(
-            cls.__schema__, object_, "object", strict=cls.__strict__, subs=cls.__subs__
+            cls.__schema__, obj, "object", strict=cls.__strict__, subs=cls.__subs__
         )
         if cls.__dbg__ and valid != "":
             print(f"DEBUG: {valid}")
@@ -308,14 +308,14 @@ class _union(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
         messages = []
         for schema in self.schemas:
-            message = schema.__validate__(object_, name=name, strict=strict, subs=subs)
+            message = schema.__validate__(obj, name=name, strict=strict, subs=subs)
             if message == "":
                 return ""
             else:
@@ -347,13 +347,13 @@ class _intersect(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
         for schema in self.schemas:
-            message = schema.__validate__(object_, name=name, strict=strict, subs=subs)
+            message = schema.__validate__(obj, name=name, strict=strict, subs=subs)
             if message != "":
                 return message
         return ""
@@ -379,12 +379,12 @@ class _complement(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        message = self.schema.__validate__(object_, name=name, strict=strict, subs=subs)
+        message = self.schema.__validate__(obj, name=name, strict=strict, subs=subs)
         if message != "":
             return ""
         else:
@@ -411,12 +411,12 @@ class _lax(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        return self.schema.__validate__(object_, name=name, strict=False, subs=subs)
+        return self.schema.__validate__(obj, name=name, strict=False, subs=subs)
 
 
 class lax:
@@ -439,12 +439,12 @@ class _strict(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        return self.schema.__validate__(object_, name=name, strict=True, subs=subs)
+        return self.schema.__validate__(obj, name=name, strict=True, subs=subs)
 
 
 class strict:
@@ -473,7 +473,7 @@ class _set_label(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
@@ -492,9 +492,9 @@ class _set_label(compiled_schema):
             # known at schema creation time.
             #
             # But the user can always pre-compile subs[key].
-            return _validate(subs[key], object_, name=name, strict=True, subs=subs)
+            return _validate(subs[key], obj, name=name, strict=True, subs=subs)
         else:
-            return self.schema.__validate__(object_, name=name, strict=True, subs=subs)
+            return self.schema.__validate__(obj, name=name, strict=True, subs=subs)
 
 
 class set_label:
@@ -526,12 +526,12 @@ class quote(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        return self.schema.__validate__(object_, name=name, strict=strict, subs=subs)
+        return self.schema.__validate__(obj, name=name, strict=strict, subs=subs)
 
 
 class _set_name(compiled_schema):
@@ -552,18 +552,18 @@ class _set_name(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        message = self.schema.__validate__(object_, name=name, strict=strict, subs=subs)
+        message = self.schema.__validate__(obj, name=name, strict=strict, subs=subs)
         if message != "":
             if not self.reason:
-                return _wrong_type_message(object_, name, self.__name__)
+                return _wrong_type_message(obj, name, self.__name__)
             else:
                 return _wrong_type_message(
-                    object_, name, self.__name__, explanation=message, skip_value=True
+                    obj, name, self.__name__, explanation=message, skip_value=True
                 )
         return ""
 
@@ -623,21 +623,21 @@ class regex(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, str):
-            return _wrong_type_message(object_, name, self.__name__)
+        if not isinstance(obj, str):
+            return _wrong_type_message(obj, name, self.__name__)
         try:
-            if self.fullmatch and self.pattern.fullmatch(object_):
+            if self.fullmatch and self.pattern.fullmatch(obj):
                 return ""
-            elif not self.fullmatch and self.pattern.match(object_):
+            elif not self.fullmatch and self.pattern.match(obj):
                 return ""
         except Exception:
             pass
-        return _wrong_type_message(object_, name, self.__name__)
+        return _wrong_type_message(obj, name, self.__name__)
 
 
 class glob(compiled_schema):
@@ -662,20 +662,20 @@ class glob(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, str):
-            return _wrong_type_message(object_, name, self.__name__)
+        if not isinstance(obj, str):
+            return _wrong_type_message(obj, name, self.__name__)
         try:
-            if pathlib.PurePath(object_).match(self.pattern):
+            if pathlib.PurePath(obj).match(self.pattern):
                 return ""
             else:
-                return _wrong_type_message(object_, name, self.__name__)
+                return _wrong_type_message(obj, name, self.__name__)
         except Exception as e:
-            return _wrong_type_message(object_, name, self.__name__, str(e))
+            return _wrong_type_message(obj, name, self.__name__, str(e))
 
 
 class magic(compiled_schema):
@@ -698,23 +698,23 @@ class magic(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, (str, bytes)):
-            return _wrong_type_message(object_, name, self.__name__)
+        if not isinstance(obj, (str, bytes)):
+            return _wrong_type_message(obj, name, self.__name__)
         try:
-            object_mime_type = magic_.from_buffer(object_, mime=True)
+            objmime_type = magic_.from_buffer(obj, mime=True)
         except Exception as e:
-            return _wrong_type_message(object_, name, self.__name__, str(e))
-        if object_mime_type != self.mime_type:
+            return _wrong_type_message(obj, name, self.__name__, str(e))
+        if objmime_type != self.mime_type:
             return _wrong_type_message(
-                object_,
+                obj,
                 name,
                 self.__name__,
-                f"{repr(object_mime_type)} is different from {repr(self.mime_type)}",
+                f"{repr(objmime_type)} is different from {repr(self.mime_type)}",
             )
         return ""
 
@@ -747,17 +747,17 @@ class div(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, int):
-            return _wrong_type_message(object_, name, "int")
-        elif (object_ - self.remainder) % self.divisor == 0:
+        if not isinstance(obj, int):
+            return _wrong_type_message(obj, name, "int")
+        elif (obj - self.remainder) % self.divisor == 0:
             return ""
         else:
-            return _wrong_type_message(object_, name, self.__name__)
+            return _wrong_type_message(obj, name, self.__name__)
 
 
 class close_to(compiled_schema):
@@ -794,17 +794,17 @@ class close_to(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, (float, int)):
-            return _wrong_type_message(object_, name, "number")
-        elif math.isclose(object_, self.x, **self.kw):
+        if not isinstance(obj, (float, int)):
+            return _wrong_type_message(obj, name, "number")
+        elif math.isclose(obj, self.x, **self.kw):
             return ""
         else:
-            return _wrong_type_message(object_, name, self.__name__)
+            return _wrong_type_message(obj, name, self.__name__)
 
 
 class gt(compiled_schema):
@@ -819,23 +819,23 @@ class gt(compiled_schema):
             ) from None
         self.lb = lb
 
-    def message(self, name: str, object_: object) -> str:
-        return f"{name} (value:{_c(object_)}) is not strictly greater than {self.lb}"
+    def message(self, name: str, obj: object) -> str:
+        return f"{name} (value:{_c(obj)}) is not strictly greater than {self.lb}"
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
         try:
-            if self.lb < object_:
+            if self.lb < obj:
                 return ""
             else:
-                return self.message(name, object_)
+                return self.message(name, obj)
         except Exception as e:
-            return f"{self.message(name, object_)}: {str(e)}"
+            return f"{self.message(name, obj)}: {str(e)}"
 
 
 class ge(compiled_schema):
@@ -850,23 +850,23 @@ class ge(compiled_schema):
             ) from None
         self.lb = lb
 
-    def message(self, name: str, object_: object) -> str:
-        return f"{name} (value:{_c(object_)}) is not greater than or equal to {self.lb}"
+    def message(self, name: str, obj: object) -> str:
+        return f"{name} (value:{_c(obj)}) is not greater than or equal to {self.lb}"
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
         try:
-            if self.lb <= object_:
+            if self.lb <= obj:
                 return ""
             else:
-                return self.message(name, object_)
+                return self.message(name, obj)
         except Exception as e:
-            return f"{self.message(name, object_)}: {str(e)}"
+            return f"{self.message(name, obj)}: {str(e)}"
 
 
 class lt(compiled_schema):
@@ -881,23 +881,23 @@ class lt(compiled_schema):
             ) from None
         self.ub = ub
 
-    def message(self, name: str, object_: object) -> str:
-        return f"{name} (value:{_c(object_)}) is not strictly less than {self.ub}"
+    def message(self, name: str, obj: object) -> str:
+        return f"{name} (value:{_c(obj)}) is not strictly less than {self.ub}"
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
         try:
-            if self.ub > object_:
+            if self.ub > obj:
                 return ""
             else:
-                return self.message(name, object_)
+                return self.message(name, obj)
         except Exception as e:
-            return f"{self.message(name, object_)}: {str(e)}"
+            return f"{self.message(name, obj)}: {str(e)}"
 
 
 class le(compiled_schema):
@@ -912,23 +912,23 @@ class le(compiled_schema):
             ) from None
         self.ub = ub
 
-    def message(self, name: str, object_: object) -> str:
-        return f"{name} (value:{_c(object_)}) is not less than or equal to {self.ub}"
+    def message(self, name: str, obj: object) -> str:
+        return f"{name} (value:{_c(obj)}) is not less than or equal to {self.ub}"
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
         try:
-            if self.ub >= object_:
+            if self.ub >= obj:
                 return ""
             else:
-                return self.message(name, object_)
+                return self.message(name, obj)
         except Exception as e:
-            return f"{self.message(name, object_)}: {str(e)}"
+            return f"{self.message(name, obj)}: {str(e)}"
 
 
 class interval(compiled_schema):
@@ -1021,15 +1021,15 @@ class size(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, Sized):
-            return f"{name} (value:{_c(object_)}) has no len()"
+        if not isinstance(obj, Sized):
+            return f"{name} (value:{_c(obj)}) has no len()"
 
-        L = len(object_)
+        L = len(obj)
 
         return self.interval_.__validate__(L, f"len({name})", strict, subs)
 
@@ -1044,7 +1044,7 @@ class _deferred(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
@@ -1052,7 +1052,7 @@ class _deferred(compiled_schema):
         if self.key not in self.collection:
             raise ValidationError(f"{name}: key {self.key} is unknown")
         return self.collection[self.key].__validate__(
-            object_, name=name, strict=strict, subs=subs
+            obj, name=name, strict=strict, subs=subs
         )
 
 
@@ -1194,24 +1194,35 @@ def _compile(
 
 def _validate(
     schema: object,
-    object_: object,
+    obj: object,
     name: str = "object",
     strict: bool = True,
     subs: Mapping[str, object] = {},
 ) -> str:
-    return compile(schema).__validate__(object_, name=name, strict=strict, subs=subs)
+    return compile(schema).__validate__(obj, name=name, strict=strict, subs=subs)
 
 
 def validate(
     schema: object,
-    object_: object,
+    obj: object,
     name: str = "object",
     strict: bool = True,
     subs: Mapping[str, object] = {},
 ) -> None:
+    """
+    Validates the given object against the given schema.
+
+    :param schema: the given schema
+    :param obj: the object to be validated
+    :param name: common name for the object to be validated
+    :param strict: indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema.
+    :param subs: a dictionary whose keys are labels and whose values are substitution schemas for schemas with those labels
+    :raises ValidationError: exception thrown when the object does not validate; the exception message contains an explanation about what went wrong
+    :raises SchemaError: exception thrown when the schema definition is found to contain an error
+    """
     message = _validate(
         schema,
-        object_,
+        obj,
         name=name,
         strict=strict,
         subs=subs,
@@ -1233,15 +1244,15 @@ class number(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if isinstance(object_, (int, float)):
+        if isinstance(obj, (int, float)):
             return ""
         else:
-            return _wrong_type_message(object_, name, "number")
+            return _wrong_type_message(obj, name, "number")
 
 
 class email(compiled_schema):
@@ -1256,20 +1267,20 @@ class email(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, str):
+        if not isinstance(obj, str):
             return _wrong_type_message(
-                object_, name, "email", f"{_c(object_)} is not a string"
+                obj, name, "email", f"{_c(obj)} is not a string"
             )
         try:
-            email_validator.validate_email(object_, **self.kw)
+            email_validator.validate_email(obj, **self.kw)
             return ""
         except Exception as e:
-            return _wrong_type_message(object_, name, "email", str(e))
+            return _wrong_type_message(obj, name, "email", str(e))
 
 
 class ip_address(compiled_schema):
@@ -1293,34 +1304,34 @@ class ip_address(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, (int, str, bytes)):
-            return _wrong_type_message(object_, name, self.__name__)
+        if not isinstance(obj, (int, str, bytes)):
+            return _wrong_type_message(obj, name, self.__name__)
         try:
-            self.method(object_)
+            self.method(obj)
         except ValueError as e:
-            return _wrong_type_message(object_, name, self.__name__, explanation=str(e))
+            return _wrong_type_message(obj, name, self.__name__, explanation=str(e))
         return ""
 
 
 class url(compiled_schema):
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, str):
-            return _wrong_type_message(object_, name, "url")
-        result = urllib.parse.urlparse(object_)
+        if not isinstance(obj, str):
+            return _wrong_type_message(obj, name, "url")
+        result = urllib.parse.urlparse(obj)
         if all([result.scheme, result.netloc]):
             return ""
-        return _wrong_type_message(object_, name, "url")
+        return _wrong_type_message(obj, name, "url")
 
 
 class date_time(compiled_schema):
@@ -1336,75 +1347,75 @@ class date_time(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, str):
-            return _wrong_type_message(object_, name, self.__name__)
+        if not isinstance(obj, str):
+            return _wrong_type_message(obj, name, self.__name__)
         if self.format is not None:
             try:
-                datetime.datetime.strptime(object_, self.format)
+                datetime.datetime.strptime(obj, self.format)
             except Exception as e:
-                return _wrong_type_message(object_, name, self.__name__, str(e))
+                return _wrong_type_message(obj, name, self.__name__, str(e))
         else:
             try:
-                datetime.datetime.fromisoformat(object_)
+                datetime.datetime.fromisoformat(obj)
             except Exception as e:
-                return _wrong_type_message(object_, name, self.__name__, str(e))
+                return _wrong_type_message(obj, name, self.__name__, str(e))
         return ""
 
 
 class date(compiled_schema):
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, str):
-            return _wrong_type_message(object_, name, "date")
+        if not isinstance(obj, str):
+            return _wrong_type_message(obj, name, "date")
         try:
-            datetime.date.fromisoformat(object_)
+            datetime.date.fromisoformat(obj)
         except Exception as e:
-            return _wrong_type_message(object_, name, "date", str(e))
+            return _wrong_type_message(obj, name, "date", str(e))
         return ""
 
 
 class time(compiled_schema):
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, str):
-            return _wrong_type_message(object_, name, "date")
+        if not isinstance(obj, str):
+            return _wrong_type_message(obj, name, "date")
         try:
-            datetime.time.fromisoformat(object_)
+            datetime.time.fromisoformat(obj)
         except Exception as e:
-            return _wrong_type_message(object_, name, "time", str(e))
+            return _wrong_type_message(obj, name, "time", str(e))
         return ""
 
 
 class nothing(compiled_schema):
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        return _wrong_type_message(object_, name, "nothing")
+        return _wrong_type_message(obj, name, "nothing")
 
 
 class anything(compiled_schema):
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
@@ -1435,28 +1446,28 @@ class domain_name(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, str):
-            return _wrong_type_message(object_, name, self.__name__)
+        if not isinstance(obj, str):
+            return _wrong_type_message(obj, name, self.__name__)
         if self.ascii_only:
-            if not self.re_ascii.fullmatch(object_):
+            if not self.re_ascii.fullmatch(obj):
                 return _wrong_type_message(
-                    object_, name, self.__name__, "Non-ascii characters"
+                    obj, name, self.__name__, "Non-ascii characters"
                 )
         try:
-            idna.encode(object_, uts46=False)
+            idna.encode(obj, uts46=False)
         except idna.core.IDNAError as e:
-            return _wrong_type_message(object_, name, self.__name__, str(e))
+            return _wrong_type_message(obj, name, self.__name__, str(e))
 
         if self.resolve:
             try:
-                _get_dns_resolver().resolve(object_)
+                _get_dns_resolver().resolve(obj)
             except Exception as e:
-                return _wrong_type_message(object_, name, self.__name__, str(e))
+                return _wrong_type_message(obj, name, self.__name__, str(e))
         return ""
 
 
@@ -1471,20 +1482,20 @@ class at_least_one_of(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, Mapping):
-            return _wrong_type_message(object_, name, self.__name__)
+        if not isinstance(obj, Mapping):
+            return _wrong_type_message(obj, name, self.__name__)
         try:
-            if any([a in object_ for a in self.args]):
+            if any([a in obj for a in self.args]):
                 return ""
             else:
-                return _wrong_type_message(object_, name, self.__name__)
+                return _wrong_type_message(obj, name, self.__name__)
         except Exception as e:
-            return _wrong_type_message(object_, name, self.__name__, str(e))
+            return _wrong_type_message(obj, name, self.__name__, str(e))
 
 
 class at_most_one_of(compiled_schema):
@@ -1498,20 +1509,20 @@ class at_most_one_of(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, Mapping):
-            return _wrong_type_message(object_, name, self.__name__)
+        if not isinstance(obj, Mapping):
+            return _wrong_type_message(obj, name, self.__name__)
         try:
-            if sum([a in object_ for a in self.args]) <= 1:
+            if sum([a in obj for a in self.args]) <= 1:
                 return ""
             else:
-                return _wrong_type_message(object_, name, self.__name__)
+                return _wrong_type_message(obj, name, self.__name__)
         except Exception as e:
-            return _wrong_type_message(object_, name, self.__name__, str(e))
+            return _wrong_type_message(obj, name, self.__name__, str(e))
 
 
 class one_of(compiled_schema):
@@ -1525,20 +1536,20 @@ class one_of(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, Mapping):
-            return _wrong_type_message(object_, name, self.__name__)
+        if not isinstance(obj, Mapping):
+            return _wrong_type_message(obj, name, self.__name__)
         try:
-            if sum([a in object_ for a in self.args]) == 1:
+            if sum([a in obj for a in self.args]) == 1:
                 return ""
             else:
-                return _wrong_type_message(object_, name, self.__name__)
+                return _wrong_type_message(obj, name, self.__name__)
         except Exception as e:
-            return _wrong_type_message(object_, name, self.__name__, str(e))
+            return _wrong_type_message(obj, name, self.__name__, str(e))
 
 
 class keys(compiled_schema):
@@ -1549,15 +1560,15 @@ class keys(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, Mapping):
-            return _wrong_type_message(object_, name, "Mapping")  # TODO: __name__
+        if not isinstance(obj, Mapping):
+            return _wrong_type_message(obj, name, "Mapping")  # TODO: __name__
         for k in self.args:
-            if k not in object_:
+            if k not in obj:
                 return f"{name}[{repr(k)}] is missing"
         return ""
 
@@ -1585,21 +1596,21 @@ class _ifthen(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
         if (
-            self.if_schema.__validate__(object_, name=name, strict=strict, subs=subs)
+            self.if_schema.__validate__(obj, name=name, strict=strict, subs=subs)
             == ""
         ):
             return self.then_schema.__validate__(
-                object_, name=name, strict=strict, subs=subs
+                obj, name=name, strict=strict, subs=subs
             )
         elif self.else_schema is not None:
             return self.else_schema.__validate__(
-                object_, name=name, strict=strict, subs=subs
+                obj, name=name, strict=strict, subs=subs
             )
         return ""
 
@@ -1647,14 +1658,14 @@ class _cond(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
         for c in self.conditions:
-            if c[0].__validate__(object_, name=name, strict=strict, subs=subs) == "":
-                return c[1].__validate__(object_, name=name, strict=strict, subs=subs)
+            if c[0].__validate__(obj, name=name, strict=strict, subs=subs) == "":
+                return c[1].__validate__(obj, name=name, strict=strict, subs=subs)
         return ""
 
 
@@ -1683,17 +1694,17 @@ class _fields(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
         for k, v in self.d.items():
             name_ = f"{name}.{k}"
-            if not hasattr(object_, k):
+            if not hasattr(obj, k):
                 return f"{name_} is missing"
             ret = self.d[k].__validate__(
-                getattr(object_, k), name=name_, strict=strict, subs=subs
+                getattr(obj, k), name=name_, strict=strict, subs=subs
             )
             if ret != "":
                 return ret
@@ -1739,21 +1750,21 @@ class _filter(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
         try:
-            object_ = self.filter(object_)
+            obj = self.filter(obj)
         except Exception as e:
             return (
                 f"Applying {self.filter_name} to {name} "
-                f"(value: {_c(object_)}) failed: {str(e)}"
+                f"(value: {_c(obj)}) failed: {str(e)}"
             )
         name = f"{self.filter_name}({name})"
         return self.schema.__validate__(
-            object_, name="object", strict=strict, subs=subs
+            obj, name="object", strict=strict, subs=subs
         )
 
 
@@ -1798,16 +1809,16 @@ class _type(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
         try:
-            if self.schema == float and isinstance(object_, int):
+            if self.schema == float and isinstance(obj, int):
                 return ""
-            if not isinstance(object_, self.schema):
-                return _wrong_type_message(object_, name, self.schema.__name__)
+            if not isinstance(obj, self.schema):
+                return _wrong_type_message(obj, name, self.schema.__name__)
             else:
                 return ""
         except Exception as e:
@@ -1815,29 +1826,29 @@ class _type(compiled_schema):
 
     def __validate_float__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
         # consider int as a subtype of float
-        if isinstance(object_, (int, float)):
+        if isinstance(obj, (int, float)):
             return ""
         else:
-            return _wrong_type_message(object_, name, "float")
+            return _wrong_type_message(obj, name, "float")
 
     def __validate_complex__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
         # consider int, float as subtypes of complex
-        if isinstance(object_, (int, float, complex)):
+        if isinstance(obj, (int, float, complex)):
             return ""
         else:
-            return _wrong_type_message(object_, name, "complex")
+            return _wrong_type_message(obj, name, "complex")
 
     def __str__(self) -> str:
         return self.schema.__name__
@@ -1871,15 +1882,15 @@ class _sequence(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, self.type_schema):
-            return _wrong_type_message(object_, name, self.type_schema.__name__)
+        if not isinstance(obj, self.type_schema):
+            return _wrong_type_message(obj, name, self.type_schema.__name__)
         ls = len(self.schema)
-        lo = len(object_)
+        lo = len(obj)
         if strict:
             if lo > ls:
                 return f"{name}[{ls}] is not in the schema"
@@ -1887,32 +1898,32 @@ class _sequence(compiled_schema):
             return f"{name}[{lo}] is missing"
         for i in range(ls):
             name_ = f"{name}[{i}]"
-            ret = self.schema[i].__validate__(object_[i], name_, strict, subs)
+            ret = self.schema[i].__validate__(obj[i], name_, strict, subs)
             if ret != "":
                 return ret
         return ""
 
     def __validate_ellipsis__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, self.type_schema):
-            return _wrong_type_message(object_, name, self.type_schema.__name__)
+        if not isinstance(obj, self.type_schema):
+            return _wrong_type_message(obj, name, self.type_schema.__name__)
         ls = len(self.schema)
-        lo = len(object_)
+        lo = len(obj)
         if ls > lo:
             return f"{name}[{lo}] is missing"
         for i in range(ls):
             name_ = f"{name}[{i}]"
-            ret = self.schema[i].__validate__(object_[i], name_, strict, subs)
+            ret = self.schema[i].__validate__(obj[i], name_, strict, subs)
             if ret != "":
                 return ret
         for i in range(ls, lo):
             name_ = f"{name}[{i}]"
-            ret = self.fill.__validate__(object_[i], name_, strict, subs)
+            ret = self.fill.__validate__(obj[i], name_, strict, subs)
             if ret != "":
                 return ret
         return ""
@@ -1929,18 +1940,18 @@ class _const(compiled_schema):
         if isinstance(schema, float) and not strict_eq:
             setattr(self, "__validate__", close_to(schema).__validate__)
 
-    def message(self, name: str, object_: object) -> str:
-        return f"{name} (value:{_c(object_)}) is not equal to {repr(self.schema)}"
+    def message(self, name: str, obj: object) -> str:
+        return f"{name} (value:{_c(obj)}) is not equal to {repr(self.schema)}"
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if object_ != self.schema:
-            return self.message(name, object_)
+        if obj != self.schema:
+            return self.message(name, obj)
         return ""
 
     def __str__(self) -> str:
@@ -1960,18 +1971,18 @@ class _callable(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
         try:
-            if self.schema(object_):
+            if self.schema(obj):
                 return ""
             else:
-                return _wrong_type_message(object_, name, self.__name__)
+                return _wrong_type_message(obj, name, self.__name__)
         except Exception as e:
-            return _wrong_type_message(object_, name, self.__name__, str(e))
+            return _wrong_type_message(obj, name, self.__name__, str(e))
 
     def __str__(self) -> str:
         return str(self.schema)
@@ -2016,25 +2027,25 @@ class _dict(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, self.type_schema):
-            return _wrong_type_message(object_, name, self.type_schema.__name__)
+        if not isinstance(obj, self.type_schema):
+            return _wrong_type_message(obj, name, self.type_schema.__name__)
 
         for k in self.min_keys:
-            if k not in object_:
+            if k not in obj:
                 name_ = f"{name}[{repr(k)}]"
                 return f"{name_} is missing"
 
-        for k in object_:
+        for k in obj:
             vals = []
             name_ = f"{name}[{repr(k)}]"
             if k in self.const_keys:
                 val = self.schema[k].__validate__(
-                    object_[k], name=name_, strict=strict, subs=subs
+                    obj[k], name=name_, strict=strict, subs=subs
                 )
                 if val == "":
                     continue
@@ -2044,7 +2055,7 @@ class _dict(compiled_schema):
             for kk in self.other_keys:
                 if kk.__validate__(k, name="key", strict=strict, subs=subs) == "":
                     val = self.schema[kk].__validate__(
-                        object_[k], name=name_, strict=strict, subs=subs
+                        obj[k], name=name_, strict=strict, subs=subs
                     )
                     if val == "":
                         break
@@ -2085,27 +2096,27 @@ class _set(compiled_schema):
 
     def __validate_empty_set__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, self.type_schema):
-            return _wrong_type_message(object_, name, self.type_schema.__name__)
-        if len(object_) != 0:
-            return f"{name} (value:{_c(object_)}) is not empty"
+        if not isinstance(obj, self.type_schema):
+            return _wrong_type_message(obj, name, self.type_schema.__name__)
+        if len(obj) != 0:
+            return f"{name} (value:{_c(obj)}) is not empty"
         return ""
 
     def __validate_singleton__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, set):
-            return _wrong_type_message(object_, name, self.type_schema.__name__)
-        for i, o in enumerate(object_):
+        if not isinstance(obj, set):
+            return _wrong_type_message(obj, name, self.type_schema.__name__)
+        for i, o in enumerate(obj):
             name_ = f"{name}{{{i}}}"
             v = self.schema.__validate__(o, name=name_, strict=True, subs=subs)
             if v != "":
@@ -2114,14 +2125,14 @@ class _set(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        if not isinstance(object_, self.type_schema):
-            return _wrong_type_message(object_, name, self.type_schema.__name__)
-        for i, o in enumerate(object_):
+        if not isinstance(obj, self.type_schema):
+            return _wrong_type_message(obj, name, self.type_schema.__name__)
+        for i, o in enumerate(obj):
             name_ = f"{name}{{{i}}}"
             v = self.schema.__validate__(o, name=name_, strict=True, subs=subs)
             if v != "":
@@ -2225,16 +2236,16 @@ class _Mapping(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
 
-        if not isinstance(object_, self.type_schema):
-            return _wrong_type_message(object_, name, self.__name__)
+        if not isinstance(obj, self.type_schema):
+            return _wrong_type_message(obj, name, self.__name__)
 
-        for k, v in object_.items():
+        for k, v in obj.items():
             _name = f"{name}[{repr(k)}]"
             message = self.key.__validate__(k, name=str(k), strict=strict, subs=subs)
             if message != "":
@@ -2265,17 +2276,17 @@ class _Container(compiled_schema):
 
     def __validate__(
         self,
-        object_: object,
+        obj: object,
         name: str = "object",
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
 
-        if not isinstance(object_, self.type_schema):
-            return _wrong_type_message(object_, name, self.type_schema.__name__)
+        if not isinstance(obj, self.type_schema):
+            return _wrong_type_message(obj, name, self.type_schema.__name__)
 
         try:
-            for i, o in enumerate(object_):
+            for i, o in enumerate(obj):
                 _name = f"{name}[{i}]"
                 message = self.schema.__validate__(
                     o, name=_name, strict=strict, subs=subs
@@ -2283,7 +2294,7 @@ class _Container(compiled_schema):
                 if message != "":
                     return message
         except Exception as e:
-            return _wrong_type_message(object_, name, self.__name__, explanation=str(e))
+            return _wrong_type_message(obj, name, self.__name__, explanation=str(e))
 
         return ""
 
