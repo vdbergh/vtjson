@@ -78,7 +78,18 @@ import idna
 T = TypeVar("T")
 
 
-def safe_cast(t: Type[T], obj: Any) -> T:
+def safe_cast(schema: Type[T], obj: Any) -> T:
+    """
+    Validates the given object against the given schema and changes its type accordingly.
+
+    :param schema: the given schema
+    :param obj: the object to be validated
+    :return: the validated object with its type changed
+
+    :raises ValidationError: exception thrown when the object does not validate; the exception message contains an explanation about what went wrong
+    :raises SchemaError: exception thrown when the schema definition is found to contain an error
+    """
+    
     validate(t, obj)
     return cast(T, obj)
 
@@ -283,6 +294,16 @@ def make_type(
     debug: bool = False,
     subs: Mapping[str, object] = {},
 ) -> _validate_meta:
+    """
+    Transforms a schema into a genuine Python type
+
+    :param schema: the given schema
+    :param name: sets the `__name__` attribute of the type; if it is not supplied then `vtjson` makes an educated guess
+    :param strict: indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema
+    :param debug: print feedback on the console if validation fails
+    :param subs: a dictionary whose keys are labels and whose values are substitution schemas for schemas with those labels
+    :raises SchemaError: exception thrown when the schema definition is found to contain an error
+    """
     if name is None:
         if hasattr(schema, "__name__"):
             name = schema.__name__
