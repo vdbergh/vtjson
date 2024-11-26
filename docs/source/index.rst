@@ -7,7 +7,7 @@ Welcome to vtjson's documentation
 =================================
 
 **vtjson** is a lightweight package for validating JSON like Python objects. Validation is done according to a `schema` which is somewhat inspired by a typescript type.
-vtjson integrates seamlessly with Python type annotations.
+``vtjson`` integrates seamlessly with Python type annotations.
 
 Check out the :doc:`usage` section for further information.
 

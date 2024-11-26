@@ -21,6 +21,7 @@ release = '2.1.9'
 
 extensions = [
     'sphinx.ext.duration',
+    'sphinx.ext.doctest',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx_autodoc_typehints',

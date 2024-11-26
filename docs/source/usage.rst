@@ -24,6 +24,84 @@ A suitable written schema can be used as a Python type annotation. :py:func:`vtj
 .. autoexception:: vtjson.ValidationError
 .. autoexception:: vtjson.SchemaError
 
+Examples
+--------
+
+.. testsetup:: *
+
+   from vtjson import validate
+
+Here is a simple schema:
+
+.. testcode::
+
+   book_schema = {
+     "title": str,
+     "authors": [str, ...],
+     "editor?": str,
+     "year": int,
+   }
+
+The following conventions were used:
+
+* As in typescript, a (string) key ending in `?` represents an optional key. The corresponding schema (the item the key points to) will only be used for validation when the key is present in the object that should be validated. A key can also be made optional by wrapping it as ``optional_key(key)``.
+* If in a list/tuple the last entry is `...` (ellipsis) it means that the next to last entry will be repeated zero or more times. In this way generic types can be created. For example the schema ``[str, ...]`` represents a list of strings.
+
+Let's try to validate some book objects:
+
+.. testcode::
+
+   good_book = {
+     "title": "Gone with the Wind",
+     "authors": ["Margaret Mitchell"],
+     "year": 1936,
+   }
+
+   bad_book = {
+     "title": "Gone with the Wind",
+     "authors": ["Margaret Mitchell"],
+     "year": "1936",
+   }
+
+   validate(book_schema, good_book, name="good_book")
+   validate(book_schema, bad_book, name="bad_book")
+
+As expected ``vtjson`` throws an exception for the second object:
+
+.. testoutput::
+
+  Traceback (most recent call last):
+      ...
+      raise ValidationError(message)
+  vtjson.vtjson.ValidationError: bad_book['year'] (value:'1936') is not of type 'int'
+
+We may rewrite the ``book_schema`` as a valid Python type annotation.
+
+.. testcode::
+
+   from typing import NotRequired, TypedDict
+
+   class book_schema(TypedDict):
+     title: str
+     authors: list[str]
+     editor: NotRequired[str]
+     year: int
+
+Attempting to validate the bad book raises the same exception:
+
+.. testcode::
+
+   validate(book_schema, bad_book, name="bad_book")
+
+.. testoutput::
+
+  Traceback (most recent call last):
+      ...
+      raise ValidationError(message)
+  vtjson.vtjson.ValidationError: book['year'] (value:'1936') is not of type 'int'
+
+
+
 Schema format
 -------------
 
