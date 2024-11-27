@@ -29,7 +29,7 @@ Examples
 
 .. testsetup:: *
 
-   from vtjson import validate
+   from vtjson import make_type, validate
 
 Here is a simple schema:
 
@@ -75,7 +75,22 @@ As expected ``vtjson`` throws an exception for the second object:
       raise ValidationError(message)
   vtjson.vtjson.ValidationError: bad_book['year'] (value:'1936') is not of type 'int'
 
-We may rewrite the ``book_schema`` as a valid Python type annotation.
+We can turn the ``book_schema`` into a genuine Python type.
+
+.. testcode::
+
+   Book = make_type(book_schema)
+
+   print(f"Is good_book an instance of Book? {isinstance(good_book, Book)}!")
+   print(f"Is bad_book an instance of Book? {isinstance(bad_book, Book)}!")
+
+.. testoutput::
+
+   Is good_book an instance of Book? True!
+   Is bad_book an instance of Book? False!
+
+
+We may also rewrite the ``book_schema`` as a valid Python type annotation.
 
 .. testcode::
 
@@ -87,7 +102,7 @@ We may rewrite the ``book_schema`` as a valid Python type annotation.
      editor: NotRequired[str]
      year: int
 
-Attempting to validate the bad book raises the same exception:
+Attempting to validate the bad book raises the same exception as before:
 
 .. testcode::
 
