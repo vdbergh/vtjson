@@ -90,7 +90,7 @@ def safe_cast(schema: Type[T], obj: Any) -> T:
     :raises SchemaError: exception thrown when the schema definition is found to contain an error
     """
     
-    validate(t, obj)
+    validate(schema, obj)
     return cast(T, obj)
 
 

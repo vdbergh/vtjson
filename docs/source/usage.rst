@@ -12,7 +12,7 @@ Installation
 
 Validating objects
 ------------------
-To validate an object against a schema one uses :py:func:`vtjson.validate`. If validation fails this throws a :py:exc:`vtjson.ValidationError`.
+To validate an object against a schema one may use :py:func:`vtjson.validate`. If validation fails this throws a :py:exc:`vtjson.ValidationError`.
 A suitable written schema can be used as a Python type annotation. :py:func:`vtjson.safe_cast` verifies if a given object has a given type.
 :py:func:`vtjson.make_type` transforms a schema into a genuine Python type so that validation can be done using ``isinstance()``.
 
@@ -29,7 +29,7 @@ Examples
 
 .. testsetup:: *
 
-   from vtjson import make_type, validate
+   from vtjson import make_type, safe_cast, validate
 
 Here is a simple schema:
 
@@ -115,6 +115,21 @@ Attempting to validate the bad book raises the same exception as before:
       raise ValidationError(message)
   vtjson.vtjson.ValidationError: book['year'] (value:'1936') is not of type 'int'
 
+:py:func:`vtjson.safe_cast` functions exactly like `cast` except that it also verifies at run time that the given object matches the given schema.
+  
+.. testcode::
+
+   book2 = safe_cast(book_schema, good_book)
+   book3 = safe_cast(book_schema, bad_book)
+
+The exception now looks a bit different.
+
+.. testoutput::
+
+   Traceback (most recent call last):
+       ...
+       raise ValidationError(message)
+   vtjson.vtjson.ValidationError: object is not of type 'book_schema': object['year'] (value:'1936') is not of type 'int'
 
 
 Schema format
@@ -129,6 +144,6 @@ A schema can be, in order of precedence:
 * An object having a ``__validate__()`` attribute with the same signature as  :py:meth:`vtjson.compiled_schema.__validate__`.
 
 .. autoclass:: vtjson.compiled_schema
-  
-.. automethod:: vtjson.compiled_schema.__validate__
+  :members: __validate__
+
 
