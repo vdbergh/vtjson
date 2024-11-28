@@ -115,14 +115,14 @@ Attempting to validate the bad book raises the same exception as before:
       raise ValidationError(message)
   vtjson.vtjson.ValidationError: book['year'] (value:'1936') is not of type 'int'
 
-:py:func:`vtjson.safe_cast` functions exactly like `cast` except that it also verifies at run time that the given object matches the given schema.
+:py:func:`vtjson.safe_cast` functions exactly like ``cast`` except that it also verifies at run time that the given object matches the given schema.
   
 .. testcode::
 
    book2 = safe_cast(book_schema, good_book)
    book3 = safe_cast(book_schema, bad_book)
 
-The exception now looks a bit different.
+The exception thrown is similar.
 
 .. testoutput::
 
@@ -130,7 +130,17 @@ The exception now looks a bit different.
        ...
        raise ValidationError(message)
    vtjson.vtjson.ValidationError: object is not of type 'book_schema': object['year'] (value:'1936') is not of type 'int'
+   
+Built-in schemas
+----------------
 
+Some built-in schemas take arguments. If no arguments are given then the parentheses can be omitted. So ``email`` is equivalent to ``email()``. Some built-ins have an optional ``name`` argument. This is used in non-validation messages.
+
+.. autoclass:: vtjson.regex
+   :class-doc-from: init
+
+.. autoclass:: vtjson.glob
+   :class-doc-from: init
 
 Schema format
 -------------

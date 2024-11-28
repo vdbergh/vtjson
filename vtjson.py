@@ -644,6 +644,16 @@ class regex(compiled_schema):
         fullmatch: bool = True,
         flags: int = 0,
     ) -> None:
+        """
+        This matches the strings which match the given pattern.
+
+        :param regex: the regular expression pattern
+        :param name: common name for the pattern that will be used in non-validation messages
+        :param fullmatch: indicates whether or not the full string should be matched
+        :param flags: the flags argument used when invoking ``re.compile``
+
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        """
         self.regex = regex
         self.fullmatch = fullmatch
         if name is not None:
@@ -687,6 +697,15 @@ class glob(compiled_schema):
     __name__: str
 
     def __init__(self, pattern: str, name: str | None = None) -> None:
+        """
+        Unix style filename matching. This is implemented using ``pathlib.PurePath().match()``.
+
+        :param pattern: the wild card pattern to match
+        :param name: common name for the pattern that will be used in non-validation messages
+
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        """
+
         self.pattern = pattern
 
         if name is None:
