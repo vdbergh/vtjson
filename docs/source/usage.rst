@@ -154,6 +154,12 @@ Some built-in schemas take arguments. If no arguments are given then the parenth
 .. autoclass:: vtjson.ip_address
    :class-doc-from: both
 		    
+.. autoclass:: vtjson.url
+   :class-doc-from: both
+
+.. autoclass:: vtjson.domain_name
+   :class-doc-from: both
+		    
 
 Schema format
 -------------

@@ -1376,7 +1376,7 @@ class ip_address(compiled_schema):
     __name__: str
     method: Callable[[Any], Any]
 
-    def __init__(self, version: Literal[4, 6] | None = None) -> None:
+    def __init__(self, version: Literal[4, 6, None] = None) -> None:
         """
         :param version: the version of the ip protocol
         :raises SchemaError: exception thrown when the schema definition is found to contain an error
@@ -1411,6 +1411,9 @@ class ip_address(compiled_schema):
 
 
 class url(compiled_schema):
+    """
+    Matches valid urls.
+    """
     def __validate__(
         self,
         obj: object,
@@ -1516,12 +1519,19 @@ class anything(compiled_schema):
 
 
 class domain_name(compiled_schema):
+    """
+    Checks if the object is a valid domain name.
+    """
     re_asci: re.Pattern[str]
     ascii_only: bool
     resolve: bool
     __name__: str
 
     def __init__(self, ascii_only: bool = True, resolve: bool = False) -> None:
+        """
+        :param ascii_only: if ``False`` then allow IDNA domain names
+        :param resolve: if ``True`` check if the domain names resolves
+        """
         self.re_ascii = re.compile(r"[\x00-\x7F]*")
         self.ascii_only = ascii_only
         self.resolve = resolve
