@@ -632,6 +632,9 @@ class set_name:
 
 
 class regex(compiled_schema):
+    """
+    This matches the strings which match the given pattern.
+    """
     regex: str
     fullmatch: bool
     __name__: str
@@ -645,8 +648,6 @@ class regex(compiled_schema):
         flags: int = 0,
     ) -> None:
         """
-        This matches the strings which match the given pattern.
-
         :param regex: the regular expression pattern
         :param name: common name for the pattern that will be used in non-validation messages
         :param fullmatch: indicates whether or not the full string should be matched
@@ -693,13 +694,14 @@ class regex(compiled_schema):
 
 
 class glob(compiled_schema):
+    """
+    Unix style filename matching. This is implemented using ``pathlib.PurePath().match()``.
+    """
     pattern: str
     __name__: str
 
     def __init__(self, pattern: str, name: str | None = None) -> None:
         """
-        Unix style filename matching. This is implemented using ``pathlib.PurePath().match()``.
-
         :param pattern: the wild card pattern to match
         :param name: common name for the pattern that will be used in non-validation messages
 
@@ -781,6 +783,9 @@ class magic(compiled_schema):
 
 
 class div(compiled_schema):
+    """
+    This matches the integers `x` such that `(x - remainder) % divisor` == 0.
+    """
     divisor: int
     remainder: int
     __name__: str
@@ -788,6 +793,13 @@ class div(compiled_schema):
     def __init__(
         self, divisor: int, remainder: int = 0, name: str | None = None
     ) -> None:
+        """
+        :param divisor: the divisor
+        :param remainder: the remainer
+        :param name: common name (e.g. `even` or `odd`) that will be used in non-validation messages
+
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        """
         if not isinstance(divisor, int):
             raise SchemaError(f"The divisor {repr(divisor)} is not an integer")
         if divisor == 0:
@@ -822,6 +834,9 @@ class div(compiled_schema):
 
 
 class close_to(compiled_schema):
+    """
+    This matches the real numbers that are close to `x` in the sense of ``math.isclose``.
+    """
     kw: dict[str, float]
     x: int | float
     __name__: str
@@ -832,6 +847,12 @@ class close_to(compiled_schema):
         rel_tol: int | float | None = None,
         abs_tol: int | float | None = None,
     ) -> None:
+        """
+        :param rel_tol: the maximal allowed relative deviation
+        :param abs_tol: the maximal allowed absolute deviation
+
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error        
+        """
         self.kw = {}
         if not isinstance(x, (int, float)):
             raise SchemaError(f"{repr(x)} is not a number")
@@ -1317,9 +1338,15 @@ class number(compiled_schema):
 
 
 class email(compiled_schema):
+    """
+    Checks if the object is a valid email address. This uses the package ``email_validator``. The ``email`` schema accepts the same options as ``validate_email`` in loc. cit.
+    """
     kw: dict[str, Any]
 
     def __init__(self, **kw: Any) -> None:
+        """
+        :param kw: optional keyword arguments to be forwarded to ``email_validator.validate_email``
+        """
         self.kw = kw
         if "dns_resolver" not in kw:
             self.kw["dns_resolver"] = _get_dns_resolver()
@@ -1343,11 +1370,17 @@ class email(compiled_schema):
 
 
 class ip_address(compiled_schema):
-
+    """
+    Matches ip addresses of the specified version which can be 4, 6 or None.
+    """
     __name__: str
     method: Callable[[Any], Any]
 
     def __init__(self, version: Literal[4, 6] | None = None) -> None:
+        """
+        :param version: the version of the ip protocol
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        """
         if version is not None and version not in (4, 6):
             raise SchemaError("version is not 4 or 6")
         if version is None:

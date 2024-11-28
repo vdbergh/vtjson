@@ -137,10 +137,23 @@ Built-in schemas
 Some built-in schemas take arguments. If no arguments are given then the parentheses can be omitted. So ``email`` is equivalent to ``email()``. Some built-ins have an optional ``name`` argument. This is used in non-validation messages.
 
 .. autoclass:: vtjson.regex
-   :class-doc-from: init
+   :class-doc-from: both
 
 .. autoclass:: vtjson.glob
-   :class-doc-from: init
+   :class-doc-from: both
+
+.. autoclass:: vtjson.div
+   :class-doc-from: both
+		    
+.. autoclass:: vtjson.close_to
+   :class-doc-from: both
+
+.. autoclass:: vtjson.email
+   :class-doc-from: both
+		    
+.. autoclass:: vtjson.ip_address
+   :class-doc-from: both
+		    
 
 Schema format
 -------------
