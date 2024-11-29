@@ -44,7 +44,7 @@ Here is a simple schema:
 
 The following conventions were used:
 
-* As in typescript, a (string) key ending in `?` represents an optional key. The corresponding schema (the item the key points to) will only be used for validation when the key is present in the object that should be validated. A key can also be made optional by wrapping it as ``optional_key(key)``.
+* As in typescript, a (string) key ending in `?` represents an optional key. The corresponding schema (the item the key points to) will only be used for validation when the key is present in the object that should be validated. A key can also be made optional by wrapping it as :py:func:`vtjson.optional_key`.
 * If in a list/tuple the last entry is `...` (ellipsis) it means that the next to last entry will be repeated zero or more times. In this way generic types can be created. For example the schema ``[str, ...]`` represents a list of strings.
 
 Let's try to validate some book objects:
@@ -160,9 +160,15 @@ Some built-in schemas take arguments. If no arguments are given then the parenth
 .. autoclass:: vtjson.domain_name
    :class-doc-from: both
 		    
+.. _type_annotations:
+
+Type annotations integration
+----------------------------
 
 Schema format
 -------------
+
+The material below gives some insight into the internal working of ``vtsjon``. It is provided for interested people.
 
 A schema can be, in order of precedence:
 
@@ -203,7 +209,17 @@ A schema can be, in order of precedence:
 Validating against Mapping schemas
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. _type_annotations:
+For a Mapping schema containing only ``const keys`` (i.e. keys corresponding to a ``const schema``) the interpretation is obvious. Below we discuss the validation of an object against a Mapping schema in the general case.
 
-Type annotations integration
-----------------------------
+* First we verify that the type of the object is a subtype of the type of the schema. If not then validation fails.
+* We verify that all non-optional const keys of the schema are also keys of the object. If this is not the case then validation fails.
+* Now we make a list of all the keys of the schema (both optional and non-optional). The result will be called the ``key list`` below.
+* The object will pass validation if all its keys pass validation. We next discuss how to validate a particular key of the object.
+* If none of the entries of the key list validate the given key and ``strict==True`` (the default) then the key fails validation. If on the other hand ``strict==False`` then the key passes.
+* Assuming the fate of the given key hasn't been decided yet, we now match it against all entries of the key list. If it matches an entry and the corresponding value also validates then the key is validated. Otherwise we keep going through the key list.
+* If the entire key list is consumed then the key fails validation.
+
+A consequence of this algorithm is that non-const keys are automatically optional. So applying the wrapper :py:func:`vtjson.optional_key` to them is meaningless and has no effect.
+
+.. autoclass:: vtjson.optional_key
+   :class-doc-from: both

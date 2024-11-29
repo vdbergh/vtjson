@@ -344,9 +344,15 @@ def make_type(
 
 
 class optional_key:
+    """
+    Make a key in a Mapping schema optional. In the common case that the key is a string, the same effect can be achieved by appending ``?``.
+    """
     key: object
 
     def __init__(self, key: object) -> None:
+        """
+        :param key: the key to be made optional
+        """
         self.key = key
 
     def __eq__(self, key: object) -> bool:
