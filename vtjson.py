@@ -95,7 +95,9 @@ def safe_cast(schema: Type[T], obj: Any) -> T:
 
 
 class compiled_schema:
-    """The result of compiling a schema."""
+    """
+    The result of compiling a schema. A ``compiled_schema`` is produced by the factory function :py:func:`vtjson.compile`.
+    """
 
     def __validate__(
         self,
@@ -1174,12 +1176,27 @@ class _validate_schema(compiled_schema):
 
 
 def compile(schema: object) -> compiled_schema:
+    """
+    Compiles a schema. Internally invokes :py:func:`vtjson._compile`.
+
+    :param schema: the schema that should be compiled
+
+    :raises SchemaError: exception thrown when the schema definition is found to contain an error
+    """
     return _compile(schema, _deferred_compiles=None)
 
 
 def _compile(
     schema: object, _deferred_compiles: _mapping | None = None
 ) -> compiled_schema:
+    """
+    Compiles a schema.
+
+    :param schema: the schema that should be compiled
+    :param _deferred_compiles: an opaque data structure used for handling recursive schemas; it should be passed unmodifed to any internal invocations of :py:func:`vtjson._compile` or :py:meth:`vtjson.wrapper.__compile__`
+
+    :raises SchemaError: exception thrown when the schema definition is found to contain an error
+    """
     if _deferred_compiles is None:
         _deferred_compiles = _mapping()
     # avoid infinite loop in case of a recursive schema

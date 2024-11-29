@@ -175,4 +175,6 @@ A schema can be, in order of precedence:
 .. autoclass:: vtjson.compiled_schema
   :members: __validate__
 
+.. autofunction:: vtjson.compile
 
+.. autofunction:: vtjson._compile
