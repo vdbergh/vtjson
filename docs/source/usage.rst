@@ -168,8 +168,6 @@ Type annotations integration
 Schema format
 -------------
 
-The material below gives some insight into the internal working of ``vtsjon``. It is provided for interested people.
-
 A schema can be, in order of precedence:
 
 * An instance of the class :py:class:`vtjson.compiled_schema`.   The class :py:class:`vtjson.compiled_schema` defines a single abstract method :py:meth:`vtjson.compiled_schema.__validate__` with similar semantics as  :py:func:`vtjson.validate`.
