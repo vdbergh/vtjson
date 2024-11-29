@@ -184,6 +184,10 @@ A schema can be, in order of precedence:
 
 * An instance of ``Mapping``. Validation is done by first checking membership of the schema type, and then performing validation for each of the values of the object being validated against the corresponding values of the schema. Keys are themselves considered as schemas. E.g. ``{str: str}`` represents a dictionary whose keys and values are both strings. For a more elaborate discussion of validation of mappings see :ref:`mapping_schemas`.
 
+* A ``set``. A set validates an object if the object is a set and the elements of the object are validated by an element of the schema.
+
+* An arbitrary Python object. Validation is done by checking equality of the schema and the object, except when the schema is ``float``, in which case ``math.isclose`` is used. Below we call such an object a ``const schema``.
+
 .. autoclass:: vtjson.compiled_schema
   :members: __validate__
 
