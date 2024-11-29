@@ -126,6 +126,7 @@ class wrapper:
 
     Handling such schemas is somewhat delicate since ``vtjson`` allows them to be recursive.
     """
+
     def __compile__(
         self, _deferred_compiles: _mapping | None = None
     ) -> compiled_schema:
@@ -1245,7 +1246,7 @@ def _compile(
             ) from None
     elif hasattr(schema, "__validate__"):
         ret = _validate_schema(schema)
-    elif hasattr(schema, "__compile__"):
+    elif isinstance(schema, wrapper):
         ret = schema.__compile__(_deferred_compiles=_deferred_compiles)
     elif isinstance(schema, compiled_schema):
         ret = schema
