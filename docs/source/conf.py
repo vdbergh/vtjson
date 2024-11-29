@@ -38,7 +38,8 @@ exclude_patterns = []
 #html_theme = 'alabaster'
 #html_theme = 'furo'
 #html_theme = 'press'
+#html_theme = 'insipid'
 
 html_permalinks_icon = '§'
-html_theme = 'insipid'
+html_theme = "sphinx_rtd_theme"
 html_static_path = ['_static']

@@ -1,0 +1,8 @@
+sphinx==8.1.3
+sphinx_autodoc_typehints==2.5.0
+sphinx_rtd_theme
+dnspython
+email_validator
+idna
+python-magic
+typing_extensions
