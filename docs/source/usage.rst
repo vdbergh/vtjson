@@ -10,21 +10,7 @@ Installation
 
    $ pip install vtjson
 
-Validating objects
-------------------
-To validate an object against a schema one may use :py:func:`vtjson.validate`. If validation fails this throws a :py:exc:`vtjson.ValidationError`.
-A suitable written schema can be used as a Python type annotation. :py:func:`vtjson.safe_cast` verifies if a given object has a given type.
-:py:func:`vtjson.make_type` transforms a schema into a genuine Python type so that validation can be done using ``isinstance()``.
-
-
-.. autofunction:: vtjson.validate
-.. autofunction:: vtjson.safe_cast
-.. autofunction:: vtjson.make_type
-
-.. autoexception:: vtjson.ValidationError
-.. autoexception:: vtjson.SchemaError
-
-Examples
+Tutorial
 --------
 
 .. testsetup:: *
@@ -130,6 +116,21 @@ The exception thrown is similar.
        ...
        raise ValidationError(message)
    vtjson.vtjson.ValidationError: object is not of type 'book_schema': object['year'] (value:'1936') is not of type 'int'
+
+Validating objects
+------------------
+To validate an object against a schema one may use :py:func:`vtjson.validate`. If validation fails this throws a :py:exc:`vtjson.ValidationError`.
+A suitable written schema can be used as a Python type annotation. :py:func:`vtjson.safe_cast` verifies if a given object has a given type.
+:py:func:`vtjson.make_type` transforms a schema into a genuine Python type so that validation can be done using ``isinstance()``.
+
+
+.. autofunction:: vtjson.validate
+.. autofunction:: vtjson.safe_cast
+.. autofunction:: vtjson.make_type
+
+.. autoexception:: vtjson.ValidationError
+.. autoexception:: vtjson.SchemaError
+
    
 Built-in schemas
 ----------------
