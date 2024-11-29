@@ -174,6 +174,16 @@ A schema can be, in order of precedence:
 
 * An instance of the class :py:class:`vtjson.wrapper`. The class :py:class:`vtjson.wrapper` defines a single abstract method :py:meth:`vtjson.wrapper.__compile__` that should produce an instance  of :py:class:`vtjson.compiled_schema`.
 
+* A Python type annotation such as ``list[str]``. See :ref:`type_annotations`.
+
+* A Python type. In that case validation is done by checking membership. By convention the schema ``float`` matches both ints and floats. Similarly the schema ``complex`` matches ints and floats besides of course complex numbers.
+
+* A callable. Validation is done by applying the callable to the object. If applying the callable throws an exception then the corresponding message will be part of the non-validation message.
+
+* An instance of ``Sequence`` that is not an instance of ``str`` (e.g a ``list`` or a ``tuple``). Validation is done by first checking membership of the schema type, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
+
+* An instance of ``Mapping``. Validation is done by first checking membership of the schema type, and then performing validation for each of the values of the object being validated against the corresponding values of the schema. Keys are themselves considered as schemas. E.g. ``{str: str}`` represents a dictionary whose keys and values are both strings. For a more elaborate discussion of validation of mappings see :ref:`mapping_schemas`.
+
 .. autoclass:: vtjson.compiled_schema
   :members: __validate__
 
@@ -183,4 +193,13 @@ A schema can be, in order of precedence:
 
 .. autoclass:: vtjson.wrapper
   :members: __compile__
-	    
+
+.. _mapping_schemas:
+
+Validating against Mapping schemas
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. _type_annotations:
+
+Type annotations integration
+----------------------------
