@@ -89,14 +89,14 @@ def safe_cast(schema: Type[T], obj: Any) -> T:
     :raises ValidationError: exception thrown when the object does not validate; the exception message contains an explanation about what went wrong
     :raises SchemaError: exception thrown when the schema definition is found to contain an error
     """
-    
+
     validate(schema, obj)
     return cast(T, obj)
 
 
 class compiled_schema:
     """
-    The result of compiling a schema. A ``compiled_schema`` is produced by the factory function :py:func:`vtjson.compile`.
+    The result of compiling a schema. A :py:class:`compiled_schema` is produced by the factory function :py:func:`vtjson.compile`.
     """
 
     def __validate__(
@@ -118,6 +118,25 @@ class compiled_schema:
         """
 
         return ""
+
+
+class wrapper:
+    """
+    Base class for schemas that refer to other schemas.
+
+    Handling such schemas is somewhat delicate since ``vtjson`` allows them to be recursive.
+    """
+    def __compile__(
+        self, _deferred_compiles: _mapping | None = None
+    ) -> compiled_schema:
+        """
+        Compiles a schema.
+
+        :param _deferred_compiles: an opaque data structure used for handling recursive schemas; it should be passed unmodifed to any internal invocations of :py:func:`vtjson._compile` or :py:meth:`vtjson.wrapper.__compile__`
+
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        """
+        return anything()
 
 
 class comparable(Protocol):
@@ -367,7 +386,7 @@ class _union(compiled_schema):
         return " and ".join(messages)
 
 
-class union:
+class union(wrapper):
     schemas: tuple[object, ...]
 
     def __init__(self, *schemas: object) -> None:
@@ -403,7 +422,7 @@ class _intersect(compiled_schema):
         return ""
 
 
-class intersect:
+class intersect(wrapper):
     schemas: tuple[object, ...]
 
     def __init__(self, *schemas: object) -> None:
@@ -435,7 +454,7 @@ class _complement(compiled_schema):
             return f"{name} does not match the complemented schema"
 
 
-class complement:
+class complement(wrapper):
     schema: object
 
     def __init__(self, schema: object) -> None:
@@ -463,7 +482,7 @@ class _lax(compiled_schema):
         return self.schema.__validate__(obj, name=name, strict=False, subs=subs)
 
 
-class lax:
+class lax(wrapper):
     schema: object
 
     def __init__(self, schema: object) -> None:
@@ -491,7 +510,7 @@ class _strict(compiled_schema):
         return self.schema.__validate__(obj, name=name, strict=True, subs=subs)
 
 
-class strict:
+class strict(wrapper):
     def __init__(self, schema: object) -> None:
         self.schema = schema
 
@@ -541,7 +560,7 @@ class _set_label(compiled_schema):
             return self.schema.__validate__(obj, name=name, strict=True, subs=subs)
 
 
-class set_label:
+class set_label(wrapper):
     schema: object
     labels: set[str]
     debug: bool
@@ -612,7 +631,7 @@ class _set_name(compiled_schema):
         return ""
 
 
-class set_name:
+class set_name(wrapper):
     reason: bool
     schema: object
     name: str
@@ -637,6 +656,7 @@ class regex(compiled_schema):
     """
     This matches the strings which match the given pattern.
     """
+
     regex: str
     fullmatch: bool
     __name__: str
@@ -699,6 +719,7 @@ class glob(compiled_schema):
     """
     Unix style filename matching. This is implemented using ``pathlib.PurePath().match()``.
     """
+
     pattern: str
     __name__: str
 
@@ -788,6 +809,7 @@ class div(compiled_schema):
     """
     This matches the integers `x` such that `(x - remainder) % divisor` == 0.
     """
+
     divisor: int
     remainder: int
     __name__: str
@@ -839,6 +861,7 @@ class close_to(compiled_schema):
     """
     This matches the real numbers that are close to `x` in the sense of ``math.isclose``.
     """
+
     kw: dict[str, float]
     x: int | float
     __name__: str
@@ -853,7 +876,7 @@ class close_to(compiled_schema):
         :param rel_tol: the maximal allowed relative deviation
         :param abs_tol: the maximal allowed absolute deviation
 
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error        
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error
         """
         self.kw = {}
         if not isinstance(x, (int, float)):
@@ -1358,6 +1381,7 @@ class email(compiled_schema):
     """
     Checks if the object is a valid email address. This uses the package ``email_validator``. The ``email`` schema accepts the same options as ``validate_email`` in loc. cit.
     """
+
     kw: dict[str, Any]
 
     def __init__(self, **kw: Any) -> None:
@@ -1390,6 +1414,7 @@ class ip_address(compiled_schema):
     """
     Matches ip addresses of the specified version which can be 4, 6 or None.
     """
+
     __name__: str
     method: Callable[[Any], Any]
 
@@ -1431,6 +1456,7 @@ class url(compiled_schema):
     """
     Matches valid urls.
     """
+
     def __validate__(
         self,
         obj: object,
@@ -1539,6 +1565,7 @@ class domain_name(compiled_schema):
     """
     Checks if the object is a valid domain name.
     """
+
     re_asci: re.Pattern[str]
     ascii_only: bool
     resolve: bool
@@ -1731,7 +1758,7 @@ class _ifthen(compiled_schema):
         return ""
 
 
-class ifthen:
+class ifthen(wrapper):
     if_schema: object
     then_schema: object
     else_schema: object | None
@@ -1785,7 +1812,7 @@ class _cond(compiled_schema):
         return ""
 
 
-class cond:
+class cond(wrapper):
     args: tuple[tuple[object, object], ...]
 
     def __init__(self, *args: tuple[object, object]) -> None:
@@ -1827,7 +1854,7 @@ class _fields(compiled_schema):
         return ""
 
 
-class fields:
+class fields(wrapper):
     def __init__(self, d: object) -> None:
         if not isinstance(d, Mapping):
             raise SchemaError(f"{repr(d)} is not a Mapping")
@@ -1882,7 +1909,7 @@ class _filter(compiled_schema):
         return self.schema.__validate__(obj, name="object", strict=strict, subs=subs)
 
 
-class filter:
+class filter(wrapper):
     filter: Callable[[Any], object]
     schema: object
     filter_name: str | None
@@ -2257,7 +2284,7 @@ class _set(compiled_schema):
         return str(self.schema_)
 
 
-class protocol:
+class protocol(wrapper):
     type_dict: dict[object, object]
     dict: bool
     __name__: str

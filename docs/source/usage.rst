@@ -166,11 +166,13 @@ Schema format
 
 A schema can be, in order of precedence:
 
-* An instance of the class :py:class:`vtjson.compiled_schema`.   The class :py:class:`vtjson.compiled_schema` defines a single method :py:meth:`vtjson.compiled_schema.__validate__` with similar semantics as  :py:func:`vtjson.validate`.
+* An instance of the class :py:class:`vtjson.compiled_schema`.   The class :py:class:`vtjson.compiled_schema` defines a single abstract method :py:meth:`vtjson.compiled_schema.__validate__` with similar semantics as  :py:func:`vtjson.validate`.
 
 * A subclass of :py:class:`vtjson.compiled_schema` with a no-argument constructor.
 
 * An object having a ``__validate__()`` attribute with the same signature as  :py:meth:`vtjson.compiled_schema.__validate__`.
+
+* An instance of the class :py:class:`vtjson.wrapper`. The class :py:class:`vtjson.wrapper` defines a single abstract method :py:meth:`vtjson.wrapper.__compile__` that should produce an instance  of :py:class:`vtjson.compiled_schema`.
 
 .. autoclass:: vtjson.compiled_schema
   :members: __validate__
@@ -178,3 +180,7 @@ A schema can be, in order of precedence:
 .. autofunction:: vtjson.compile
 
 .. autofunction:: vtjson._compile
+
+.. autoclass:: vtjson.wrapper
+  :members: __compile__
+	    
