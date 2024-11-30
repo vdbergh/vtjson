@@ -15,7 +15,7 @@ Tutorial
 
 .. testsetup:: *
 
-   from vtjson import make_type, safe_cast, validate
+   from vtjson import email, make_type, safe_cast, url, validate
 
 Here is a simple schema:
 
@@ -117,6 +117,84 @@ The exception thrown is similar.
        raise ValidationError(message)
    vtjson.vtjson.ValidationError: object is not of type 'book_schema': object['year'] (value:'1936') is not of type 'int'
 
+Schemas can of course be nested
+
+.. testcode::
+   
+   person_schema = {
+     "name": str,
+     "email?": email,
+     "website?": url,
+   }
+
+   book_schema = {
+     "title": str,
+     "authors": [person_schema, ...],
+     "editor?": person_schema,
+     "year": int,
+   }
+
+`email` and `url` are built-in schemas. See :ref:`builtins`.
+
+Let's validate an object not fitting the schema.
+
+.. testcode::
+
+   bad_book = {
+     "title": "Gone with the Wind",
+     "authors": [{"name": "Margaret Mitchell", "email":"margaret@gmailcom"}, ...],
+     "year": "1936",
+   }
+
+   validate(book_schema, bad_book, name="bad_book")
+
+.. testoutput::
+
+   Traceback (most recent call last):
+       ...
+       raise ValidationError(message)
+   vtjson.vtjson.ValidationError: bad_book['authors'][0]['email'] (value:'margaret@gmailcom') is not of type 'email': The part after the @-sign is not valid. It should have a period.
+
+As before we can rewrite the new `book_schema` as a valid type annotation
+
+.. testcode::
+   
+   from typing import Annotated
+
+   class person_schema(TypedDict):
+     name: str
+     email: NotRequired[Annotated[str, email]]
+     website: NotRequired[Annotated[str, url]]
+
+   class book_schema(TypedDict):
+     title: str
+     authors: list[person_schema]
+     editor: NotRequired[list[person_schema]]
+     year: int
+
+The contraint that a string should be an email address cannot be expressed in the language of type annotations. That's where `typing.Annotated` comes in:
+
+.. testcode::
+   
+   Annotated[str, email]
+
+Type checkers such as `mypy` only see the `str` part of this schema, but `vtjson` sees everything. For more information see :ref:`type_annotations`.
+
+Let's check that validation also works with type annotations:
+
+.. testcode::
+
+   validate(book_schema, bad_book, name="bad_book")
+
+.. testoutput::
+
+   Traceback (most recent call last):
+       ...
+       raise ValidationError(message)
+   vtjson.vtjson.ValidationError: bad_book is not of type 'book_schema': bad_book['authors'][0] is not of type 'person_schema': bad_book['authors'][0]['email'] (value:'margaret@gmailcom') is not of type 'email': The part after the @-sign is not valid. It should have a period.
+
+
+   
 Validating objects
 ------------------
 To validate an object against a schema one may use :py:func:`vtjson.validate`. If validation fails this throws a :py:exc:`vtjson.ValidationError`.
@@ -131,7 +209,8 @@ A suitable written schema can be used as a Python type annotation. :py:func:`vtj
 .. autoexception:: vtjson.ValidationError
 .. autoexception:: vtjson.SchemaError
 
-   
+.. _builtins:
+
 Built-in schemas
 ----------------
 
@@ -178,6 +257,8 @@ Some built-in schemas take arguments. If no arguments are given then the parenth
 
 Wrappers
 --------
+
+Wrappers may be used to combine a collection of schemas into a new schema.
 
 .. autoclass:: vtjson.union
    :class-doc-from: both

@@ -615,7 +615,7 @@ class set_label(wrapper):
         """
         :param schema: the schema that will be labeled
         :param labels: labels that will be attached to the schema
-        :param debug:  it `True` pring a message will on the console if the schema was changed via substitution
+        :param debug:  it `True` print a message on the console if the schema was changed via substitution
         :raises SchemaError: exception thrown when the schema definition is found to contain an error
         """
         self.schema = schema
