@@ -4,7 +4,7 @@ Usage
 Installation
 ------------
 
-``vtjson`` is available via pip:
+`vtjson` is available via pip:
 
 .. code-block:: console
 
@@ -31,7 +31,7 @@ Here is a simple schema:
 The following conventions were used:
 
 * As in typescript, a (string) key ending in `?` represents an optional key. The corresponding schema (the item the key points to) will only be used for validation when the key is present in the object that should be validated. A key can also be made optional by wrapping it as :py:func:`vtjson.optional_key`.
-* If in a list/tuple the last entry is `...` (ellipsis) it means that the next to last entry will be repeated zero or more times. In this way generic types can be created. For example the schema ``[str, ...]`` represents a list of strings.
+* If in a list/tuple the last entry is `...` (ellipsis) it means that the next to last entry will be repeated zero or more times. In this way generic types can be created. For example the schema `[str, ...]` represents a list of strings.
 
 Let's try to validate some book objects:
 
@@ -52,7 +52,7 @@ Let's try to validate some book objects:
    validate(book_schema, good_book, name="good_book")
    validate(book_schema, bad_book, name="bad_book")
 
-As expected ``vtjson`` throws an exception for the second object:
+As expected `vtjson` throws an exception for the second object:
 
 .. testoutput::
 
@@ -61,7 +61,7 @@ As expected ``vtjson`` throws an exception for the second object:
       raise ValidationError(message)
   vtjson.vtjson.ValidationError: bad_book['year'] (value:'1936') is not of type 'int'
 
-We can turn the ``book_schema`` into a genuine Python type.
+We can turn the `book_schema` into a genuine Python type.
 
 .. testcode::
 
@@ -76,7 +76,7 @@ We can turn the ``book_schema`` into a genuine Python type.
    Is bad_book an instance of Book? False!
 
 
-We may also rewrite the ``book_schema`` as a valid Python type annotation.
+We may also rewrite the `book_schema` as a valid Python type annotation.
 
 .. testcode::
 
@@ -101,7 +101,7 @@ Attempting to validate the bad book raises the same exception as before:
       raise ValidationError(message)
   vtjson.vtjson.ValidationError: book['year'] (value:'1936') is not of type 'int'
 
-:py:func:`vtjson.safe_cast` functions exactly like ``cast`` except that it also verifies at run time that the given object matches the given schema.
+:py:func:`vtjson.safe_cast` functions exactly like `cast` except that it also verifies at run time that the given object matches the given schema.
   
 .. testcode::
 
@@ -121,7 +121,7 @@ Validating objects
 ------------------
 To validate an object against a schema one may use :py:func:`vtjson.validate`. If validation fails this throws a :py:exc:`vtjson.ValidationError`.
 A suitable written schema can be used as a Python type annotation. :py:func:`vtjson.safe_cast` verifies if a given object has a given type.
-:py:func:`vtjson.make_type` transforms a schema into a genuine Python type so that validation can be done using ``isinstance()``.
+:py:func:`vtjson.make_type` transforms a schema into a genuine Python type so that validation can be done using `isinstance()`.
 
 
 .. autofunction:: vtjson.validate
@@ -135,7 +135,7 @@ A suitable written schema can be used as a Python type annotation. :py:func:`vtj
 Built-in schemas
 ----------------
 
-Some built-in schemas take arguments. If no arguments are given then the parentheses can be omitted. So ``email`` is equivalent to ``email()``. Some built-ins have an optional ``name`` argument. This is used in non-validation messages.
+Some built-in schemas take arguments. If no arguments are given then the parentheses can be omitted. So `email` is equivalent to `email()`. Some built-ins have an optional `name` argument. This is used in non-validation messages.
 
 .. autoclass:: vtjson.regex
    :class-doc-from: both
@@ -160,7 +160,49 @@ Some built-in schemas take arguments. If no arguments are given then the parenth
 
 .. autoclass:: vtjson.domain_name
    :class-doc-from: both
-		    
+
+.. autoclass:: vtjson.date_time
+   :class-doc-from: both
+
+.. autoclass:: vtjson.date
+   :class-doc-from: both
+
+.. autoclass:: vtjson.time
+   :class-doc-from: both
+
+.. autoclass:: vtjson.anything
+   :class-doc-from: both
+
+.. autoclass:: vtjson.nothing
+   :class-doc-from: both
+
+Wrappers
+--------
+
+.. autoclass:: vtjson.union
+   :class-doc-from: both
+
+.. autoclass:: vtjson.intersect
+   :class-doc-from: both
+
+.. autoclass:: vtjson.complement
+   :class-doc-from: both
+
+.. autoclass:: vtjson.lax
+   :class-doc-from: both
+
+.. autoclass:: vtjson.strict
+   :class-doc-from: both
+
+.. autoclass:: vtjson.set_name
+   :class-doc-from: both
+
+.. autoclass:: vtjson.protocol
+   :class-doc-from: both
+
+.. autoclass:: vtjson.set_label
+   :class-doc-from: both
+
 .. _type_annotations:
 
 Type annotations integration
@@ -175,23 +217,23 @@ A schema can be, in order of precedence:
 
 * A subclass of :py:class:`vtjson.compiled_schema` with a no-argument constructor.
 
-* An object having a ``__validate__()`` attribute with the same signature as  :py:meth:`vtjson.compiled_schema.__validate__`.
+* An object having a `__validate__()` attribute with the same signature as  :py:meth:`vtjson.compiled_schema.__validate__`.
 
 * An instance of the class :py:class:`vtjson.wrapper`. The class :py:class:`vtjson.wrapper` defines a single abstract method :py:meth:`vtjson.wrapper.__compile__` that should produce an instance  of :py:class:`vtjson.compiled_schema`.
 
-* A Python type annotation such as ``list[str]``. See :ref:`type_annotations`.
+* A Python type annotation such as `list[str]`. See :ref:`type_annotations`.
 
-* A Python type. In that case validation is done by checking membership. By convention the schema ``float`` matches both ints and floats. Similarly the schema ``complex`` matches ints and floats besides of course complex numbers.
+* A Python type. In that case validation is done by checking membership. By convention the schema `float` matches both ints and floats. Similarly the schema `complex` matches ints and floats besides of course complex numbers.
 
 * A callable. Validation is done by applying the callable to the object. If applying the callable throws an exception then the corresponding message will be part of the non-validation message.
 
-* An instance of ``Sequence`` that is not an instance of ``str`` (e.g a ``list`` or a ``tuple``). Validation is done by first checking membership of the schema type, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
+* An instance of `Sequence` that is not an instance of `str` (e.g a `list` or a `tuple`). Validation is done by first checking membership of the schema type, and then performing validation for each of the entries of the object being validated against the corresponding entries of the schema.
 
-* An instance of ``Mapping``. Validation is done by first checking membership of the schema type, and then performing validation for each of the values of the object being validated against the corresponding values of the schema. Keys are themselves considered as schemas. E.g. ``{str: str}`` represents a dictionary whose keys and values are both strings. For a more elaborate discussion of validation of mappings see :ref:`mapping_schemas`.
+* An instance of `Mapping`. Validation is done by first checking membership of the schema type, and then performing validation for each of the values of the object being validated against the corresponding values of the schema. Keys are themselves considered as schemas. E.g. `{str: str}` represents a dictionary whose keys and values are both strings. For a more elaborate discussion of validation of mappings see :ref:`mapping_schemas`.
 
-* A ``set``. A set validates an object if the object is a set and the elements of the object are validated by an element of the schema.
+* A `set`. A set validates an object if the object is a set and the elements of the object are validated by an element of the schema.
 
-* An arbitrary Python object. Validation is done by checking equality of the schema and the object, except when the schema is ``float``, in which case ``math.isclose`` is used. Below we call such an object a ``const schema``.
+* An arbitrary Python object. Validation is done by checking equality of the schema and the object, except when the schema is `float`, in which case `math.isclose` is used. Below we call such an object a `const schema`.
 
 .. autoclass:: vtjson.compiled_schema
   :members: __validate__
@@ -208,13 +250,13 @@ A schema can be, in order of precedence:
 Validating against Mapping schemas
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a Mapping schema containing only ``const keys`` (i.e. keys corresponding to a ``const schema``) the interpretation is obvious. Below we discuss the validation of an object against a Mapping schema in the general case.
+For a Mapping schema containing only `const keys` (i.e. keys corresponding to a `const schema`) the interpretation is obvious. Below we discuss the validation of an object against a Mapping schema in the general case.
 
 * First we verify that the type of the object is a subtype of the type of the schema. If not then validation fails.
 * We verify that all non-optional const keys of the schema are also keys of the object. If this is not the case then validation fails.
-* Now we make a list of all the keys of the schema (both optional and non-optional). The result will be called the ``key list`` below.
+* Now we make a list of all the keys of the schema (both optional and non-optional). The result will be called the `key list` below.
 * The object will pass validation if all its keys pass validation. We next discuss how to validate a particular key of the object.
-* If none of the entries of the key list validate the given key and ``strict==True`` (the default) then the key fails validation. If on the other hand ``strict==False`` then the key passes.
+* If none of the entries of the key list validate the given key and `strict==True` (the default) then the key fails validation. If on the other hand `strict==False` then the key passes.
 * Assuming the fate of the given key hasn't been decided yet, we now match it against all entries of the key list. If it matches an entry and the corresponding value also validates then the key is validated. Otherwise we keep going through the key list.
 * If the entire key list is consumed then the key fails validation.
 

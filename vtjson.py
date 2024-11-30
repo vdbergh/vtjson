@@ -124,7 +124,7 @@ class wrapper:
     """
     Base class for schemas that refer to other schemas.
 
-    Handling such schemas is somewhat delicate since ``vtjson`` allows them to be recursive.
+    Handling such schemas is somewhat delicate since `vtjson` allows them to be recursive.
     """
 
     def __compile__(
@@ -345,8 +345,9 @@ def make_type(
 
 class optional_key:
     """
-    Make a key in a Mapping schema optional. In the common case that the key is a string, the same effect can be achieved by appending ``?``.
+    Make a key in a Mapping schema optional. In the common case that the key is a string, the same effect can be achieved by appending `?`.
     """
+
     key: object
 
     def __init__(self, key: object) -> None:
@@ -394,9 +395,16 @@ class _union(compiled_schema):
 
 
 class union(wrapper):
+    """
+    An object matches the schema `union(schema1, ..., schemaN)` if it matches one of the schemas `schema1, ..., schemaN`.
+    """
+
     schemas: tuple[object, ...]
 
     def __init__(self, *schemas: object) -> None:
+        """
+        :param schemas: collection of schemas, one of which should match
+        """
         self.schemas = schemas
 
     def __compile__(self, _deferred_compiles: _mapping | None = None) -> _union:
@@ -430,9 +438,16 @@ class _intersect(compiled_schema):
 
 
 class intersect(wrapper):
+    """
+    An object matches the schema `intersect(schema1, ..., schemaN)` if it matches all the schemas `schema1, ..., schemaN`.
+    """
+
     schemas: tuple[object, ...]
 
     def __init__(self, *schemas: object) -> None:
+        """
+        :param schemas: collection of schemas, all of which should match
+        """
         self.schemas = schemas
 
     def __compile__(self, _deferred_compiles: _mapping | None = None) -> _intersect:
@@ -462,9 +477,16 @@ class _complement(compiled_schema):
 
 
 class complement(wrapper):
+    """
+    An object matches the schema `complement(schema)` if it does not match `schema`.
+    """
+
     schema: object
 
     def __init__(self, schema: object) -> None:
+        """
+        :param schema: the schema that should not be matched
+        """
         self.schema = schema
 
     def __compile__(self, _deferred_compiles: _mapping | None = None) -> _complement:
@@ -490,9 +512,16 @@ class _lax(compiled_schema):
 
 
 class lax(wrapper):
+    """
+    An object matches the schema `lax(schema)` if it matches `schema` when validated with `strict=False`.
+    """
+
     schema: object
 
     def __init__(self, schema: object) -> None:
+        """
+        :param schema: schema that should be validated against with `strict=False`
+        """
         self.schema = schema
 
     def __compile__(self, _deferred_compiles: _mapping | None = None) -> _lax:
@@ -518,7 +547,14 @@ class _strict(compiled_schema):
 
 
 class strict(wrapper):
+    """
+    An object matches the schema `strict(schema)` if it matches `schema` when validated with `strict=True`.
+    """
+
     def __init__(self, schema: object) -> None:
+        """
+        :param schema: schema that should be validated against with `strict=True`
+        """
         self.schema = schema
 
     def __compile__(self, _deferred_compiles: _mapping | None = None) -> _strict:
@@ -568,11 +604,20 @@ class _set_label(compiled_schema):
 
 
 class set_label(wrapper):
+    """
+    An object matches the schema `set_label(schema, label1, ..., labelN, debug=False)` if it matches `schema`, unless the schema is replaced by a different one via the `subs` argument to `validate`.
+    """
     schema: object
     labels: set[str]
     debug: bool
 
     def __init__(self, schema: object, *labels: str, debug: bool = False) -> None:
+        """
+        :param schema: the schema that will be labeled
+        :param labels: labels that will be attached to the schema
+        :param debug:  it `True` pring a message will on the console if the schema was changed via substitution
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        """
         self.schema = schema
         for L in labels:
             if not isinstance(L, str):
@@ -639,11 +684,20 @@ class _set_name(compiled_schema):
 
 
 class set_name(wrapper):
+    """
+    An object matches the schema `set_name(schema, name, reason=False)` if it matches `schema`, but the `name` argument will be used in non-validation messages.
+    """
+
     reason: bool
     schema: object
     name: str
 
     def __init__(self, schema: object, name: str, reason: bool = False) -> None:
+        """
+        :param schema: the original schema
+        :param name: name for use in non-validation messages
+        :param reason: indicates whether the original non-validation message should be suppressed
+        """
         if not isinstance(name, str):
             raise SchemaError(f"The name {_c(name)} is not a string")
         self.schema = schema
@@ -680,7 +734,7 @@ class regex(compiled_schema):
         :param regex: the regular expression pattern
         :param name: common name for the pattern that will be used in non-validation messages
         :param fullmatch: indicates whether or not the full string should be matched
-        :param flags: the flags argument used when invoking ``re.compile``
+        :param flags: the flags argument used when invoking `re.compile`
 
         :raises SchemaError: exception thrown when the schema definition is found to contain an error
         """
@@ -724,7 +778,7 @@ class regex(compiled_schema):
 
 class glob(compiled_schema):
     """
-    Unix style filename matching. This is implemented using ``pathlib.PurePath().match()``.
+    Unix style filename matching. This is implemented using `pathlib.PurePath().match()`.
     """
 
     pattern: str
@@ -866,7 +920,7 @@ class div(compiled_schema):
 
 class close_to(compiled_schema):
     """
-    This matches the real numbers that are close to `x` in the sense of ``math.isclose``.
+    This matches the real numbers that are close to `x` in the sense of `math.isclose`.
     """
 
     kw: dict[str, float]
@@ -1386,14 +1440,14 @@ class number(compiled_schema):
 
 class email(compiled_schema):
     """
-    Checks if the object is a valid email address. This uses the package ``email_validator``. The ``email`` schema accepts the same options as ``validate_email`` in loc. cit.
+    Checks if the object is a valid email address. This uses the package `email_validator`. The `email` schema accepts the same options as `validate_email` in loc. cit.
     """
 
     kw: dict[str, Any]
 
     def __init__(self, **kw: Any) -> None:
         """
-        :param kw: optional keyword arguments to be forwarded to ``email_validator.validate_email``
+        :param kw: optional keyword arguments to be forwarded to `email_validator.validate_email`
         """
         self.kw = kw
         if "dns_resolver" not in kw:
@@ -1480,10 +1534,17 @@ class url(compiled_schema):
 
 
 class date_time(compiled_schema):
+    """
+    Without argument this represents an ISO 8601 date-time. The `format` argument represents a format string for `strftime`.
+    """
+
     format: str | None
     __name__: str
 
     def __init__(self, format: str | None = None) -> None:
+        """
+        :param format: format string for `strftime`
+        """
         self.format = format
         if format is not None:
             self.__name__ = f"date_time({repr(format)})"
@@ -1513,6 +1574,10 @@ class date_time(compiled_schema):
 
 
 class date(compiled_schema):
+    """
+    Matches an ISO 8601 date.
+    """
+
     def __validate__(
         self,
         obj: object,
@@ -1530,6 +1595,10 @@ class date(compiled_schema):
 
 
 class time(compiled_schema):
+    """
+    Matches an ISO 8601 time.
+    """
+
     def __validate__(
         self,
         obj: object,
@@ -1547,6 +1616,10 @@ class time(compiled_schema):
 
 
 class nothing(compiled_schema):
+    """
+    Matches nothing.
+    """
+
     def __validate__(
         self,
         obj: object,
@@ -1558,6 +1631,10 @@ class nothing(compiled_schema):
 
 
 class anything(compiled_schema):
+    """
+    Matchess anything.
+    """
+
     def __validate__(
         self,
         obj: object,
@@ -1580,8 +1657,8 @@ class domain_name(compiled_schema):
 
     def __init__(self, ascii_only: bool = True, resolve: bool = False) -> None:
         """
-        :param ascii_only: if ``False`` then allow IDNA domain names
-        :param resolve: if ``True`` check if the domain names resolves
+        :param ascii_only: if `False` then allow IDNA domain names
+        :param resolve: if `True` check if the domain names resolves
         """
         self.re_ascii = re.compile(r"[\x00-\x7F]*")
         self.ascii_only = ascii_only
@@ -2292,11 +2369,21 @@ class _set(compiled_schema):
 
 
 class protocol(wrapper):
+    """
+    An object matches the schema `protocol(schema, dict=False)` if `schema` is a class (or class like object) and its fields are annotated with schemas which validate the corresponding fields in the object.
+    """
+
     type_dict: dict[object, object]
     dict: bool
     __name__: str
 
     def __init__(self, schema: object, dict: bool = False):
+        """
+        :param schema: a type annotated class (or class like object) serving as prototype
+        :param dict: if `True` parse the object as a `dict`
+
+        :raises SchemaError: exception thrown when the schema does not support type_hints
+        """
         if not isinstance(dict, bool):
             raise SchemaError("bool flag is not a bool")
         type_hints = _get_type_hints(schema)

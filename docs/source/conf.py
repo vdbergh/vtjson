@@ -9,9 +9,10 @@
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src' / 'vtjson'))
 add_module_names = False
 
-project = 'Vtjson'
+project = 'vtjson'
 copyright = '2024, Michel Van den Bergh'
 author = 'Michel Van den Bergh'
 release = '2.1.9'
@@ -24,6 +25,7 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
+    'sphinx.ext.githubpages',
     'sphinx_autodoc_typehints',
 ]
 
