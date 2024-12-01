@@ -976,9 +976,17 @@ class close_to(compiled_schema):
 
 
 class gt(compiled_schema):
+    """
+    This checks if `object > lb`.
+    """
     lb: comparable
 
     def __init__(self, lb: comparable) -> None:
+        """
+        :param lb: the strict lower bound
+
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        """
         try:
             lb <= lb
         except Exception:
@@ -1007,9 +1015,17 @@ class gt(compiled_schema):
 
 
 class ge(compiled_schema):
+    """
+    This checks if `object >= lb`.
+    """
     lb: comparable
 
     def __init__(self, lb: comparable) -> None:
+        """
+        :param lb: the lower bound
+
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        """
         try:
             lb <= lb
         except Exception:
@@ -1038,9 +1054,17 @@ class ge(compiled_schema):
 
 
 class lt(compiled_schema):
+    """
+    This checks if `object < ub`.
+    """
     ub: comparable
 
     def __init__(self, ub: comparable) -> None:
+        """
+        :param ub: the strict upper bound
+
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        """
         try:
             ub <= ub
         except Exception:
@@ -1069,9 +1093,17 @@ class lt(compiled_schema):
 
 
 class le(compiled_schema):
+    """
+    This checks if `object <= ub`.
+    """
     ub: comparable
 
     def __init__(self, ub: comparable) -> None:
+        """
+        :param ub: the upper bound
+
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        """
         try:
             ub <= ub
         except Exception:
@@ -1114,10 +1146,12 @@ class interval(compiled_schema):
         strict_ub: bool = False,
     ) -> None:
         """
-        :param lb: lowerbound; ... (ellipsis) means no lowerbound
-        :param ub: upperbound; ... (ellipsis) means no upperbound
-        :param strict_lb: if True use a strict lowerbound
-        :param strict_ub: if True use a strict upperbound
+        :param lb: lower bound; ... (ellipsis) means no lower bound
+        :param ub: upper bound; ... (ellipsis) means no upper bound
+        :param strict_lb: if True use a strict lower bound
+        :param strict_ub: if True use a strict upper bound
+
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error
         """
         self.lb_s = "..." if lb == ... else repr(lb)
         self.ub_s = "..." if ub == ... else repr(ub)
@@ -1171,9 +1205,18 @@ class interval(compiled_schema):
 
 
 class size(compiled_schema):
+    """
+    Matches the objects (which support `len()` such as strings or lists) whose length is in the interval `[lb, ub]`.
+    """
     interval_: interval
 
     def __init__(self, lb: int, ub: int | types.EllipsisType | None = None) -> None:
+        """
+        :param lb: the lower bound for the length
+        :param ub: the upper bound for the length; ... (ellipsis) means that there is no upper bound; `None` means `lb==ub`
+
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        """
         if ub is None:
             ub = lb
         if not isinstance(lb, int):
