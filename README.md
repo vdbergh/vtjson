@@ -70,9 +70,9 @@ Some built-ins take arguments. If no arguments are given then the parentheses ca
 - `anything`. Matches anything. This is functionally the same as just `object`.
 - `nothing`. Matches nothing.
 
-## Mixins
+## Modifiers
 
-Mixins are built-ins that are usually combined with other schemas using `intersect`.
+Modifiers are built-ins that are usually combined with other schemas using `intersect`.
 
 - `one_of(key1, ..., keyN)`. This represents a dictionary with exactly one key among `key1, ..., keyN`.
 - `at_least_one_of(key1, ..., keyN)`. This represents a dictionary with a least one key among `key1, ..., keyN`.

@@ -1100,6 +1100,9 @@ class le(compiled_schema):
 
 
 class interval(compiled_schema):
+    """
+    This checks if `lb <= object <= ub`, provided the comparisons make sense.
+    """
     lb_s: str
     ub_s: str
 
@@ -1110,7 +1113,12 @@ class interval(compiled_schema):
         strict_lb: bool = False,
         strict_ub: bool = False,
     ) -> None:
-
+        """
+        :param lb: lowerbound; ... (ellipsis) means no lowerbound
+        :param ub: upperbound; ... (ellipsis) means no upperbound
+        :param strict_lb: if True use a strict lowerbound
+        :param strict_ub: if True use a strict upperbound
+        """
         self.lb_s = "..." if lb == ... else repr(lb)
         self.ub_s = "..." if ub == ... else repr(ub)
 
@@ -1702,10 +1710,16 @@ class domain_name(compiled_schema):
 
 
 class at_least_one_of(compiled_schema):
+    """
+    This represents a dictionary with a least one key among a collection of keys.
+    """
     args: tuple[object, ...]
     __name__: str
 
     def __init__(self, *args: object) -> None:
+        """
+        :param args: a collection of keys
+        """
         self.args = args
         args_s = [repr(a) for a in args]
         self.__name__ = f"{self.__class__.__name__}({','.join(args_s)})"
@@ -1729,10 +1743,16 @@ class at_least_one_of(compiled_schema):
 
 
 class at_most_one_of(compiled_schema):
+    """
+    This represents an dictionary with at most one key among a collection of keys.
+    """
     args: tuple[object, ...]
     __name__: str
 
     def __init__(self, *args: object) -> None:
+        """
+        :param args: a collection of keys
+        """
         self.args = args
         args_s = [repr(a) for a in args]
         self.__name__ = f"{self.__class__.__name__}({','.join(args_s)})"
@@ -1756,10 +1776,16 @@ class at_most_one_of(compiled_schema):
 
 
 class one_of(compiled_schema):
+    """
+    This represents a dictionary with exactly one key among a collection of keys.
+    """
     args: tuple[object, ...]
     __name__: str
 
     def __init__(self, *args: object) -> None:
+        """
+        :param args: a collection of keys
+        """
         self.args = args
         args_s = [repr(a) for a in args]
         self.__name__ = f"{self.__class__.__name__}({','.join(args_s)})"
@@ -1783,9 +1809,15 @@ class one_of(compiled_schema):
 
 
 class keys(compiled_schema):
+    """
+    This represents a dictionary containing all the keys in a collection of keys
+    """
     args: tuple[object, ...]
 
     def __init__(self, *args: object) -> None:
+        """
+        :param args: a collection of keys
+        """
         self.args = args
 
     def __validate__(

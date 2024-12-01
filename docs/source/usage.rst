@@ -66,6 +66,48 @@ Some built-in schemas take arguments. If no arguments are given then the parenth
 Modifiers
 ---------
 
+.. autoclass:: vtjson.one_of
+   :class-doc-from: both
+
+.. autoclass:: vtjson.at_least_one_of
+   :class-doc-from: both
+
+.. autoclass:: vtjson.at_most_one_of
+   :class-doc-from: both
+
+.. autoclass:: vtjson.keys
+   :class-doc-from: both
+
+.. autoclass:: vtjson.interval
+   :class-doc-from: both
+
+.. autoclass:: vtjson.gt
+   :class-doc-from: both
+
+.. autoclass:: vtjson.ge
+   :class-doc-from: both
+
+.. autoclass:: vtjson.lt
+   :class-doc-from: both
+
+.. autoclass:: vtjson.le
+   :class-doc-from: both
+
+.. autoclass:: vtjson.size
+   :class-doc-from: both
+
+.. autoclass:: vtjson.fields
+   :class-doc-from: both
+
+.. autoclass:: vtjson.magic
+   :class-doc-from: both
+
+.. autoclass:: vtjson.filter
+   :class-doc-from: both
+
+
+		    
+
 .. _wrappers:
 
 Wrappers
@@ -96,6 +138,9 @@ Wrappers may be used to combine a collection of schemas into a new schema.
 
 .. autoclass:: vtjson.set_label
    :class-doc-from: both
+
+Conditional schemas
+-------------------
 
 .. _type_annotations:
 
