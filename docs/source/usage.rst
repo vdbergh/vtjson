@@ -1,17 +1,6 @@
-Usage
-=====
+API reference
+=============
 
-Installation
-------------
-
-`vtjson` is available via pip:
-
-.. code-block:: console
-
-   $ pip install vtjson
-
-
-   
 Validating objects
 ------------------
 To validate an object against a schema one may use :py:func:`vtjson.validate`. If validation fails this throws a :py:exc:`vtjson.ValidationError`.
