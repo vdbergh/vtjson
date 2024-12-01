@@ -15,7 +15,7 @@ Tutorial
 
 .. testsetup:: *
 
-   from vtjson import email, make_type, safe_cast, url, validate
+   from vtjson import email, ge, intersect, make_type, regex, safe_cast, url, validate
 
 Here is a simple schema:
 
@@ -117,12 +117,12 @@ The exception thrown is similar.
        raise ValidationError(message)
    vtjson.vtjson.ValidationError: object is not of type 'book_schema': object['year'] (value:'1936') is not of type 'int'
 
-Schemas can of course be nested
+Schemas can of course be more complicated and in particular they can be nested
 
 .. testcode::
    
    person_schema = {
-     "name": str,
+     "name": regex("[a-zA-Z. ]*"),
      "email?": email,
      "website?": url,
    }
@@ -131,10 +131,16 @@ Schemas can of course be nested
      "title": str,
      "authors": [person_schema, ...],
      "editor?": person_schema,
-     "year": int,
+     "year": intersect(int, ge(1900)),
    }
 
-`email` and `url` are built-in schemas. See :ref:`builtins`.
+:py:class:`regex`, :py:class:`email` and :py:class:`url` are built-in schemas. See :ref:`builtins`. :py:class:`intersect` is a `wrapper`. See :ref:`wrappers`. :py:class:`ge` is a `modifier`. See :ref:`modifiers`. It should be obvious that the schema
+
+.. testcode::
+
+   intersect(int, ge(1900))
+
+represents an integer greater or equal than 1900.
 
 Let's validate an object not fitting the schema.
 
@@ -142,7 +148,7 @@ Let's validate an object not fitting the schema.
 
    bad_book = {
      "title": "Gone with the Wind",
-     "authors": [{"name": "Margaret Mitchell", "email":"margaret@gmailcom"}, ...],
+     "authors": [{"name": "Margaret Mitchell", "email":"margaret@gmailcom"}],
      "year": "1936",
    }
 
@@ -159,10 +165,10 @@ As before we can rewrite the new `book_schema` as a valid type annotation
 
 .. testcode::
    
-   from typing import Annotated
+   from typing import Annotated, NotRequired, TypedDict
 
    class person_schema(TypedDict):
-     name: str
+     name: Annotated[str, regex("[a-zA-Z. ]*")]
      email: NotRequired[Annotated[str, email]]
      website: NotRequired[Annotated[str, url]]
 
@@ -170,9 +176,9 @@ As before we can rewrite the new `book_schema` as a valid type annotation
      title: str
      authors: list[person_schema]
      editor: NotRequired[list[person_schema]]
-     year: int
+     year: Annotated[int, ge(1900)]
 
-The contraint that a string should be an email address cannot be expressed in the language of type annotations. That's where `typing.Annotated` comes in:
+Many constraints expressible in `vtjson` schemas cannot be expressed in the language of type annotations. That's where `typing.Annotated` comes in:
 
 .. testcode::
    
@@ -254,6 +260,13 @@ Some built-in schemas take arguments. If no arguments are given then the parenth
 
 .. autoclass:: vtjson.nothing
    :class-doc-from: both
+
+.. _modifiers:
+
+Modifiers
+---------
+
+.. _wrappers:
 
 Wrappers
 --------
