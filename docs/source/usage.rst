@@ -142,11 +142,62 @@ Wrappers may be used to combine a collection of schemas into a new schema.
 Conditional schemas
 -------------------
 
+.. autoclass:: vtjson.ifthen
+   :class-doc-from: both
+
+.. autoclass:: vtjson.cond
+   :class-doc-from: both
+
+
 .. _type_annotations:
 
 Type annotations integration
 ----------------------------
 
+Type annotations as schemas
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`vtjson` recognizes the following type annotations as schemas.
+
+.. code-block:: text
+		
+  Annotated, Mapping[...,...] and subtypes, Container[...] and subtypes,
+  tuple[...], Tuple[...], Protocol, NamedTuple, Literal, NewType, TypedDict,
+  Union (or the equivalent operator |), Any.
+
+For example `dict[str, str]` is translated internally into the schema `{str: str}`. This is explained further below.
+
+Annotated
+^^^^^^^^^
+
+* More general vtjson schemas can work along Python type annotations by using the `typing.Annotated` contruct. The most naive way to do this is via
+
+  .. code-block:: python
+
+    Annotated[type_annotation, vtjson_schema, skip_first]
+    
+  A type checker such as `mypy` will only see the type annotation (`list[object]` in the example), whereas vtjson will only see the vtjson schema (`[int, str, float]` in the example). `skip_first` is a built-in short hand for `Apply(skip_first=True)` (see below) which directs vtjson to ignore the first argument of an `Annotated` schema.
+ 
+* In some use cases a `vtjon` schema will meaningfully refine a Python type or type annotation. In that case one should not use `skip_first`. For example:
+
+  .. code-block:: python
+		
+    Annotated[int, div(2), skip_first]
+
+  matches even integers.
+
+* If one wants to pre-compile a schema and still use it as a type annotation (assuming it is valid as such) then one can do:
+
+  .. code-block:: python
+
+    schema = <schema definition>
+    Schema = Annotated[schema, compile(schema), skip_first]
+
+Supported type annotations
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Note that Python imposes strong restrictions on what constitutes a valid type annotation but `vtjson` is much more lax about this. Enforcing the restrictions is left to the type checkers or the Python interpreter.
+  
 Schema format
 -------------
 

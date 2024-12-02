@@ -841,10 +841,19 @@ class glob(compiled_schema):
 
 
 class magic(compiled_schema):
+    """
+    Checks if a buffer (for example a string or a byte array) has the given mime type. This is implemented using the `python-magic` package.
+    """
     mime_type: str
     __name__: str
 
     def __init__(self, mime_type: str, name: str | None = None) -> None:
+        """
+        :param mime_type: the mime type
+        :param name: common name to refer to this mime type
+
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        """
         if not HAS_MAGIC:
             raise SchemaError("Failed to load python-magic")
 
@@ -1943,6 +1952,9 @@ class _ifthen(compiled_schema):
 
 
 class ifthen(wrapper):
+    """
+    If the object matches the `if_schema` then it should also match the `then_schema`. If the object does not match the `if_schema` then it should match the `else_schema`, if present.
+    """
     if_schema: object
     then_schema: object
     else_schema: object | None
@@ -1953,6 +1965,11 @@ class ifthen(wrapper):
         then_schema: object,
         else_schema: object | None = None,
     ) -> None:
+        """
+        :param if_schema: the `if_schema`
+        :param then_schema: the `then_schema`
+        :param else_schema: the `else_schema`
+        """
         self.if_schema = if_schema
         self.then_schema = then_schema
         self.else_schema = else_schema
@@ -1997,9 +2014,17 @@ class _cond(compiled_schema):
 
 
 class cond(wrapper):
+    """
+    An object is successively validated against `if_schema1`, `if_schema2`, ... until a validation succeeds. When this happens the object should match the corresponding `then_schema`. If no `if_schema` succeeds then the object is considered to have been validated. If one sets `if_schemaN` equal to `anything` then this serves as a catch all.
+    """
     args: tuple[tuple[object, object], ...]
 
     def __init__(self, *args: tuple[object, object]) -> None:
+        """
+        :param args: list of tuples pairing `if_schemas` with `then_schemas`
+
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        """
         for c in args:
             if not isinstance(c, tuple) or len(c) != 2:
                 raise SchemaError(f"{repr(c)} is not a tuple of length two")
@@ -2117,6 +2142,9 @@ class _filter(compiled_schema):
 
 
 class filter(wrapper):
+    """
+    Applies `callable` to the object and validates the result with `schema`. If the callable throws an exception then validation fails.
+    """
     filter: Callable[[Any], object]
     schema: object
     filter_name: str | None
@@ -2127,6 +2155,13 @@ class filter(wrapper):
         schema: object,
         filter_name: str | None = None,
     ) -> None:
+        """
+        :param filter: the filter to apply to the object
+        :param schema: the schema used for validation once the filter  has been applied
+        :param filter_name: common name to refer to the filter
+
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        """
         if filter_name is not None and not isinstance(filter_name, str):
             raise SchemaError("The filter name is not a string")
         if not callable(filter):
