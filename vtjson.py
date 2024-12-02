@@ -231,8 +231,8 @@ def _get_type_hints(schema: object) -> dict[str, object]:
 
 def _to_dict(
     type_hints: Mapping[str, object], total: bool = True
-) -> dict[object, object]:
-    d: dict[object, object] = {}
+) -> dict[str | optional_key, object]:
+    d: dict[str | optional_key, object] = {}
     if not supports_Generics:
         raise SchemaError("Generic types are not supported")
     for k, v in type_hints.items():
@@ -607,6 +607,7 @@ class set_label(wrapper):
     """
     An object matches the schema `set_label(schema, label1, ..., labelN, debug=False)` if it matches `schema`, unless the schema is replaced by a different one via the `subs` argument to `validate`.
     """
+
     schema: object
     labels: set[str]
     debug: bool
@@ -979,6 +980,7 @@ class gt(compiled_schema):
     """
     This checks if `object > lb`.
     """
+
     lb: comparable
 
     def __init__(self, lb: comparable) -> None:
@@ -1018,6 +1020,7 @@ class ge(compiled_schema):
     """
     This checks if `object >= lb`.
     """
+
     lb: comparable
 
     def __init__(self, lb: comparable) -> None:
@@ -1057,6 +1060,7 @@ class lt(compiled_schema):
     """
     This checks if `object < ub`.
     """
+
     ub: comparable
 
     def __init__(self, ub: comparable) -> None:
@@ -1096,6 +1100,7 @@ class le(compiled_schema):
     """
     This checks if `object <= ub`.
     """
+
     ub: comparable
 
     def __init__(self, ub: comparable) -> None:
@@ -1135,6 +1140,7 @@ class interval(compiled_schema):
     """
     This checks if `lb <= object <= ub`, provided the comparisons make sense.
     """
+
     lb_s: str
     ub_s: str
 
@@ -1208,6 +1214,7 @@ class size(compiled_schema):
     """
     Matches the objects (which support `len()` such as strings or lists) whose length is in the interval `[lb, ub]`.
     """
+
     interval_: interval
 
     def __init__(self, lb: int, ub: int | types.EllipsisType | None = None) -> None:
@@ -1756,6 +1763,7 @@ class at_least_one_of(compiled_schema):
     """
     This represents a dictionary with a least one key among a collection of keys.
     """
+
     args: tuple[object, ...]
     __name__: str
 
@@ -1789,6 +1797,7 @@ class at_most_one_of(compiled_schema):
     """
     This represents an dictionary with at most one key among a collection of keys.
     """
+
     args: tuple[object, ...]
     __name__: str
 
@@ -1822,6 +1831,7 @@ class one_of(compiled_schema):
     """
     This represents a dictionary with exactly one key among a collection of keys.
     """
+
     args: tuple[object, ...]
     __name__: str
 
@@ -1855,6 +1865,7 @@ class keys(compiled_schema):
     """
     This represents a dictionary containing all the keys in a collection of keys
     """
+
     args: tuple[object, ...]
 
     def __init__(self, *args: object) -> None:
@@ -1985,10 +1996,12 @@ class cond(wrapper):
 
 
 class _fields(compiled_schema):
-    d: dict[str, compiled_schema]
+    d: dict[str | optional_key, compiled_schema]
 
     def __init__(
-        self, d: Mapping[str, object], _deferred_compiles: _mapping | None = None
+        self,
+        d: Mapping[str | optional_key, object],
+        _deferred_compiles: _mapping | None = None,
     ) -> None:
         self.d = {}
         for k, v in d.items():
@@ -2003,10 +2016,14 @@ class _fields(compiled_schema):
     ) -> str:
         for k, v in self.d.items():
             name_ = f"{name}.{k}"
-            if not hasattr(obj, k):
+            if not isinstance(k, optional_key) and not hasattr(obj, k):
                 return f"{name_} is missing"
+            if isinstance(k, optional_key):
+                k_ = str(k.key)
+            else:
+                k_ = k
             ret = self.d[k].__validate__(
-                getattr(obj, k), name=name_, strict=strict, subs=subs
+                getattr(obj, k_), name=name_, strict=strict, subs=subs
             )
             if ret != "":
                 return ret
@@ -2014,13 +2031,29 @@ class _fields(compiled_schema):
 
 
 class fields(wrapper):
-    def __init__(self, d: object) -> None:
+    """
+    Matches Python objects with attributes `field1, field2, ..., fieldN` whose corresponding values should validate against `schema1, schema2, ..., schemaN` respectively
+    """
+
+    def __init__(self, d: Mapping[str | optional_key, object]) -> None:
+        self.d: dict[str | optional_key, object]
+        """
+        :param d: a dictionary associating fields with schemas
+
+        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        """
+        self.d = {}
         if not isinstance(d, Mapping):
             raise SchemaError(f"{repr(d)} is not a Mapping")
-        for k in d:
-            if not isinstance(k, str):
-                raise SchemaError(f"key {repr(k)} in {repr(d)} is not a string")
-        self.d = d
+        for k, v in d.items():
+            if not isinstance(k, str) and not isinstance(k, optional_key):
+                raise SchemaError(
+                    f"key {repr(k)} in {repr(d)} is not an instance of optional_key and not a string"
+                )
+            if isinstance(k, str) and k[-1] == "?":
+                self.d[optional_key(k[:-1])] = v
+            else:
+                self.d[k] = v
 
     def __compile__(self, _deferred_compiles: _mapping | None = None) -> _fields:
         return _fields(self.d, _deferred_compiles=_deferred_compiles)
@@ -2448,7 +2481,7 @@ class protocol(wrapper):
     An object matches the schema `protocol(schema, dict=False)` if `schema` is a class (or class like object) and its fields are annotated with schemas which validate the corresponding fields in the object.
     """
 
-    type_dict: dict[object, object]
+    type_dict: dict[str | optional_key, object]
     dict: bool
     __name__: str
 

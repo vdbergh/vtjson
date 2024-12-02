@@ -560,11 +560,13 @@ class TestValidation(unittest.TestCase):
     def test_fields(self) -> None:
         object_: object
         with self.assertRaises(SchemaError) as mc_:
-            fields("dummy")
+            fields("dummy")  # type: ignore
         show(mc_)
         with self.assertRaises(SchemaError) as mc_:
-            fields({1: "a"})
+            fields({1: "a"})  # type: ignore
         show(mc_)
+        fields({optional_key(1): "a"})
+        fields({"a?": "a"})
         datetime_utc = intersect(datetime, fields({"tzinfo": timezone.utc}))
         object_ = datetime(2024, 4, 17)
         with self.assertRaises(ValidationError) as mc:
