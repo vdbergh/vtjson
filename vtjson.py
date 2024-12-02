@@ -12,7 +12,17 @@ import urllib.parse
 import warnings
 from collections.abc import Sequence, Set, Sized
 from dataclasses import dataclass
-from typing import Any, Callable, Container, Mapping, Type, TypeVar, Union, cast
+from typing import (
+    Any,
+    Callable,
+    Container,
+    Generic,
+    Mapping,
+    Type,
+    TypeVar,
+    Union,
+    cast,
+)
 
 try:
     from typing import Literal
@@ -231,13 +241,13 @@ def _get_type_hints(schema: object) -> dict[str, object]:
 
 def _to_dict(
     type_hints: Mapping[str, object], total: bool = True
-) -> dict[str | optional_key, object]:
-    d: dict[str | optional_key, object] = {}
+) -> dict[str | optional_key[str], object]:
+    d: dict[str | optional_key[str], object] = {}
     if not supports_Generics:
         raise SchemaError("Generic types are not supported")
     for k, v in type_hints.items():
         v_ = v
-        k_: str | optional_key = k
+        k_: str | optional_key[str] = k
         value_type = typing.get_origin(v)
         if supports_NotRequired and value_type in (Required, NotRequired):
             v_ = typing.get_args(v)[0]
@@ -343,14 +353,17 @@ def make_type(
     )
 
 
-class optional_key:
+K = TypeVar("K")
+
+
+class optional_key(Generic[K]):
     """
     Make a key in a Mapping schema optional. In the common case that the key is a string, the same effect can be achieved by appending `?`.
     """
 
-    key: object
+    key: K
 
-    def __init__(self, key: object) -> None:
+    def __init__(self, key: K) -> None:
         """
         :param key: the key to be made optional
         """
@@ -359,7 +372,8 @@ class optional_key:
     def __eq__(self, key: object) -> bool:
         if not isinstance(key, optional_key):
             return False
-        return self.key == key.key
+        k: object = key.key
+        return self.key == k
 
     def __hash__(self) -> int:
         return hash(self.key)
@@ -1996,11 +2010,11 @@ class cond(wrapper):
 
 
 class _fields(compiled_schema):
-    d: dict[str | optional_key, compiled_schema]
+    d: dict[str | optional_key[str], compiled_schema]
 
     def __init__(
         self,
-        d: Mapping[str | optional_key, object],
+        d: Mapping[str | optional_key[str], object],
         _deferred_compiles: _mapping | None = None,
     ) -> None:
         self.d = {}
@@ -2019,7 +2033,7 @@ class _fields(compiled_schema):
             if not isinstance(k, optional_key) and not hasattr(obj, k):
                 return f"{name_} is missing"
             if isinstance(k, optional_key):
-                k_ = str(k.key)
+                k_ = k.key
             else:
                 k_ = k
             ret = self.d[k].__validate__(
@@ -2035,9 +2049,9 @@ class fields(wrapper):
     Matches Python objects with attributes `field1, field2, ..., fieldN` whose corresponding values should validate against `schema1, schema2, ..., schemaN` respectively
     """
 
-    d: dict[str | optional_key, object]
+    d: dict[str | optional_key[str], object]
 
-    def __init__(self, d: Mapping[str | optional_key, object]) -> None:
+    def __init__(self, d: Mapping[str | optional_key[str], object]) -> None:
         """
         :param d: a dictionary associating fields with schemas
 
@@ -2482,13 +2496,13 @@ class protocol(wrapper):
     An object matches the schema `protocol(schema, dict=False)` if `schema` is a class (or class like object) and its fields are annotated with schemas which validate the corresponding fields in the object.
     """
 
-    type_dict: dict[str | optional_key, object]
+    type_dict: dict[str | optional_key[str], object]
     dict: bool
     __name__: str
 
     def __init__(self, schema: object, dict: bool = False):
         """
-        :param schema: a type annotated class (or class like object) serving as prototype
+        :param schema: a type annotated class (or class like object such as Protocol or TypedDict) serving as prototype
         :param dict: if `True` parse the object as a `dict`
 
         :raises SchemaError: exception thrown when the schema does not support type_hints

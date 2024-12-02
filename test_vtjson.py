@@ -565,7 +565,7 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(SchemaError) as mc_:
             fields({1: "a"})  # type: ignore
         show(mc_)
-        fields({optional_key(1): "a"})
+        fields({optional_key(1): "a"})  # type: ignore
         fields({"a?": "a"})
         datetime_utc = intersect(datetime, fields({"tzinfo": timezone.utc}))
         object_ = datetime(2024, 4, 17)
