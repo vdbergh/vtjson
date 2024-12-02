@@ -2035,8 +2035,9 @@ class fields(wrapper):
     Matches Python objects with attributes `field1, field2, ..., fieldN` whose corresponding values should validate against `schema1, schema2, ..., schemaN` respectively
     """
 
+    d: dict[str | optional_key, object]
+
     def __init__(self, d: Mapping[str | optional_key, object]) -> None:
-        self.d: dict[str | optional_key, object]
         """
         :param d: a dictionary associating fields with schemas
 
