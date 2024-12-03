@@ -228,7 +228,7 @@ Note that Python imposes strong restrictions on what constitutes a valid type an
 
   internally becomes `intersect(tuple, fields({"title": str, "price": float}))`.
 
-* `Annotated` has already been discussed. It is translated into a suitable :py:class:`vtjson.intersect` schema. The handling of `Annotated` schemas can be influenced by `Apply` objects.
+* `Annotated` has already been discussed. It is translated into a suitable :py:class:`vtjson.intersect` schema. The handling of `Annotated` schemas can be influenced by :py:class:`vtjson.Apply` objects.
 
 * `NewType` is translated into a :py:class:`vtjson.set_name` schema. E.g. `NewType('Movie', str)` becomes `set_name(str, 'Movie')`
 

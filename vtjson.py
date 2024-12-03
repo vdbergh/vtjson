@@ -1506,7 +1506,9 @@ def validate(
 
 
 class number(compiled_schema):
-    # functionally equivalent to float
+    """
+    A deprecated alias for `float`.
+    """
     def __init__(self) -> None:
         warnings.warn(
             "The schema 'number' is deprecated. Use 'float' instead.",
