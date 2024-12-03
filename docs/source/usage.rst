@@ -326,3 +326,10 @@ A consequence of this algorithm is that non-const keys are automatically optiona
 
 .. autoclass:: vtjson.optional_key
    :class-doc-from: both
+
+Pre-compiling a schema
+^^^^^^^^^^^^^^^^^^^^^^
+
+An object matches the schema `compile(schema)` if it matches `schema`. `vtjson` compiles a schema before using it for validation, so pre-compiling is not necessary. However for large schemas it may gain some of performance as it needs to be done only once. Compiling is an idempotent operation. It does nothing for an already compiled schema.
+		    
+

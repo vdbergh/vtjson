@@ -12,3 +12,5 @@ Check out the :doc:`tutorial` section for further information.
    tutorial
    usage
    api
+   example1
+   example2
