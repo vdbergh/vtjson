@@ -151,6 +151,9 @@ class wrapper:
 
 
 class comparable(Protocol):
+    """
+    Base class for objects that are comparable with each other.
+    """
     def __eq__(self, x: Any) -> bool: ...
 
     def __lt__(self, x: Any) -> bool: ...
@@ -656,9 +659,15 @@ class set_label(wrapper):
 
 
 class quote(compiled_schema):
+    """
+    An object matches the schema `quote(schema)` if it is equal to `schema`. For example the schema `str` matches strings but the schema `quote(str)` matches the object `str`.
+    """
     schema: _const
 
     def __init__(self, schema: object) -> None:
+        """
+        :param schema: the schema to be quoted
+        """
         self.schema = _const(schema, strict_eq=True)
 
     def __validate__(

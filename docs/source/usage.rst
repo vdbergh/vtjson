@@ -130,6 +130,9 @@ Wrappers may be used to combine a collection of schemas into a new schema.
 .. autoclass:: vtjson.strict
    :class-doc-from: both
 
+.. autoclass:: vtjson.quote
+   :class-doc-from: both
+
 .. autoclass:: vtjson.set_name
    :class-doc-from: both
 
