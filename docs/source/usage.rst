@@ -197,6 +197,75 @@ Supported type annotations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Note that Python imposes strong restrictions on what constitutes a valid type annotation but `vtjson` is much more lax about this. Enforcing the restrictions is left to the type checkers or the Python interpreter.
+
+* `TypedDict`. A TypedDict type annotation is translated into a `dict` schema. E.g.
+
+  .. code-block:: python
+
+    class Movie(TypedDict):
+      title: str
+      price: float
+
+  internally becomes `{"title": str, "price": float}`. `vtjson` supports the `total` option to `TypedDict` as well as the `Required` and `NotRequired` annotations of fields, if they are compatible with the Python version being used.
+
+* `Protocol`. A class implementing a protocol is translated into a :py:class:`vtjson.fields` schema. E.g.
+
+  .. code-block:: python
+
+    class Movie(Protocol):
+      title: str
+      price: float
+
+  internally becomes `fields({"title": str, "price": float})`.
+
+* `NamedTuple`. A `NamedTuple` class is translated an :py:class:`vtjson.intersect` schema encompassing a `tuple` schema and a :py:class:`vtjson.fields` schema. E.g.
+
+  .. code-block:: python
+  
+    class Movie(NamedTuple):
+      title: str
+      price: float
+
+  internally becomes `intersect(tuple, fields({"title": str, "price": float}))`.
+
+* `Annotated` has already been discussed. It is translated into a suitable :py:class:`vtjson.intersect` schema. The handling of `Annotated` schemas can be influenced by `Apply` objects.
+
+* `NewType` is translated into a :py:class:`vtjson.set_name` schema. E.g. `NewType('Movie', str)` becomes `set_name(str, 'Movie')`
+
+* `tuple[...]` and `Tuple[...]` are translated into the equivalent `tuple` schemas.
+
+* `Mapping[S, T]` and subtypes validate those objects that are members of the origin type (a subclass of `Mapping`) and whose (key, value) pairs match `(S, T)`.
+
+* `Container[T]` and subtypes validate those objects that are members of the origin type (a subclass of `Container`) and whose elements match `T`.
+
+* `Union` and the `|` operator are translated into :py:class:`vtjson.union`.
+
+* `Literal` is also translated into :py:class:`vtjson.union`.
+
+* `Any` is translated into :py:class:`vtjson.anything`.
+
+Apply objects
+^^^^^^^^^^^^^
+
+* If the list of arguments of an Annotated schema includes :py:class:`vtjson.Apply` objects then those modify the treatement of the arguments that come before them. We already encountered :py:data:`vtjson.skip_first` which is a built-in alias for `Apply(skip_first=True)`.
+
+* Multiple :py:class:`vtjson.Apply` objects are allowed. E.g. the following contrived schema
+
+  .. code-block:: python
+  
+    Annotated[int, str, skip_first, float, skip_first]
+
+  is equivalent to `float`.
+
+.. autoclass:: vtjson.Apply
+   :class-doc-from: both
+
+.. py:data:: vtjson.skip_first
+  :type: vtjson.Apply
+  :value: vtjson.Apply(skip_first=True)
+
+   Do not use the first argument (the Python type annotation) in an `Annotated` construct for validation (likely because it is already covered by the other arguments).
+
   
 Schema format
 -------------

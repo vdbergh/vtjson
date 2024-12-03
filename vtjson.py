@@ -190,6 +190,13 @@ __version__ = "2.1.8"
 
 @dataclass
 class Apply:
+    """
+    Modifies the treatement of the previous arguments in an `Annotated` schema.
+    
+    :param skip_first: if `True` do not use the first argument (the Python type annotation) in an `Annotated` construct for validation because this is already covered by the other arguments
+    :param name:  apply the corresponding :py:class:`vtjson.set_name` command  to the previous arguments
+    :param labels: apply the corresponding :py:class:`vtjson.set_label` command  to the previous arguments
+    """
     skip_first: bool | None = None
     name: str | None = None
     labels: Sequence[str] | None = None
