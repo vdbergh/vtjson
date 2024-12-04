@@ -32,7 +32,7 @@ extensions = [
 templates_path = ['_templates']
 exclude_patterns = []
 
-
+html_baseurl = 'https://www.cantate.be/vtsjon'
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
