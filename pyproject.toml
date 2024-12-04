@@ -8,7 +8,7 @@ dynamic = ["version"]
 authors = [
   { name="Michel Van den Bergh", email="michel.vandenbergh@uhasselt.be" },
 ]
-description = "A lightweight package for validating JSON like Python objects"
+description = "An easy to use validation library compatible with Python type annotations"
 readme = "README.md"
 dependencies = ["dnspython", "email_validator", "idna", "python-magic", "typing_extensions"]
 requires-python = ">=3.7"
