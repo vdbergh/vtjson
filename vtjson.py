@@ -90,14 +90,19 @@ T = TypeVar("T")
 
 def safe_cast(schema: Type[T], obj: Any) -> T:
     """
-    Validates the given object against the given schema and changes its type accordingly.
+    Validates the given object against the given schema and changes its type
+    accordingly.
 
     :param schema: the given schema
     :param obj: the object to be validated
     :return: the validated object with its type changed
 
-    :raises ValidationError: exception thrown when the object does not validate; the exception message contains an explanation about what went wrong
-    :raises SchemaError: exception thrown when the schema definition is found to contain an error
+    :raises ValidationError: exception thrown when the object does not
+      validate; the exception message contains an explanation about what went
+      wrong
+
+    :raises SchemaError: exception thrown when the schema definition is found
+      to contain an error
     """
 
     validate(schema, obj)
@@ -106,7 +111,8 @@ def safe_cast(schema: Type[T], obj: Any) -> T:
 
 class compiled_schema:
     """
-    The result of compiling a schema. A :py:class:`compiled_schema` is produced by the factory function :py:func:`vtjson.compile`.
+    The result of compiling a schema. A :py:class:`compiled_schema` is
+    produced by the factory function :py:func:`vtjson.compile`.
     """
 
     def __validate__(
@@ -121,10 +127,14 @@ class compiled_schema:
 
         :param schema: the given schema
         :param obj: the object to be validated
-        :param name: common name for the object to be validated; used in non-validation messages
-        :param strict: indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema
-        :param subs: a dictionary whose keys are labels and whose values are substitution schemas for schemas with those labels
-        :return: an empty string if validation succeeds; otherwise an explanation about what went wrong
+        :param name: common name for the object to be validated; used in
+          non-validation messages
+        :param strict: indicates whether or not the object being validated is
+          allowed to have keys/entries which are not in the schema
+        :param subs: a dictionary whose keys are labels and whose values are
+          substitution schemas for schemas with those labels
+        :return: an empty string if validation succeeds; otherwise an
+          explanation about what went wrong
         """
 
         return ""
@@ -134,7 +144,8 @@ class wrapper:
     """
     Base class for schemas that refer to other schemas.
 
-    Handling such schemas is somewhat delicate since `vtjson` allows them to be recursive.
+    Handling such schemas is somewhat delicate since `vtjson` allows them to
+    be recursive.
     """
 
     def __compile__(
@@ -143,9 +154,13 @@ class wrapper:
         """
         Compiles a schema.
 
-        :param _deferred_compiles: an opaque data structure used for handling recursive schemas; it should be passed unmodifed to any internal invocations of :py:func:`vtjson._compile` or :py:meth:`vtjson.wrapper.__compile__`
+        :param _deferred_compiles: an opaque data structure used for handling
+          recursive schemas; it should be passed unmodifed to any internal
+          invocations of :py:func:`vtjson._compile` or
+          :py:meth:`vtjson.wrapper.__compile__`
 
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        :raises SchemaError: exception thrown when the schema definition is
+          found to contain an error
         """
         return anything()
 
@@ -154,6 +169,7 @@ class comparable(Protocol):
     """
     Base class for objects that are comparable with each other.
     """
+
     def __eq__(self, x: Any) -> bool: ...
 
     def __lt__(self, x: Any) -> bool: ...
@@ -174,7 +190,8 @@ except Exception:
 
 class ValidationError(Exception):
     """
-    Raised if validation fails. The associated message explains what went wrong.
+    Raised if validation fails. The associated message explains what went
+    wrong.
     """
 
     pass
@@ -195,11 +212,16 @@ __version__ = "2.1.8"
 class Apply:
     """
     Modifies the treatement of the previous arguments in an `Annotated` schema.
-    
-    :param skip_first: if `True` do not use the first argument (the Python type annotation) in an `Annotated` construct for validation because this is already covered by the other arguments
-    :param name:  apply the corresponding :py:class:`vtjson.set_name` command  to the previous arguments
-    :param labels: apply the corresponding :py:class:`vtjson.set_label` command  to the previous arguments
+
+    :param skip_first: if `True` do not use the first argument (the Python
+      type annotation) in an `Annotated` construct for validation because this
+      is already covered by the other arguments
+    :param name:  apply the corresponding :py:class:`vtjson.set_name` command
+      to the previous arguments
+    :param labels: apply the corresponding :py:class:`vtjson.set_label`
+      command  to the previous arguments
     """
+
     skip_first: bool | None = None
     name: str | None = None
     labels: Sequence[str] | None = None
@@ -340,11 +362,15 @@ def make_type(
     Transforms a schema into a genuine Python type.
 
     :param schema: the given schema
-    :param name: sets the `__name__` attribute of the type; if it is not supplied then `vtjson` makes an educated guess
-    :param strict: indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema
+    :param name: sets the `__name__` attribute of the type; if it is not
+      supplied then `vtjson` makes an educated guess
+    :param strict: indicates whether or not the object being validated is
+      allowed to have keys/entries which are not in the schema
     :param debug: print feedback on the console if validation fails
-    :param subs: a dictionary whose keys are labels and whose values are substitution schemas for schemas with those labels
-    :raises SchemaError: exception thrown when the schema definition is found to contain an error
+    :param subs: a dictionary whose keys are labels and whose values are
+      substitution schemas for schemas with those labels
+    :raises SchemaError: exception thrown when the schema definition is found
+      to contain an error
     """
     if name is None:
         if hasattr(schema, "__name__"):
@@ -368,7 +394,8 @@ K = TypeVar("K")
 
 class optional_key(Generic[K]):
     """
-    Make a key in a Mapping schema optional. In the common case that the key is a string, the same effect can be achieved by appending `?`.
+    Make a key in a Mapping schema optional. In the common case that the key
+      is a string, the same effect can be achieved by appending `?`.
     """
 
     key: K
@@ -420,7 +447,8 @@ class _union(compiled_schema):
 
 class union(wrapper):
     """
-    An object matches the schema `union(schema1, ..., schemaN)` if it matches one of the schemas `schema1, ..., schemaN`.
+    An object matches the schema `union(schema1, ..., schemaN)` if it matches
+    one of the schemas `schema1, ..., schemaN`.
     """
 
     schemas: tuple[object, ...]
@@ -463,7 +491,8 @@ class _intersect(compiled_schema):
 
 class intersect(wrapper):
     """
-    An object matches the schema `intersect(schema1, ..., schemaN)` if it matches all the schemas `schema1, ..., schemaN`.
+    An object matches the schema `intersect(schema1, ..., schemaN)` if it
+    matches all the schemas `schema1, ..., schemaN`.
     """
 
     schemas: tuple[object, ...]
@@ -502,7 +531,8 @@ class _complement(compiled_schema):
 
 class complement(wrapper):
     """
-    An object matches the schema `complement(schema)` if it does not match `schema`.
+    An object matches the schema `complement(schema)` if it does not match
+    `schema`.
     """
 
     schema: object
@@ -537,14 +567,16 @@ class _lax(compiled_schema):
 
 class lax(wrapper):
     """
-    An object matches the schema `lax(schema)` if it matches `schema` when validated with `strict=False`.
+    An object matches the schema `lax(schema)` if it matches `schema` when
+    validated with `strict=False`.
     """
 
     schema: object
 
     def __init__(self, schema: object) -> None:
         """
-        :param schema: schema that should be validated against with `strict=False`
+        :param schema: schema that should be validated against with
+          `strict=False`
         """
         self.schema = schema
 
@@ -572,12 +604,14 @@ class _strict(compiled_schema):
 
 class strict(wrapper):
     """
-    An object matches the schema `strict(schema)` if it matches `schema` when validated with `strict=True`.
+    An object matches the schema `strict(schema)` if it matches `schema` when
+    validated with `strict=True`.
     """
 
     def __init__(self, schema: object) -> None:
         """
-        :param schema: schema that should be validated against with `strict=True`
+        :param schema: schema that should be validated against with
+          `strict=True`
         """
         self.schema = schema
 
@@ -629,7 +663,9 @@ class _set_label(compiled_schema):
 
 class set_label(wrapper):
     """
-    An object matches the schema `set_label(schema, label1, ..., labelN, debug=False)` if it matches `schema`, unless the schema is replaced by a different one via the `subs` argument to `validate`.
+    An object matches the schema `set_label(schema, label1, ..., labelN,
+    debug=False)` if it matches `schema`, unless the schema is replaced by a
+    different one via the `subs` argument to `validate`.
     """
 
     schema: object
@@ -640,8 +676,10 @@ class set_label(wrapper):
         """
         :param schema: the schema that will be labeled
         :param labels: labels that will be attached to the schema
-        :param debug:  it `True` print a message on the console if the schema was changed via substitution
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        :param debug:  it `True` print a message on the console if the schema
+          was changed via substitution
+        :raises SchemaError: exception thrown when the schema definition is
+          found to contain an error
         """
         self.schema = schema
         for L in labels:
@@ -660,8 +698,11 @@ class set_label(wrapper):
 
 class quote(compiled_schema):
     """
-    An object matches the schema `quote(schema)` if it is equal to `schema`. For example the schema `str` matches strings but the schema `quote(str)` matches the object `str`.
+    An object matches the schema `quote(schema)` if it is equal to `schema`.
+    For example the schema `str` matches strings but the schema `quote(str)`
+    matches the object `str`.
     """
+
     schema: _const
 
     def __init__(self, schema: object) -> None:
@@ -716,7 +757,9 @@ class _set_name(compiled_schema):
 
 class set_name(wrapper):
     """
-    An object matches the schema `set_name(schema, name, reason=False)` if it matches `schema`, but the `name` argument will be used in non-validation messages.
+    An object matches the schema `set_name(schema, name, reason=False)` if it
+    matches `schema`, but the `name` argument will be used in non-validation
+    messages.
     """
 
     reason: bool
@@ -727,7 +770,8 @@ class set_name(wrapper):
         """
         :param schema: the original schema
         :param name: name for use in non-validation messages
-        :param reason: indicates whether the original non-validation message should be suppressed
+        :param reason: indicates whether the original non-validation message
+          should be suppressed
         """
         if not isinstance(name, str):
             raise SchemaError(f"The name {_c(name)} is not a string")
@@ -763,11 +807,14 @@ class regex(compiled_schema):
     ) -> None:
         """
         :param regex: the regular expression pattern
-        :param name: common name for the pattern that will be used in non-validation messages
-        :param fullmatch: indicates whether or not the full string should be matched
+        :param name: common name for the pattern that will be used in
+          non-validation messages
+        :param fullmatch: indicates whether or not the full string should be
+          matched
         :param flags: the flags argument used when invoking `re.compile`
 
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        :raises SchemaError: exception thrown when the schema definition is
+          found to contain an error
         """
         self.regex = regex
         self.fullmatch = fullmatch
@@ -809,7 +856,8 @@ class regex(compiled_schema):
 
 class glob(compiled_schema):
     """
-    Unix style filename matching. This is implemented using `pathlib.PurePath().match()`.
+    Unix style filename matching. This is implemented using
+    `pathlib.PurePath().match()`.
     """
 
     pattern: str
@@ -818,9 +866,11 @@ class glob(compiled_schema):
     def __init__(self, pattern: str, name: str | None = None) -> None:
         """
         :param pattern: the wild card pattern to match
-        :param name: common name for the pattern that will be used in non-validation messages
+        :param name: common name for the pattern that will be used in
+          non-validation messages
 
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        :raises SchemaError: exception thrown when the schema definition is
+          found to contain an error
         """
 
         self.pattern = pattern
@@ -858,8 +908,10 @@ class glob(compiled_schema):
 
 class magic(compiled_schema):
     """
-    Checks if a buffer (for example a string or a byte array) has the given mime type. This is implemented using the `python-magic` package.
+    Checks if a buffer (for example a string or a byte array) has the given
+    mime type. This is implemented using the `python-magic` package.
     """
+
     mime_type: str
     __name__: str
 
@@ -868,7 +920,8 @@ class magic(compiled_schema):
         :param mime_type: the mime type
         :param name: common name to refer to this mime type
 
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        :raises SchemaError: exception thrown when the schema definition is
+          found to contain an error
         """
         if not HAS_MAGIC:
             raise SchemaError("Failed to load python-magic")
@@ -921,9 +974,11 @@ class div(compiled_schema):
         """
         :param divisor: the divisor
         :param remainder: the remainer
-        :param name: common name (e.g. `even` or `odd`) that will be used in non-validation messages
+        :param name: common name (e.g. `even` or `odd`) that will be used in
+          non-validation messages
 
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        :raises SchemaError: exception thrown when the schema definition is
+          found to contain an error
         """
         if not isinstance(divisor, int):
             raise SchemaError(f"The divisor {repr(divisor)} is not an integer")
@@ -960,7 +1015,8 @@ class div(compiled_schema):
 
 class close_to(compiled_schema):
     """
-    This matches the real numbers that are close to `x` in the sense of `math.isclose`.
+    This matches the real numbers that are close to `x` in the sense of
+    `math.isclose`.
     """
 
     kw: dict[str, float]
@@ -977,7 +1033,8 @@ class close_to(compiled_schema):
         :param rel_tol: the maximal allowed relative deviation
         :param abs_tol: the maximal allowed absolute deviation
 
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        :raises SchemaError: exception thrown when the schema definition is
+          found to contain an error
         """
         self.kw = {}
         if not isinstance(x, (int, float)):
@@ -1026,7 +1083,8 @@ class gt(compiled_schema):
         """
         :param lb: the strict lower bound
 
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        :raises SchemaError: exception thrown when the schema definition is
+          found to contain an error
         """
         try:
             lb <= lb
@@ -1066,7 +1124,8 @@ class ge(compiled_schema):
         """
         :param lb: the lower bound
 
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        :raises SchemaError: exception thrown when the schema definition is
+          found to contain an error
         """
         try:
             lb <= lb
@@ -1106,7 +1165,8 @@ class lt(compiled_schema):
         """
         :param ub: the strict upper bound
 
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        :raises SchemaError: exception thrown when the schema definition is
+          found to contain an error
         """
         try:
             ub <= ub
@@ -1146,7 +1206,8 @@ class le(compiled_schema):
         """
         :param ub: the upper bound
 
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        :raises SchemaError: exception thrown when the schema definition is
+          found to contain an error
         """
         try:
             ub <= ub
@@ -1196,7 +1257,8 @@ class interval(compiled_schema):
         :param strict_lb: if True use a strict lower bound
         :param strict_ub: if True use a strict upper bound
 
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        :raises SchemaError: exception thrown when the schema definition is
+          found to contain an error
         """
         self.lb_s = "..." if lb == ... else repr(lb)
         self.ub_s = "..." if ub == ... else repr(ub)
@@ -1251,7 +1313,8 @@ class interval(compiled_schema):
 
 class size(compiled_schema):
     """
-    Matches the objects (which support `len()` such as strings or lists) whose length is in the interval `[lb, ub]`.
+    Matches the objects (which support `len()` such as strings or lists) whose
+    length is in the interval `[lb, ub]`.
     """
 
     interval_: interval
@@ -1259,9 +1322,11 @@ class size(compiled_schema):
     def __init__(self, lb: int, ub: int | types.EllipsisType | None = None) -> None:
         """
         :param lb: the lower bound for the length
-        :param ub: the upper bound for the length; ... (ellipsis) means that there is no upper bound; `None` means `lb==ub`
+        :param ub: the upper bound for the length; ... (ellipsis) means that
+          there is no upper bound; `None` means `lb==ub`
 
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        :raises SchemaError: exception thrown when the schema definition is
+          found to contain an error
         """
         if ub is None:
             ub = lb
@@ -1362,7 +1427,8 @@ def compile(schema: object) -> compiled_schema:
 
     :param schema: the schema that should be compiled
 
-    :raises SchemaError: exception thrown when the schema definition is found to contain an error
+    :raises SchemaError: exception thrown when the schema definition is found
+      to contain an error
     """
     return _compile(schema, _deferred_compiles=None)
 
@@ -1374,9 +1440,13 @@ def _compile(
     Compiles a schema.
 
     :param schema: the schema that should be compiled
-    :param _deferred_compiles: an opaque data structure used for handling recursive schemas; it should be passed unmodifed to any internal invocations of :py:func:`vtjson._compile` or :py:meth:`vtjson.wrapper.__compile__`
+    :param _deferred_compiles: an opaque data structure used for handling
+      recursive schemas; it should be passed unmodifed to any internal
+      invocations of :py:func:`vtjson._compile` or
+      :py:meth:`vtjson.wrapper.__compile__`
 
-    :raises SchemaError: exception thrown when the schema definition is found to contain an error
+    :raises SchemaError: exception thrown when the schema definition is found
+      to contain an error
     """
     if _deferred_compiles is None:
         _deferred_compiles = _mapping()
@@ -1494,11 +1564,17 @@ def validate(
 
     :param schema: the given schema
     :param obj: the object to be validated
-    :param name: common name for the object to be validated; used in non-validation messages
-    :param strict: indicates whether or not the object being validated is allowed to have keys/entries which are not in the schema
-    :param subs: a dictionary whose keys are labels and whose values are substitution schemas for schemas with those labels
-    :raises ValidationError: exception thrown when the object does not validate; the exception message contains an explanation about what went wrong
-    :raises SchemaError: exception thrown when the schema definition is found to contain an error
+    :param name: common name for the object to be validated; used in
+      non-validation messages
+    :param strict: indicates whether or not the object being validated is
+      allowed to have keys/entries which are not in the schema
+    :param subs: a dictionary whose keys are labels and whose values are
+      substitution schemas for schemas with those labels
+    :raises ValidationError: exception thrown when the object does not
+      validate; the exception message contains an explanation about what went
+      wrong
+    :raises SchemaError: exception thrown when the schema definition is found
+      to contain an error
     """
     message = _validate(
         schema,
@@ -1518,6 +1594,7 @@ class number(compiled_schema):
     """
     A deprecated alias for `float`.
     """
+
     def __init__(self) -> None:
         warnings.warn(
             "The schema 'number' is deprecated. Use 'float' instead.",
@@ -1539,14 +1616,17 @@ class number(compiled_schema):
 
 class email(compiled_schema):
     """
-    Checks if the object is a valid email address. This uses the package `email_validator`. The `email` schema accepts the same options as `validate_email` in loc. cit.
+    Checks if the object is a valid email address. This uses the package
+    `email_validator`. The `email` schema accepts the same options as
+    `validate_email` in loc. cit.
     """
 
     kw: dict[str, Any]
 
     def __init__(self, **kw: Any) -> None:
         """
-        :param kw: optional keyword arguments to be forwarded to `email_validator.validate_email`
+        :param kw: optional keyword arguments to be forwarded to
+          `email_validator.validate_email`
         """
         self.kw = kw
         if "dns_resolver" not in kw:
@@ -1581,7 +1661,8 @@ class ip_address(compiled_schema):
     def __init__(self, version: Literal[4, 6, None] = None) -> None:
         """
         :param version: the version of the ip protocol
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        :raises SchemaError: exception thrown when the schema definition is
+          found to contain an error
         """
         if version is not None and version not in (4, 6):
             raise SchemaError("version is not 4 or 6")
@@ -1634,7 +1715,8 @@ class url(compiled_schema):
 
 class date_time(compiled_schema):
     """
-    Without argument this represents an ISO 8601 date-time. The `format` argument represents a format string for `strftime`.
+    Without argument this represents an ISO 8601 date-time. The `format`
+    argument represents a format string for `strftime`.
     """
 
     format: str | None
@@ -1802,7 +1884,8 @@ class domain_name(compiled_schema):
 
 class at_least_one_of(compiled_schema):
     """
-    This represents a dictionary with a least one key among a collection of keys.
+    This represents a dictionary with a least one key among a collection of
+    keys.
     """
 
     args: tuple[object, ...]
@@ -1836,7 +1919,8 @@ class at_least_one_of(compiled_schema):
 
 class at_most_one_of(compiled_schema):
     """
-    This represents an dictionary with at most one key among a collection of keys.
+    This represents an dictionary with at most one key among a collection of
+    keys.
     """
 
     args: tuple[object, ...]
@@ -1870,7 +1954,8 @@ class at_most_one_of(compiled_schema):
 
 class one_of(compiled_schema):
     """
-    This represents a dictionary with exactly one key among a collection of keys.
+    This represents a dictionary with exactly one key among a collection of
+    keys.
     """
 
     args: tuple[object, ...]
@@ -1904,7 +1989,8 @@ class one_of(compiled_schema):
 
 class keys(compiled_schema):
     """
-    This represents a dictionary containing all the keys in a collection of keys
+    This represents a dictionary containing all the keys in a collection of
+    keys
     """
 
     args: tuple[object, ...]
@@ -1971,8 +2057,11 @@ class _ifthen(compiled_schema):
 
 class ifthen(wrapper):
     """
-    If the object matches the `if_schema` then it should also match the `then_schema`. If the object does not match the `if_schema` then it should match the `else_schema`, if present.
+    If the object matches the `if_schema` then it should also match the
+    `then_schema`. If the object does not match the `if_schema` then it should
+    match the `else_schema`, if present.
     """
+
     if_schema: object
     then_schema: object
     else_schema: object | None
@@ -2033,15 +2122,21 @@ class _cond(compiled_schema):
 
 class cond(wrapper):
     """
-    An object is successively validated against `if_schema1`, `if_schema2`, ... until a validation succeeds. When this happens the object should match the corresponding `then_schema`. If no `if_schema` succeeds then the object is considered to have been validated. If one sets `if_schemaN` equal to `anything` then this serves as a catch all.
+    An object is successively validated against `if_schema1`, `if_schema2`,
+    ... until a validation succeeds. When this happens the object should match
+    the corresponding `then_schema`. If no `if_schema` succeeds then the
+    object is considered to have been validated. If one sets `if_schemaN`
+    equal to `anything` then this serves as a catch all.
     """
+
     args: tuple[tuple[object, object], ...]
 
     def __init__(self, *args: tuple[object, object]) -> None:
         """
         :param args: list of tuples pairing `if_schemas` with `then_schemas`
 
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        :raises SchemaError: exception thrown when the schema definition is
+          found to contain an error
         """
         for c in args:
             if not isinstance(c, tuple) or len(c) != 2:
@@ -2089,7 +2184,9 @@ class _fields(compiled_schema):
 
 class fields(wrapper):
     """
-    Matches Python objects with attributes `field1, field2, ..., fieldN` whose corresponding values should validate against `schema1, schema2, ..., schemaN` respectively
+    Matches Python objects with attributes `field1, field2, ..., fieldN` whose
+    corresponding values should validate against `schema1, schema2, ...,
+    schemaN` respectively
     """
 
     d: dict[str | optional_key[str], object]
@@ -2098,7 +2195,8 @@ class fields(wrapper):
         """
         :param d: a dictionary associating fields with schemas
 
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        :raises SchemaError: exception thrown when the schema definition is
+          found to contain an error
         """
         self.d = {}
         if not isinstance(d, Mapping):
@@ -2106,7 +2204,8 @@ class fields(wrapper):
         for k, v in d.items():
             if not isinstance(k, str) and not isinstance(k, optional_key):
                 raise SchemaError(
-                    f"key {repr(k)} in {repr(d)} is not an instance of optional_key and not a string"
+                    f"key {repr(k)} in {repr(d)} is not an instance of"
+                    " optional_key and not a string"
                 )
             if isinstance(k, str) and k[-1] == "?":
                 self.d[optional_key(k[:-1])] = v
@@ -2161,8 +2260,10 @@ class _filter(compiled_schema):
 
 class filter(wrapper):
     """
-    Applies `callable` to the object and validates the result with `schema`. If the callable throws an exception then validation fails.
+    Applies `callable` to the object and validates the result with `schema`.
+    If the callable throws an exception then validation fails.
     """
+
     filter: Callable[[Any], object]
     schema: object
     filter_name: str | None
@@ -2175,10 +2276,12 @@ class filter(wrapper):
     ) -> None:
         """
         :param filter: the filter to apply to the object
-        :param schema: the schema used for validation once the filter  has been applied
+        :param schema: the schema used for validation once the filter has been
+          applied
         :param filter_name: common name to refer to the filter
 
-        :raises SchemaError: exception thrown when the schema definition is found to contain an error
+        :raises SchemaError: exception thrown when the schema definition is
+          found to contain an error
         """
         if filter_name is not None and not isinstance(filter_name, str):
             raise SchemaError("The filter name is not a string")
@@ -2546,7 +2649,9 @@ class _set(compiled_schema):
 
 class protocol(wrapper):
     """
-    An object matches the schema `protocol(schema, dict=False)` if `schema` is a class (or class like object) and its fields are annotated with schemas which validate the corresponding fields in the object.
+    An object matches the schema `protocol(schema, dict=False)` if `schema` is
+    a class (or class like object) and its fields are annotated with schemas
+    which validate the corresponding fields in the object.
     """
 
     type_dict: dict[str | optional_key[str], object]
@@ -2555,10 +2660,12 @@ class protocol(wrapper):
 
     def __init__(self, schema: object, dict: bool = False):
         """
-        :param schema: a type annotated class (or class like object such as Protocol or TypedDict) serving as prototype
+        :param schema: a type annotated class (or class like object such as
+          Protocol or TypedDict) serving as prototype
         :param dict: if `True` parse the object as a `dict`
 
-        :raises SchemaError: exception thrown when the schema does not support type_hints
+        :raises SchemaError: exception thrown when the schema does not support
+          type_hints
         """
         if not isinstance(dict, bool):
             raise SchemaError("bool flag is not a bool")
