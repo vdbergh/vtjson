@@ -337,7 +337,7 @@ def make_type(
     subs: Mapping[str, object] = {},
 ) -> _validate_meta:
     """
-    Transforms a schema into a genuine Python type
+    Transforms a schema into a genuine Python type.
 
     :param schema: the given schema
     :param name: sets the `__name__` attribute of the type; if it is not supplied then `vtjson` makes an educated guess

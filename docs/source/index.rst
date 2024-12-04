@@ -3,8 +3,6 @@ Welcome to vtjson's documentation
 
 **vtjson** is an easy to use validation library compatible with Python type annotations.
 
-Check out the :doc:`tutorial` section for further information.
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -12,5 +10,3 @@ Check out the :doc:`tutorial` section for further information.
    tutorial
    usage
    api
-   example1
-   example2
