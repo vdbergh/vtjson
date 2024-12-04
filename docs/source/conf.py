@@ -37,10 +37,10 @@ html_baseurl = 'https://www.cantate.be/vtsjon'
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-#html_theme = 'alabaster'
-#html_theme = 'furo'
-#html_theme = 'press'
-#html_theme = 'insipid'
+# html_theme = 'alabaster'
+# html_theme = 'furo'
+# html_theme = 'press'
+# html_theme = 'insipid'
 
 html_permalinks_icon = '§'
 html_theme = "sphinx_rtd_theme"
