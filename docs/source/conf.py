@@ -8,31 +8,32 @@
 
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src' / 'vtjson'))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src" / "vtjson"))
 add_module_names = False
 
-project = 'vtjson'
-copyright = '2024, Michel Van den Bergh'
-author = 'Michel Van den Bergh'
-release = '2.1.9'
+project = "vtjson"
+copyright = "2024, Michel Van den Bergh"
+author = "Michel Van den Bergh"
+release = "2.1.9"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    'sphinx.ext.duration',
-    'sphinx.ext.doctest',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.githubpages',
-    'sphinx_autodoc_typehints',
+    "sphinx.ext.duration",
+    "sphinx.ext.doctest",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.githubpages",
+    "sphinx_autodoc_typehints",
 ]
 
-templates_path = ['_templates']
+templates_path = ["_templates"]
 exclude_patterns = []
 
-html_baseurl = 'https://www.cantate.be/vtsjon'
+html_baseurl = "https://www.cantate.be/vtsjon"
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
@@ -42,6 +43,6 @@ html_baseurl = 'https://www.cantate.be/vtsjon'
 # html_theme = 'press'
 # html_theme = 'insipid'
 
-html_permalinks_icon = '§'
+html_permalinks_icon = "§"
 html_theme = "sphinx_rtd_theme"
-html_static_path = ['_static']
+html_static_path = ["_static"]
