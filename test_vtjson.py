@@ -303,6 +303,11 @@ class TestValidation(unittest.TestCase):
             object_ = {"a": 3}
             validate(schema, object_)
         show(mc)
+        schema = {r"a\?": str, "b": str}
+        with self.assertRaises(ValidationError) as mc:
+            object_ = {"b": "c"}
+            validate(schema, object_)
+        show(mc)
 
         class fake_string:
             def __init__(self, s: str) -> None:
