@@ -110,4 +110,4 @@ class book_schema(TypedDict):
     year: Annotated[int, ge(1900)]
 ```
 
-For comprehensive documentation about `vtjson` see [https://www.cantate.be/vtjson](https://www.cantate.be/vtjson).
+For comprehensive documentation about `vtjson` see [https://www.cantate.be/vtjson](https://www.cantate.be/vtjson) (canonical reference) or [https://vtjson.readthedocs.io](https://vtjson.readthedocs.io).
