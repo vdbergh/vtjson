@@ -22,6 +22,7 @@ from typing import (
     TypeVar,
     Union,
     cast,
+    overload,
 )
 
 try:
@@ -84,8 +85,6 @@ else:
 import dns.resolver
 import email_validator
 import idna
-
-T = TypeVar("T")
 
 
 def safe_cast(schema: Type[T], obj: Any) -> T:
@@ -318,6 +317,27 @@ def _c(s: object) -> str:
         return repr(ret)
     else:
         return ret
+
+
+T = TypeVar("T")
+
+
+@overload
+def _canonize_key(key: str) -> str | optional_key[str]: ...
+
+
+@overload
+def _canonize_key(key: T) -> T: ...
+
+
+def _canonize_key(key: object) -> object:
+    if isinstance(key, str):
+        if len(key) > 0 and key[-1] == "?":
+            if not (len(key) > 2 and key[-2] == "\\"):
+                return optional_key(key[:-1])
+            else:
+                return key[:-2]
+    return key
 
 
 def _wrong_type_message(
@@ -2207,10 +2227,8 @@ class fields(wrapper):
                     f"key {repr(k)} in {repr(d)} is not an instance of"
                     " optional_key and not a string"
                 )
-            if isinstance(k, str) and k[-1] == "?":
-                self.d[optional_key(k[:-1])] = v
-            else:
-                self.d[k] = v
+            key_ = _canonize_key(k)
+            self.d[key_] = v
 
     def __compile__(self, _deferred_compiles: _mapping | None = None) -> _fields:
         return _fields(self.d, _deferred_compiles=_deferred_compiles)
@@ -2512,13 +2530,12 @@ class _dict(compiled_schema):
         for k in schema:
             compiled_schema = _compile(schema[k], _deferred_compiles=_deferred_compiles)
             optional = True
-            if isinstance(k, optional_key):
-                key = k.key
-            elif isinstance(k, str) and len(k) > 0 and k[-1] == "?":
-                key = k[:-1]
+            key_ = _canonize_key(k)
+            if isinstance(key_, optional_key):
+                key = key_.key
             else:
                 optional = False
-                key = k
+                key = key_
             c = _compile(key, _deferred_compiles=_deferred_compiles)
             if isinstance(c, _const):
                 if not optional:
