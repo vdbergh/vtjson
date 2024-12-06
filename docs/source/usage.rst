@@ -61,6 +61,9 @@ Some built-in schemas take arguments. If no arguments are given then the parenth
 .. autoclass:: vtjson.nothing
    :class-doc-from: both
 
+.. autoclass:: vtjson.float_
+   :class-doc-from: both
+
 .. _modifiers:
 
 Modifiers
@@ -285,7 +288,7 @@ A schema can be, in order of precedence:
 
 * A Python type annotation such as `list[str]`. See :ref:`type_annotations`.
 
-* A Python type. In that case validation is done by checking membership. For compatibility with Python type annotations, the schema `float` matches both ints and floats.
+* A Python type. In that case validation is done by checking membership. For compatibility with Python type annotations, the schema `float` matches both ints and floats. Use :py:class:`vtjson.float_` if you want only floats.
 
 * A callable. Validation is done by applying the callable to the object. If applying the callable throws an exception then the corresponding message will be part of the non-validation message.
 

@@ -1636,6 +1636,24 @@ class number(compiled_schema):
             return _wrong_type_message(obj, name, "number")
 
 
+class float_(compiled_schema):
+    """
+    Schema that only matches floats. Not ints.
+    """
+
+    def __validate__(
+        self,
+        obj: object,
+        name: str = "object",
+        strict: bool = True,
+        subs: Mapping[str, object] = {},
+    ) -> str:
+        if isinstance(obj, float):
+            return ""
+        else:
+            return _wrong_type_message(obj, name, "float_")
+
+
 class email(compiled_schema):
     """
     Checks if the object is a valid email address. This uses the package
