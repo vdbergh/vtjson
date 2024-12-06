@@ -285,7 +285,7 @@ A schema can be, in order of precedence:
 
 * A Python type annotation such as `list[str]`. See :ref:`type_annotations`.
 
-* A Python type. In that case validation is done by checking membership. By convention the schema `float` matches both ints and floats. Similarly the schema `complex` matches ints and floats besides of course complex numbers.
+* A Python type. In that case validation is done by checking membership. For compatibility with Python type annotations, the schema `float` matches both ints and floats. Similarly the schema `complex` matches ints and floats, besides of course complex numbers.
 
 * A callable. Validation is done by applying the callable to the object. If applying the callable throws an exception then the corresponding message will be part of the non-validation message.
 

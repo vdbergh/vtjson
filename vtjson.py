@@ -395,7 +395,7 @@ K = TypeVar("K")
 class optional_key(Generic[K]):
     """
     Make a key in a Mapping schema optional. In the common case that the key
-      is a string, the same effect can be achieved by appending `?`.
+    is a string, the same effect can be achieved by appending `?`.
     """
 
     key: K
