@@ -1890,10 +1890,6 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValidationError) as mc:
             validate(schema, 1.0 + 1.0j)
         show(mc)
-        schema = complex
-        validate(schema, 1)
-        validate(schema, 1.0)
-        validate(schema, 1.0 + 1.0j)
 
     def test_float_equal(self) -> None:
         schema: object

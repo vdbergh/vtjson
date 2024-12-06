@@ -2327,8 +2327,6 @@ class _type(compiled_schema):
         if math_numbers:
             if schema == float:
                 setattr(self, "__validate__", self.__validate_float__)
-            if schema == complex:
-                setattr(self, "__validate__", self.__validate_complex__)
         self.schema = schema
 
     def __validate__(
@@ -2360,19 +2358,6 @@ class _type(compiled_schema):
             return ""
         else:
             return _wrong_type_message(obj, name, "float")
-
-    def __validate_complex__(
-        self,
-        obj: object,
-        name: str = "object",
-        strict: bool = True,
-        subs: Mapping[str, object] = {},
-    ) -> str:
-        # consider int, float as subtypes of complex
-        if isinstance(obj, (int, float, complex)):
-            return ""
-        else:
-            return _wrong_type_message(obj, name, "complex")
 
     def __str__(self) -> str:
         return self.schema.__name__
