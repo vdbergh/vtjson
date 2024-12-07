@@ -323,11 +323,11 @@ T = TypeVar("T")
 
 
 @overload
-def _canonize_key(key: str) -> str | optional_key[str]: ...
+def _canonize_key(key: str | optional_key[str]) -> str | optional_key[str]: ...
 
 
 @overload
-def _canonize_key(key: T) -> T: ...
+def _canonize_key(key: object) -> object: ...
 
 
 def _canonize_key(key: object) -> object:
