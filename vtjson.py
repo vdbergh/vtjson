@@ -336,7 +336,7 @@ def _canonize_key(key: object) -> object:
             if not (len(key) > 2 and key[-2] == "\\"):
                 return optional_key(key[:-1])
             else:
-                return key[:-2]
+                return key[:-2] + "?"
     return key
 
 

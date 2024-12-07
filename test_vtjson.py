@@ -309,6 +309,12 @@ class TestValidation(unittest.TestCase):
             object_ = {"b": "c"}
             validate(schema, object_)
         show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            object_ = {"a": "c", "b": "d"}
+            validate(schema, object_)
+        show(mc)
+        object_ = {"a?": "c", "b": "d"}
+        validate(schema, object_)
 
         class fake_string:
             def __init__(self, s: str) -> None:
