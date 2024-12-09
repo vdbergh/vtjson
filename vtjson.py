@@ -428,8 +428,8 @@ class optional_key(Generic[K]):
     def __init__(self, key: K, _optional: bool = True) -> None:
         """
         :param key: the key to be made optional
-        :param _optional: create a mandatory key; this is only for internal
-          use
+        :param _optional: if `False` create a mandatory key; this is normally
+          for internal use only
         """
         self.key = key
         self.optional = _optional
