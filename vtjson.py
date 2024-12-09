@@ -2195,7 +2195,7 @@ class cond(wrapper):
 
 
 class _fields(compiled_schema):
-    d: dict[str | optional_key[str], compiled_schema]
+    d: dict[optional_key[str], compiled_schema]
 
     def __init__(
         self,
@@ -2214,7 +2214,7 @@ class _fields(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         for k, v in self.d.items():
-            name_ = f"{name}.{k}"
+            name_ = f"{name}.{k.key}"
             if not isinstance(k, optional_key):
                 if not hasattr(obj, k):
                     return f"{name_} is missing"
