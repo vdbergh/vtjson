@@ -323,7 +323,7 @@ T = TypeVar("T")
 
 
 @overload
-def _canonize_key(key: str | optional_key[str]) -> str | optional_key[str]: ...
+def _canonize_key(key: str | optional_key[str]) -> optional_key[str]: ...
 
 
 @overload
@@ -337,6 +337,8 @@ def _canonize_key(key: object) -> object:
                 return optional_key(key[:-1])
             else:
                 return optional_key(key[:-2] + "?", _optional=False)
+        else:
+            return optional_key(key, _optional=False)
     return key
 
 
