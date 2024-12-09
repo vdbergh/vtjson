@@ -336,7 +336,7 @@ def _canonize_key(key: object) -> object:
             if not (len(key) > 2 and key[-2] == "\\"):
                 return optional_key(key[:-1])
             else:
-                return key[:-2] + "?"
+                return optional_key(key[:-2] + "?", _optional=False)
     return key
 
 
@@ -421,18 +421,23 @@ class optional_key(Generic[K]):
     """
 
     key: K
+    optional: bool
 
-    def __init__(self, key: K) -> None:
+    def __init__(self, key: K, _optional: bool = True) -> None:
         """
         :param key: the key to be made optional
+        :param _optional: create a mandatory key; this is only for internal
+          use
         """
         self.key = key
+        self.optional = _optional
 
     def __eq__(self, key: object) -> bool:
         if not isinstance(key, optional_key):
             return False
         k: object = key.key
-        return self.key == k
+        o: object = key.optional
+        return (self.key, key.optional) == (k, o)
 
     def __hash__(self) -> int:
         return hash(self.key)
@@ -2208,8 +2213,13 @@ class _fields(compiled_schema):
     ) -> str:
         for k, v in self.d.items():
             name_ = f"{name}.{k}"
-            if not isinstance(k, optional_key) and not hasattr(obj, k):
-                return f"{name_} is missing"
+            if not isinstance(k, optional_key):
+                if not hasattr(obj, k):
+                    return f"{name_} is missing"
+            elif not k.optional:
+                if not hasattr(obj, k.key):
+                    return f"{name_} is missing"
+
             if isinstance(k, optional_key):
                 k_ = k.key
             else:
@@ -2538,9 +2548,10 @@ class _dict(compiled_schema):
             key_ = _canonize_key(k)
             if isinstance(key_, optional_key):
                 key = key_.key
+                optional = key_.optional
             else:
-                optional = False
                 key = key_
+                optional = False
             c = _compile(key, _deferred_compiles=_deferred_compiles)
             if isinstance(c, _const):
                 if not optional:
