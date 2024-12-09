@@ -272,13 +272,13 @@ def _get_type_hints(schema: object) -> dict[str, object]:
 
 def _to_dict(
     type_hints: Mapping[str, object], total: bool = True
-) -> dict[str | optional_key[str], object]:
-    d: dict[str | optional_key[str], object] = {}
+) -> dict[optional_key[str], object]:
+    d: dict[optional_key[str], object] = {}
     if not supports_Generics:
         raise SchemaError("Generic types are not supported")
     for k, v in type_hints.items():
         v_ = v
-        k_: str | optional_key[str] = k
+        k_ = optional_key(k, _optional=False)
         value_type = typing.get_origin(v)
         if supports_NotRequired and value_type in (Required, NotRequired):
             v_ = typing.get_args(v)[0]
@@ -2199,7 +2199,7 @@ class _fields(compiled_schema):
 
     def __init__(
         self,
-        d: Mapping[str | optional_key[str], object],
+        d: Mapping[optional_key[str], object],
         _deferred_compiles: _mapping | None = None,
     ) -> None:
         self.d = {}
@@ -2241,7 +2241,7 @@ class fields(wrapper):
     schemaN` respectively
     """
 
-    d: dict[str | optional_key[str], object]
+    d: dict[optional_key[str], object]
 
     def __init__(self, d: Mapping[str | optional_key[str], object]) -> None:
         """
@@ -2689,7 +2689,7 @@ class protocol(wrapper):
     which validate the corresponding fields in the object.
     """
 
-    type_dict: dict[str | optional_key[str], object]
+    type_dict: dict[optional_key[str], object]
     dict: bool
     __name__: str
 
@@ -2720,7 +2720,7 @@ class protocol(wrapper):
     ) -> compiled_schema:
         if not self.dict:
             return _set_name(
-                fields(self.type_dict),
+                _fields(self.type_dict),
                 self.__name__,
                 reason=True,
                 _deferred_compiles=_deferred_compiles,
