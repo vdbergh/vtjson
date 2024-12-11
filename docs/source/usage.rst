@@ -181,6 +181,14 @@ Annotated
   .. code-block:: python
 
     Annotated[type_annotation, vtjson_schema, skip_first]
+
+
+  For example
+
+  .. code-block:: python
+
+    Annotated[list[object], [int, str, float], skip_first]
+
     
   A type checker such as `mypy` will only see the type annotation (`list[object]` in the example), whereas vtjson will only see the vtjson schema (`[int, str, float]` in the example). `skip_first` is a built-in short hand for `Apply(skip_first=True)` (see below) which directs vtjson to ignore the first argument of an `Annotated` schema.
  
