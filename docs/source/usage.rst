@@ -165,13 +165,13 @@ Type annotations as schemas
 
 `vtjson` recognizes the following type annotations as schemas.
 
-.. code-block:: text
+
 		
-  Annotated, Mapping[...,...] and subtypes, Container[...] and subtypes,
-  tuple[...], Tuple[...], Protocol, NamedTuple, Literal, NewType, TypedDict,
-  Union (or the equivalent operator |), Any.
+:ref:`annotated`, :ref:`mapping`, :ref:`container`, :ref:`tuple`, :ref:`protocol`, :ref:`namedtuple`, :ref:`newtype`, :ref:`typeddict`, :ref:`union`, :ref:`any`.
 
 For example `dict[str, str]` is translated internally into the schema `{str: str}`. This is explained further below.
+
+.. _annotated:
 
 Annotated
 ^^^^^^^^^
@@ -212,6 +212,8 @@ Supported type annotations
 
 Note that Python imposes strong restrictions on what constitutes a valid type annotation but `vtjson` is much more lax about this. Enforcing the restrictions is left to the type checkers or the Python interpreter.
 
+.. _typeddict:
+
 TypedDict
   A TypedDict type annotation is translated into a `dict` schema. E.g.
 
@@ -223,6 +225,8 @@ TypedDict
 
   internally becomes `{"title": str, "price": float}`. `vtjson` supports the `total` option to `TypedDict` as well as the `Required` and `NotRequired` annotations of fields, if they are compatible with the Python version being used.
 
+.. _protocol:
+
 Protocol
   A class implementing a protocol is translated into a :py:class:`vtjson.fields` schema. E.g.
 
@@ -233,6 +237,8 @@ Protocol
       price: float
 
   internally becomes `fields({"title": str, "price": float})`.
+
+.. _namedtuple:
 
 NamedTuple
   A `NamedTuple` class is translated into an :py:class:`vtjson.intersect` schema encompassing a `tuple` schema and a :py:class:`vtjson.fields` schema. E.g.
@@ -246,25 +252,39 @@ NamedTuple
   internally becomes `intersect(tuple, fields({"title": str, "price": float}))`.
 
 Annotated
-  This has already been discussed. It is translated into a suitable :py:class:`vtjson.intersect` schema. The handling of `Annotated` schemas can be influenced by :py:class:`vtjson.Apply` objects.
+  This has already been discussed in the section :ref:`annotated`. It is translated into a suitable :py:class:`vtjson.intersect` schema. The handling of `Annotated` schemas can be influenced by :py:class:`vtjson.Apply` objects.
+
+.. _newtype:
 
 NewType
   This is translated into a :py:class:`vtjson.set_name` schema. E.g. `NewType('Movie', str)` becomes `set_name(str, 'Movie')`
 
+.. _tuple:
+
 tuple[...] and Tuple[...]
   These are translated into the equivalent `tuple` schemas.
+
+.. _mapping:
 
 Mapping[K, V] and subtypes
   These validate those objects that are members of the origin type (a subclass of `Mapping`) and whose (key, value) pairs match `(K, V)`.
 
+.. _container:
+
 Container[T] and subtypes
   These validate those objects that are members of the origin type (a subclass of `Container`) and whose elements match `T`.
+
+.. _union:
 
 Union and the | operator
   These are translated into :py:class:`vtjson.union`.
 
+.. _literal:
+
 Literal
   This is also translated into :py:class:`vtjson.union`.
+
+.. _any:
 
 Any
   This is translated into :py:class:`vtjson.anything`.
