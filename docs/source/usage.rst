@@ -194,6 +194,14 @@ Annotated
  
 * In some use cases a `vtjon` schema will meaningfully refine a Python type or type annotation. In that case one should not use `skip_first`. For example:
 
+   .. code-block:: python
+		   
+    Annotated[datetime, fields({"tzinfo": timezone.utc})]
+
+  defines a `datetime` object whose time zone is `utc`.
+
+* The built-in schemas already check that an object has the correct type. So for those one should use `skip_first`. For example:
+
   .. code-block:: python
 		
     Annotated[int, div(2), skip_first]
