@@ -90,7 +90,7 @@ We may also rewrite the `book_schema` as a valid Python type annotation.
      editor: NotRequired[str]
      year: int
 
-Attempting to validate the bad book raises the same exception as before:
+Attempting to validate the bad book raises a similar exception as before:
 
 .. testcode::
 
@@ -101,7 +101,7 @@ Attempting to validate the bad book raises the same exception as before:
   Traceback (most recent call last):
       ...
       raise ValidationError(message)
-  vtjson.vtjson.ValidationError: book['year'] (value:'1936') is not of type 'int'
+  vtjson.vtjson.ValidationError: bad_book is not of type 'book_schema': bad_book['year'] (value:'1936') is not of type 'int'
 
 :py:func:`vtjson.safe_cast` functions exactly like `cast` except that it also verifies at run time that the given object matches the given schema.
   

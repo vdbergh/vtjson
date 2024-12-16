@@ -58,7 +58,7 @@ class book_schema(TypedDict):
     year: int
 ```
 
-Attempting to validate the bad book would raise the same exception as before.
+Attempting to validate the bad book would raise a similar exception as before.
 
 Schemas can of course be more complicated and in particular they can be nested.
 Here is an example that shows more of the features of `vtjson`.
