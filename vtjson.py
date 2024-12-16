@@ -2720,7 +2720,7 @@ class protocol(wrapper):
     ) -> compiled_schema:
         if not self.dict:
             return _set_name(
-                _fields(self.type_dict),
+                _fields(self.type_dict, _deferred_compiles=_deferred_compiles),
                 self.__name__,
                 reason=True,
                 _deferred_compiles=_deferred_compiles,
