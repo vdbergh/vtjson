@@ -177,7 +177,7 @@ As before we can rewrite the new `book_schema` as a valid type annotation
    class book_schema(TypedDict):
      title: str
      authors: list[person_schema]
-     editor: NotRequired[list[person_schema]]
+     editor: NotRequired[person_schema]
      year: Annotated[int, ge(1900)]
 
 Many constraints expressible in `vtjson` schemas cannot be expressed in the language of type annotations. That's where `typing.Annotated` comes in. Consider the following example:

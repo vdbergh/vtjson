@@ -106,7 +106,7 @@ class person_schema(TypedDict):
 class book_schema(TypedDict):
     title: str
     authors: list[person_schema]
-    editor: NotRequired[list[person_schema]]
+    editor: NotRequired[person_schema]
     year: Annotated[int, ge(1900)]
 ```
 
