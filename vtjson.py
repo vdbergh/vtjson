@@ -786,9 +786,8 @@ class _set_name(compiled_schema):
 
 class set_name(wrapper):
     """
-    An object matches the schema `set_name(schema, name, reason=False)` if it
-    matches `schema`, but the `name` argument will be used in non-validation
-    messages.
+    An object matches the schema `set_name(schema, name)` if it matches `schema`,
+    but the `name` argument will be used in non-validation messages.
     """
 
     reason: bool
@@ -799,8 +798,8 @@ class set_name(wrapper):
         """
         :param schema: the original schema
         :param name: name for use in non-validation messages
-        :param reason: indicates whether the original non-validation message
-          should be suppressed
+        :param reason: if `True` then the original non-validation message
+          will not be suppressed
         """
         if not isinstance(name, str):
             raise SchemaError(f"The name {_c(name)} is not a string")

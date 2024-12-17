@@ -223,7 +223,7 @@ Note that Python imposes strong restrictions on what constitutes a valid type an
 .. _typeddict:
 
 TypedDict
-  A TypedDict type annotation is translated into a `dict` schema. E.g.
+  A TypedDict type annotation is, roughly speaking, translated into a `dict` schema. E.g.
 
   .. code-block:: python
 
@@ -231,7 +231,13 @@ TypedDict
       title: str
       price: float
 
-  internally becomes `{"title": str, "price": float}`. `vtjson` supports the `total` option to `TypedDict` as well as the `Required` and `NotRequired` annotations of fields, if they are compatible with the Python version being used.
+  internally becomes
+
+  .. code-block:: python
+
+    set_name({"title": str, "price": float}, "Movie", reason=True)
+
+  `vtjson` supports the `total` option to `TypedDict` as well as the `Required` and `NotRequired` annotations of fields, if they are compatible with the Python version being used.
 
 .. _protocol:
 
@@ -244,7 +250,11 @@ Protocol
       title: str
       price: float
 
-  internally becomes `fields({"title": str, "price": float})`.
+  internally becomes
+
+  .. code-block:: python
+
+    set_name(fields({"title": str, "price": float}), "Movie", reason=True)
 
 .. _namedtuple:
 
@@ -257,7 +267,11 @@ NamedTuple
       title: str
       price: float
 
-  internally becomes `intersect(tuple, fields({"title": str, "price": float}))`.
+  internally becomes
+
+  .. code-block:: python
+
+    set_name(intersect(tuple, fields({"title": str, "price": float})), "Movie", reason=True)
 
 Annotated
   This has already been discussed in the section :ref:`annotated`. It is translated into a suitable :py:class:`vtjson.intersect` schema. The handling of `Annotated` schemas can be influenced by :py:class:`vtjson.Apply` objects.
