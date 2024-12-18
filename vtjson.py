@@ -323,7 +323,7 @@ T = TypeVar("T")
 
 
 @overload
-def _canonize_key(key: str | optional_key[str]) -> optional_key[str]: ...
+def _canonize_key(key: StringKeyType) -> optional_key[str]: ...
 
 
 @overload
@@ -443,6 +443,9 @@ class optional_key(Generic[K]):
 
     def __hash__(self) -> int:
         return hash(self.key)
+
+
+StringKeyType = TypeVar("StringKeyType", bound=Union[str, optional_key[str]])
 
 
 class _union(compiled_schema):
@@ -2242,7 +2245,7 @@ class fields(wrapper):
 
     d: dict[optional_key[str], object]
 
-    def __init__(self, d: Mapping[str | optional_key[str], object]) -> None:
+    def __init__(self, d: Mapping[StringKeyType, object]) -> None:
         """
         :param d: a dictionary associating fields with schemas
 
@@ -2719,7 +2722,7 @@ class protocol(wrapper):
     ) -> compiled_schema:
         if not self.dict:
             return _set_name(
-                _fields(self.type_dict, _deferred_compiles=_deferred_compiles),
+                fields(self.type_dict),
                 self.__name__,
                 reason=True,
                 _deferred_compiles=_deferred_compiles,
