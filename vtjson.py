@@ -2039,7 +2039,7 @@ class one_of(compiled_schema):
 class keys(compiled_schema):
     """
     This represents a dictionary containing all the keys in a collection of
-    keys
+    keys.
     """
 
     args: tuple[object, ...]
@@ -2240,7 +2240,7 @@ class fields(wrapper):
     """
     Matches Python objects with attributes `field1, field2, ..., fieldN` whose
     corresponding values should validate against `schema1, schema2, ...,
-    schemaN` respectively
+    schemaN` respectively.
     """
 
     d: dict[optional_key[str], object]
