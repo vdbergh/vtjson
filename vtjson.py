@@ -1492,7 +1492,9 @@ def _compile(
         origin = object()
 
     ret: compiled_schema
-    if isinstance(schema, type) and issubclass(schema, compiled_schema):
+    if isinstance(schema, compiled_schema):
+        ret = schema
+    elif isinstance(schema, type) and issubclass(schema, compiled_schema):
         try:
             ret = schema()
         except Exception:
@@ -1503,8 +1505,6 @@ def _compile(
         ret = _validate_schema(schema)
     elif isinstance(schema, wrapper):
         ret = schema.__compile__(_deferred_compiles=_deferred_compiles)
-    elif isinstance(schema, compiled_schema):
-        ret = schema
     elif supports_TypedDict and typing.is_typeddict(schema):
         ret = _compile(
             protocol(schema, dict=True), _deferred_compiles=_deferred_compiles
