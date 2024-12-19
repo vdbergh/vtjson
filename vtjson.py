@@ -2729,7 +2729,7 @@ class protocol(wrapper):
             )
         else:
             return _set_name(
-                dict(self.type_dict),
+                self.type_dict,
                 self.__name__,
                 reason=True,
                 _deferred_compiles=_deferred_compiles,
