@@ -309,6 +309,12 @@ class TestValidation(unittest.TestCase):
             object_ = {"b": "c"}
             validate(schema, object_)
         show(mc)
+        schema = {optional_key("a?", _optional=False): str, "b": str}
+        with self.assertRaises(ValidationError) as mc:
+            object_ = {"b": "c"}
+            validate(schema, object_)
+        show(mc)
+
         with self.assertRaises(ValidationError) as mc:
             object_ = {"a": "c", "b": "d"}
             validate(schema, object_)
