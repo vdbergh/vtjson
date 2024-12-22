@@ -116,7 +116,7 @@ Modifiers
 Wrappers
 --------
 
-Wrappers may be used to combine a collection of schemas into a new schema.
+Wrappers are schemas that contain references to other schemas.
 
 .. autoclass:: vtjson.union
    :class-doc-from: both
@@ -144,6 +144,7 @@ Wrappers may be used to combine a collection of schemas into a new schema.
 
 .. autoclass:: vtjson.set_label
    :class-doc-from: both
+
 
 Conditional schemas
 -------------------
