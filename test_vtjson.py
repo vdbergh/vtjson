@@ -2323,6 +2323,7 @@ class TestValidation(unittest.TestCase):
 
         with self.assertRaises(SchemaError) as mc_:
             schema = protocol({})
+            validate(schema, "a")
         show(mc_)
 
         schema = protocol(dummy)

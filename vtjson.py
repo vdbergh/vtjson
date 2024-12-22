@@ -2205,12 +2205,13 @@ class _fields(compiled_schema):
 
     def __init__(
         self,
-        d: Mapping[optional_key[str], object],
+        d: Mapping[StringKeyType, object],
         _deferred_compiles: _mapping | None = None,
     ) -> None:
         self.d = {}
         for k, v in d.items():
-            self.d[k] = _compile(v, _deferred_compiles=_deferred_compiles)
+            key_ = _canonize_key(k)
+            self.d[key_] = _compile(v, _deferred_compiles=_deferred_compiles)
 
     def __validate__(
         self,
@@ -2240,14 +2241,14 @@ class _fields(compiled_schema):
         return ""
 
 
-class fields(wrapper):
+class fields(wrapper, Generic[StringKeyType]):
     """
     Matches Python objects with attributes `field1, field2, ..., fieldN` whose
     corresponding values should validate against `schema1, schema2, ...,
     schemaN` respectively.
     """
 
-    d: dict[optional_key[str], object]
+    d: Mapping[StringKeyType, object]
 
     def __init__(self, d: Mapping[StringKeyType, object]) -> None:
         """
@@ -2256,7 +2257,6 @@ class fields(wrapper):
         :raises SchemaError: exception thrown when the schema definition is
           found to contain an error
         """
-        self.d = {}
         if not isinstance(d, Mapping):
             raise SchemaError(f"{repr(d)} is not a Mapping")
         for k, v in d.items():
@@ -2265,8 +2265,7 @@ class fields(wrapper):
                     f"key {repr(k)} in {repr(d)} is not an instance of"
                     " optional_key and not a string"
                 )
-            key_ = _canonize_key(k)
-            self.d[key_] = v
+        self.d = d
 
     def __compile__(self, _deferred_compiles: _mapping | None = None) -> _fields:
         return _fields(self.d, _deferred_compiles=_deferred_compiles)
@@ -2688,6 +2687,48 @@ class _set(compiled_schema):
         return str(self.schema_)
 
 
+class _protocol(compiled_schema):
+
+    def __init__(
+        self,
+        schema: object,
+        dict: bool = False,
+        _deferred_compiles: _mapping | None = None,
+    ) -> None:
+        type_hints = _get_type_hints(schema)
+        total = True
+        if hasattr(schema, "__total__") and isinstance(schema.__total__, bool):
+            total = schema.__total__
+        type_dict = _to_dict(type_hints, total=total)
+        if hasattr(schema, "__name__") and isinstance(schema.__name__, str):
+            name = schema.__name__
+        else:
+            name = "schema"
+
+        if not dict:
+            setattr(
+                self,
+                "__validate__",
+                _set_name(
+                    fields(type_dict),
+                    name,
+                    reason=True,
+                    _deferred_compiles=_deferred_compiles,
+                ).__validate__,
+            )
+        else:
+            setattr(
+                self,
+                "__validate__",
+                _set_name(
+                    type_dict,
+                    name,
+                    reason=True,
+                    _deferred_compiles=_deferred_compiles,
+                ).__validate__,
+            )
+
+
 class protocol(wrapper):
     """
     An object matches the schema `protocol(schema, dict=False)` if `schema` is
@@ -2695,9 +2736,8 @@ class protocol(wrapper):
     which validate the corresponding fields in the object.
     """
 
-    type_dict: dict[optional_key[str], object]
+    schema: object
     dict: bool
-    __name__: str
 
     def __init__(self, schema: object, dict: bool = False):
         """
@@ -2710,34 +2750,14 @@ class protocol(wrapper):
         """
         if not isinstance(dict, bool):
             raise SchemaError("bool flag is not a bool")
-        type_hints = _get_type_hints(schema)
+
         self.dict = dict
-        total = True
-        if hasattr(schema, "__total__") and isinstance(schema.__total__, bool):
-            total = schema.__total__
-        self.type_dict = _to_dict(type_hints, total=total)
-        if hasattr(schema, "__name__") and isinstance(schema.__name__, str):
-            self.__name__ = schema.__name__
-        else:
-            self.__name__ = "schema"
+        self.schema = schema
 
     def __compile__(
         self, _deferred_compiles: _mapping | None = None
     ) -> compiled_schema:
-        if not self.dict:
-            return _set_name(
-                fields(self.type_dict),
-                self.__name__,
-                reason=True,
-                _deferred_compiles=_deferred_compiles,
-            )
-        else:
-            return _set_name(
-                self.type_dict,
-                self.__name__,
-                reason=True,
-                _deferred_compiles=_deferred_compiles,
-            )
+        return _protocol(self.schema, self.dict)
 
 
 class _Literal(compiled_schema):
