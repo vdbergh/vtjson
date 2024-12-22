@@ -2314,7 +2314,7 @@ class TestValidation(unittest.TestCase):
         if not vtjson.supports_structural:
             with self.assertRaises(SchemaError) as mc_:
                 schema = protocol(dummy)
-                validate(schema, "a")
+                compile(schema)
             show(mc_)
             return
 
@@ -2324,7 +2324,6 @@ class TestValidation(unittest.TestCase):
 
         with self.assertRaises(SchemaError) as mc_:
             schema = protocol({})
-            validate(schema, "a")
         show(mc_)
 
         schema = protocol(dummy)

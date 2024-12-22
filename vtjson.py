@@ -2751,6 +2751,9 @@ class protocol(wrapper):
         if not isinstance(dict, bool):
             raise SchemaError("bool flag is not a bool")
 
+        if not hasattr(schema, "__annotations__"):
+            raise SchemaError("schema does not have type annotations")
+
         self.dict = dict
         self.schema = schema
 
