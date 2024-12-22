@@ -806,6 +806,10 @@ class set_name(wrapper):
         """
         if not isinstance(name, str):
             raise SchemaError(f"The name {_c(name)} is not a string")
+        if not isinstance(reason, bool):
+            raise SchemaError(
+                f"The parameter 'reason' (value:{repr(reason)}) is not a boolean"
+            )
         self.schema = schema
         self.name = name
         self.reason = reason

@@ -941,6 +941,10 @@ class TestValidation(unittest.TestCase):
         self.assertTrue("datetime" in str(mc.exception))
         self.assertTrue("dummy" in str(mc.exception))
 
+        with self.assertRaises(SchemaError) as mc_:
+            set_name("a", "b", reason="c")  # type: ignore
+        show(mc_)
+
     def test_lax(self) -> None:
         schema: object
         object_: object
