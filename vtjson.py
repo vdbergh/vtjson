@@ -728,29 +728,29 @@ class set_label(wrapper):
         )
 
 
-class quote(compiled_schema):
+class _quote(compiled_schema):
+
+    def __init__(self, schema: object) -> None:
+        setattr(self, "__validate__", _const(schema, strict_eq=True).__validate__)
+
+
+class quote(wrapper):
     """
     An object matches the schema `quote(schema)` if it is equal to `schema`.
     For example the schema `str` matches strings but the schema `quote(str)`
     matches the object `str`.
     """
 
-    schema: _const
+    schema: object
 
     def __init__(self, schema: object) -> None:
         """
         :param schema: the schema to be quoted
         """
-        self.schema = _const(schema, strict_eq=True)
+        self.schema = schema
 
-    def __validate__(
-        self,
-        obj: object,
-        name: str = "object",
-        strict: bool = True,
-        subs: Mapping[str, object] = {},
-    ) -> str:
-        return self.schema.__validate__(obj, name=name, strict=strict, subs=subs)
+    def __compile__(self, _deferred_compiles: _mapping | None = None) -> _quote:
+        return _quote(self.schema)
 
 
 class _set_name(compiled_schema):
