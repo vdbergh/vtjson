@@ -2314,6 +2314,7 @@ class TestValidation(unittest.TestCase):
         if not vtjson.supports_structural:
             with self.assertRaises(SchemaError) as mc_:
                 schema = protocol(dummy)
+                validate(schema, "a")
             show(mc_)
             return
 
