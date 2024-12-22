@@ -24,45 +24,59 @@ Some built-in schemas take arguments. If no arguments are given then the parenth
 
 .. autoclass:: vtjson.regex
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.glob
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.div
    :class-doc-from: both
+   :show-inheritance:
 		    
 .. autoclass:: vtjson.close_to
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.email
    :class-doc-from: both
+   :show-inheritance:
 		    
 .. autoclass:: vtjson.ip_address
    :class-doc-from: both
+   :show-inheritance:
 		    
 .. autoclass:: vtjson.url
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.domain_name
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.date_time
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.date
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.time
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.anything
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.nothing
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.float_
    :class-doc-from: both
+   :show-inheritance:
 
 .. _modifiers:
 
@@ -71,42 +85,55 @@ Modifiers
 
 .. autoclass:: vtjson.one_of
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.at_least_one_of
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.at_most_one_of
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.keys
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.interval
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.gt
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.ge
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.lt
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.le
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.size
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.fields
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.magic
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.filter
    :class-doc-from: both
+   :show-inheritance:
 
 
 		    
@@ -120,30 +147,39 @@ Wrappers are schemas that contain references to other schemas.
 
 .. autoclass:: vtjson.union
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.intersect
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.complement
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.lax
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.strict
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.quote
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.set_name
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.protocol
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.set_label
    :class-doc-from: both
+   :show-inheritance:
 
 
 Conditional schemas
@@ -151,9 +187,11 @@ Conditional schemas
 
 .. autoclass:: vtjson.ifthen
    :class-doc-from: both
+   :show-inheritance:
 
 .. autoclass:: vtjson.cond
    :class-doc-from: both
+   :show-inheritance:
 
 
 .. _type_annotations:
@@ -327,6 +365,7 @@ Apply objects
 
 .. autoclass:: vtjson.Apply
    :class-doc-from: both
+   :show-inheritance:
 
 .. py:data:: vtjson.skip_first
   :type: vtjson.Apply
@@ -391,6 +430,7 @@ A consequence of this algorithm is that non-const keys are automatically optiona
 
 .. autoclass:: vtjson.optional_key
    :class-doc-from: both
+   :show-inheritance:
 
 Pre-compiling a schema
 ^^^^^^^^^^^^^^^^^^^^^^
