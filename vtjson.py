@@ -2175,6 +2175,7 @@ class _cond(compiled_schema):
 
 class cond(wrapper):
     """
+    Args is a list of tuples `(if_schema, then_schema)`.
     An object is successively validated against `if_schema1`, `if_schema2`,
     ... until a validation succeeds. When this happens the object should match
     the corresponding `then_schema`. If no `if_schema` succeeds then the
@@ -2243,8 +2244,9 @@ class _fields(compiled_schema):
 
 class fields(wrapper, Generic[StringKeyType]):
     """
-    Matches Python objects with attributes `field1, field2, ..., fieldN` whose
-    corresponding values should validate against `schema1, schema2, ...,
+    `d` is a dictionary `{"field1": schema1, ...}`.
+    This matches Python objects with attributes `field1, field2, ..., fieldN`
+    whose corresponding values should validate against `schema1, schema2, ...,
     schemaN` respectively.
     """
 
@@ -2315,7 +2317,7 @@ class _filter(compiled_schema):
 
 class filter(wrapper):
     """
-    Applies `callable` to the object and validates the result with `schema`.
+    Applies `filter` to the object and validates the result with `schema`.
     If the callable throws an exception then validation fails.
     """
 
