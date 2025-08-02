@@ -2308,11 +2308,11 @@ class _filter(compiled_schema):
             obj = self.filter(obj)
         except Exception as e:
             return (
-                f"Applying {self.filter_name} to {name} "
+                f"Applying {repr(self.filter_name)} to {name} "
                 f"(value: {_c(obj)}) failed: {str(e)}"
             )
         name = f"{self.filter_name}({name})"
-        return self.schema.__validate__(obj, name="object", strict=strict, subs=subs)
+        return self.schema.__validate__(obj, name=name, strict=strict, subs=subs)
 
 
 class filter(wrapper):
