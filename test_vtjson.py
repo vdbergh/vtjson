@@ -964,7 +964,6 @@ class TestValidation(unittest.TestCase):
     def test_make_type(self) -> None:
         schema: object
         object_: object
-        global url
         schema = {"a": 1}
         t = make_type(schema, "example", debug=True)
         self.assertTrue(t.__name__ == "example")
