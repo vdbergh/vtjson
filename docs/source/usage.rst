@@ -4,7 +4,7 @@ API reference
 Validating objects
 ------------------
 To validate an object against a schema one may use :py:func:`vtjson.validate`. If validation fails this throws a :py:exc:`vtjson.ValidationError`.
-A suitable written schema can be used as a Python type annotation. :py:func:`vtjson.safe_cast` verifies if a given object has a given type.
+A suitably written schema can be used as a Python type annotation. :py:func:`vtjson.safe_cast` verifies if a given object has a given type.
 :py:func:`vtjson.make_type` transforms a schema into a genuine Python type so that validation can be done using `isinstance()`.
 
 
