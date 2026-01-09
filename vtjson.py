@@ -204,7 +204,7 @@ class SchemaError(Exception):
     pass
 
 
-__version__ = "2.2.5"
+__version__ = "2.2.6"
 
 
 @dataclass
@@ -1742,6 +1742,32 @@ class ip_address(compiled_schema):
         try:
             self.method(obj)
         except ValueError as e:
+            return _wrong_type_message(obj, name, self.__name__, explanation=str(e))
+        return ""
+
+
+class regex_pattern(compiled_schema):
+    """
+    Matches valid regular expression patterns
+    """
+
+    __name__: str
+
+    def __init__(self) -> None:
+        self.__name__ = "regex_pattern"
+
+    def __validate__(
+        self,
+        obj: object,
+        name: str = "object",
+        strict: bool = True,
+        subs: Mapping[str, object] = {},
+    ) -> str:
+        if not isinstance(obj, str):
+            return _wrong_type_message(obj, name, self.__name__)
+        try:
+            re.compile(obj)
+        except re.error as e:
             return _wrong_type_message(obj, name, self.__name__, explanation=str(e))
         return ""
 

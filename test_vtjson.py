@@ -96,6 +96,7 @@ from vtjson import (
     protocol,
     quote,
     regex,
+    regex_pattern,
     safe_cast,
     set_label,
     set_name,
@@ -1843,6 +1844,17 @@ class TestValidation(unittest.TestCase):
             object_ = {"number": "a"}
             validate(schema, object_)
         show(mc)
+
+    def test_regex_pattern(self) -> None:
+        schema: object
+        object_: object
+        schema = regex_pattern
+        with self.assertRaises(ValidationError) as mc:
+            object_ = "(("
+            validate(schema, object_)
+        show(mc)
+        object_ = ".*"
+        validate(schema, object_)
 
     def test_truncation(self) -> None:
         schema: object

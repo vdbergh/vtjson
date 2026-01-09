@@ -33,7 +33,7 @@ Some built-in schemas take arguments. If no arguments are given then the parenth
 .. autoclass:: vtjson.div
    :class-doc-from: both
    :show-inheritance:
-		    
+
 .. autoclass:: vtjson.close_to
    :class-doc-from: both
    :show-inheritance:
@@ -41,11 +41,15 @@ Some built-in schemas take arguments. If no arguments are given then the parenth
 .. autoclass:: vtjson.email
    :class-doc-from: both
    :show-inheritance:
-		    
+
 .. autoclass:: vtjson.ip_address
    :class-doc-from: both
    :show-inheritance:
-		    
+
+.. autoclass:: vtjson.regex_pattern
+   :class-doc-from: both
+   :show-inheritance:
+
 .. autoclass:: vtjson.url
    :class-doc-from: both
    :show-inheritance:
