@@ -2380,6 +2380,126 @@ class TestValidation(unittest.TestCase):
                 validate(protocol(dummy2), u(""))
             show(mc)
 
+    def test_name(self) -> None:
+        schema: object
+
+        schema = regex("abc", name="cba")
+        self.assertEqual(schema.__name__, "cba")
+        schema = regex("abc")
+        self.assertEqual(schema.__name__, "regex('abc')")
+        schema = regex("abc", fullmatch=False)
+        self.assertEqual(schema.__name__, "regex('abc',fullmatch=False)")
+        schema = regex("abc", fullmatch=True)
+        self.assertEqual(schema.__name__, "regex('abc')")
+        schema = regex("abc", fullmatch=False, flags=re.ASCII | re.MULTILINE)
+        self.assertEqual(
+            schema.__name__, "regex('abc',fullmatch=False,flags=re.ASCII|re.MULTILINE)"
+        )
+        schema = regex("abc", fullmatch=False, flags=0)
+        self.assertEqual(schema.__name__, "regex('abc',fullmatch=False)")
+
+        schema = glob("*.txt", "text_file")
+        self.assertEqual(schema.__name__, "text_file")
+        schema = glob("*.txt")
+        self.assertEqual(schema.__name__, "glob('*.txt')")
+
+        schema = div(2, name="even")
+        self.assertEqual(schema.__name__, "even")
+        schema = div(2)
+        self.assertEqual(schema.__name__, "div(2)")
+        schema = div(2, 1)
+        self.assertEqual(schema.__name__, "div(2,1)")
+
+        schema = close_to(0.75)
+        self.assertEqual(schema.__name__, "close_to(0.75)")
+
+        schema = email
+        self.assertEqual(schema.__name__, "email")
+
+        schema = ip_address
+        self.assertEqual(schema.__name__, "ip_address")
+        schema = ip_address(version=4)
+        self.assertEqual(schema.__name__, "ip_address(version=4)")
+
+        schema = regex_pattern
+        self.assertEqual(schema.__name__, "regex_pattern")
+
+        schema = url
+        self.assertEqual(schema.__name__, "url")
+
+        schema = domain_name
+        self.assertEqual(schema.__name__, "domain_name")
+        schema = domain_name(ascii_only=False)
+        self.assertEqual(schema.__name__, "domain_name(ascii_only=False)")
+        schema = domain_name(ascii_only=False, resolve=True)
+        self.assertEqual(schema.__name__, "domain_name(ascii_only=False,resolve=True)")
+
+        schema = date_time
+        self.assertEqual(schema.__name__, "date_time")
+        schema = date_time("%Y^%m^%d")
+        self.assertEqual(schema.__name__, "date_time('%Y^%m^%d')")
+
+        schema = date
+        self.assertEqual(schema.__name__, "date")
+
+        schema = time
+        self.assertEqual(schema.__name__, "time")
+
+        schema = nothing
+        self.assertEqual(schema.__name__, "nothing")
+
+        schema = anything
+        self.assertEqual(schema.__name__, "anything")
+
+        schema = float_
+        self.assertEqual(schema.__name__, "float_")
+
+        schema = one_of("a", "b", 1)
+        self.assertEqual(schema.__name__, "one_of('a','b',1)")
+
+        schema = at_least_one_of("a", "b", 1)
+        self.assertEqual(schema.__name__, "at_least_one_of('a','b',1)")
+
+        schema = at_most_one_of("a", "b", 1)
+        self.assertEqual(schema.__name__, "at_most_one_of('a','b',1)")
+
+        schema = keys("a", "b", 1)
+        self.assertEqual(schema.__name__, "keys('a','b',1)")
+
+        schema = interval(1, 10)
+        self.assertEqual(schema.__name__, "interval(1,10)")
+        schema = interval(1, ...)
+        self.assertEqual(schema.__name__, "interval(1,...)")
+        schema = interval(..., 10)
+        self.assertEqual(schema.__name__, "interval(...,10)")
+        schema = interval(..., 10, strict_ub=True)
+        self.assertEqual(schema.__name__, "interval(...,10,strict_ub=True)")
+
+        schema = gt(10)
+        self.assertEqual(schema.__name__, "gt(10)")
+
+        schema = ge(10)
+        self.assertEqual(schema.__name__, "ge(10)")
+
+        schema = lt(10)
+        self.assertEqual(schema.__name__, "lt(10)")
+
+        schema = le(10)
+        self.assertEqual(schema.__name__, "le(10)")
+
+        schema = size(1)
+        self.assertEqual(schema.__name__, "size(1)")
+        schema = size(1, 10)
+        self.assertEqual(schema.__name__, "size(1,10)")
+
+        schema = fields({"a": "b"})
+        self.assertEqual(schema.__name__, "fields({'a': 'b'})")
+
+        schema = magic("application/html", name="html")
+        self.assertEqual(schema.__name__, "html")
+        schema = magic("application/html")
+        self.assertEqual(schema.__name__, "magic('application/html')")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -250,15 +250,21 @@ skip_first = Apply(skip_first=True)
 _dns_resolver: dns.resolver.Resolver | None = None
 
 
-def _to_name(c: object) -> str:
-    if hasattr(c, "__name__"):
-        return str(c.__name__)
+def _to_name(s: object) -> str:
+    if hasattr(s, "__name__"):
+        return str(s.__name__)
     else:
-        return str(c)
+        if isinstance(s, str):
+            return repr(s)
+        elif s == Ellipsis:
+            return "..."
+        else:
+            return str(s)
 
 
 def _generic_name(origin: type, args: tuple[object, ...]) -> str:
     return _to_name(origin) + "[" + ",".join([_to_name(arg) for arg in args]) + "]"
+
 
 def _make_name(
     type: type,
@@ -277,17 +283,22 @@ def _make_name(
     else:
         return f"{_to_name(type)}({','.join(arg_list)})"
 
+
 C = TypeVar("C")
 
 
 def _set__name__(c: type[C]) -> type[C]:
     defaults = {}
     a = inspect.getfullargspec(c.__init__)
-    if a is None or a.args is None or a.defaults is None:
+    a_defaults: tuple[object, ...] = ()
+    if a.defaults is not None:
+        a_defaults = a.defaults
+
+    if a is None or a.args is None:
         raise Exception(f"Could not get signature of {c.__name__}")
-    start = len(a.args) - len(a.defaults)
+    start = len(a.args) - len(a_defaults)
     for i in range(start, len(a.args)):
-        defaults[a.args[i]] = a.defaults[i - start]
+        defaults[a.args[i]] = a_defaults[i - start]
     __init__org = c.__init__
 
     @functools.wraps(__init__org)
@@ -299,8 +310,6 @@ def _set__name__(c: type[C]) -> type[C]:
 
     setattr(c, "__init__", __init__wrapper)
     return c
-
-
 
 
 def _get_type_hints(schema: object) -> dict[str, object]:
@@ -868,6 +877,7 @@ class set_name(wrapper):
         )
 
 
+@_set__name__
 class regex(compiled_schema):
     """
     This matches the strings which match the given pattern.
@@ -902,10 +912,6 @@ class regex(compiled_schema):
             if not isinstance(name, str):
                 raise SchemaError(f"The regex name {_c(name)} is not a string")
             self.__name__ = name
-        else:
-            _flags = "" if flags == 0 else f", flags={flags}"
-            _fullmatch = "" if fullmatch else ", fullmatch=False"
-            self.__name__ = f"regex({repr(regex)}{_fullmatch}{_flags})"
 
         try:
             self.pattern = re.compile(regex, flags)
@@ -934,6 +940,7 @@ class regex(compiled_schema):
         return _wrong_type_message(obj, name, self.__name__)
 
 
+@_set__name__
 class glob(compiled_schema):
     """
     Unix style filename matching. This is implemented using
@@ -955,9 +962,7 @@ class glob(compiled_schema):
 
         self.pattern = pattern
 
-        if name is None:
-            self.__name__ = f"glob({repr(pattern)})"
-        else:
+        if name is not None:
             self.__name__ = name
 
         try:
@@ -986,6 +991,7 @@ class glob(compiled_schema):
             return _wrong_type_message(obj, name, self.__name__, str(e))
 
 
+@_set__name__
 class magic(compiled_schema):
     """
     Checks if a buffer (for example a string or a byte array) has the given
@@ -1011,9 +1017,7 @@ class magic(compiled_schema):
 
         self.mime_type = mime_type
 
-        if name is None:
-            self.__name__ = f"magic({repr(mime_type)})"
-        else:
+        if name is not None:
             self.__name__ = name
 
     def __validate__(
@@ -1039,6 +1043,7 @@ class magic(compiled_schema):
         return ""
 
 
+@_set__name__
 class div(compiled_schema):
     """
     This matches the integers `x` such that `(x - remainder) % divisor` == 0.
@@ -1069,13 +1074,7 @@ class div(compiled_schema):
         self.divisor = divisor
         self.remainder = remainder
 
-        if name is None:
-            _divisor = str(divisor)
-            _remainder = ""
-            if remainder != 0:
-                _remainder = "," + str(remainder)
-            self.__name__ = f"div({_divisor+_remainder})"
-        else:
+        if name is not None:
             self.__name__ = name
 
     def __validate__(
@@ -1093,6 +1092,7 @@ class div(compiled_schema):
             return _wrong_type_message(obj, name, self.__name__)
 
 
+@_set__name__
 class close_to(compiled_schema):
     """
     This matches the real numbers that are close to `x` in the sense of
@@ -1132,9 +1132,6 @@ class close_to(compiled_schema):
                 )
             self.kw["abs_tol"] = abs_tol
 
-        kwl = [str(x)] + [f"{k}={v}" for (k, v) in self.kw.items()]
-        kwl_ = ",".join(kwl)
-        self.__name__ = f"close_to({kwl_})"
         self.x = x
 
     def __validate__(
@@ -1152,12 +1149,14 @@ class close_to(compiled_schema):
             return _wrong_type_message(obj, name, self.__name__)
 
 
+@_set__name__
 class gt(compiled_schema):
     """
     This checks if `object > lb`.
     """
 
     lb: comparable
+    __name__: str
 
     def __init__(self, lb: comparable) -> None:
         """
@@ -1193,12 +1192,14 @@ class gt(compiled_schema):
             return f"{self.message(name, obj)}: {str(e)}"
 
 
+@_set__name__
 class ge(compiled_schema):
     """
     This checks if `object >= lb`.
     """
 
     lb: comparable
+    __name__: str
 
     def __init__(self, lb: comparable) -> None:
         """
@@ -1234,12 +1235,14 @@ class ge(compiled_schema):
             return f"{self.message(name, obj)}: {str(e)}"
 
 
+@_set__name__
 class lt(compiled_schema):
     """
     This checks if `object < ub`.
     """
 
     ub: comparable
+    __name__: str
 
     def __init__(self, ub: comparable) -> None:
         """
@@ -1275,12 +1278,14 @@ class lt(compiled_schema):
             return f"{self.message(name, obj)}: {str(e)}"
 
 
+@_set__name__
 class le(compiled_schema):
     """
     This checks if `object <= ub`.
     """
 
     ub: comparable
+    __name__: str
 
     def __init__(self, ub: comparable) -> None:
         """
@@ -1316,6 +1321,7 @@ class le(compiled_schema):
             return f"{self.message(name, obj)}: {str(e)}"
 
 
+@_set__name__
 class interval(compiled_schema):
     """
     This checks if `lb <= object <= ub`, provided the comparisons make sense.
@@ -1323,6 +1329,7 @@ class interval(compiled_schema):
 
     lb_s: str
     ub_s: str
+    __name__: str
 
     def __init__(
         self,
@@ -1391,6 +1398,7 @@ class interval(compiled_schema):
             setattr(self, "__validate__", anything().__validate__)
 
 
+@_set__name__
 class size(compiled_schema):
     """
     Matches the objects (which support `len()` such as strings or lists) whose
@@ -1398,6 +1406,7 @@ class size(compiled_schema):
     """
 
     interval_: interval
+    __name__: str
 
     def __init__(self, lb: int, ub: int | types.EllipsisType | None = None) -> None:
         """
@@ -1694,10 +1703,16 @@ class number(compiled_schema):
             return _wrong_type_message(obj, name, "number")
 
 
+@_set__name__
 class float_(compiled_schema):
     """
     Schema that only matches floats. Not ints.
     """
+
+    __name__: str
+
+    def __init__(self) -> None:
+        pass
 
     def __validate__(
         self,
@@ -1712,6 +1727,7 @@ class float_(compiled_schema):
             return _wrong_type_message(obj, name, "float_")
 
 
+@_set__name__
 class email(compiled_schema):
     """
     Checks if the object is a valid email address. This uses the package
@@ -1720,6 +1736,7 @@ class email(compiled_schema):
     """
 
     kw: dict[str, Any]
+    __name__: str
 
     def __init__(self, **kw: Any) -> None:
         """
@@ -1748,6 +1765,7 @@ class email(compiled_schema):
             return _wrong_type_message(obj, name, "email", str(e))
 
 
+@_set__name__
 class ip_address(compiled_schema):
     """
     Matches ip addresses of the specified version which can be 4, 6 or None.
@@ -1764,10 +1782,7 @@ class ip_address(compiled_schema):
         """
         if version is not None and version not in (4, 6):
             raise SchemaError("version is not 4 or 6")
-        if version is None:
-            self.__name__ = "ip_address"
-        else:
-            self.__name__ = f"ip_address(version={version})"
+
         if version == 4:
             self.method = ipaddress.IPv4Address
         elif version == 6:
@@ -1791,6 +1806,7 @@ class ip_address(compiled_schema):
         return ""
 
 
+@_set__name__
 class regex_pattern(compiled_schema):
     """
     Matches valid regular expression patterns
@@ -1799,7 +1815,7 @@ class regex_pattern(compiled_schema):
     __name__: str
 
     def __init__(self) -> None:
-        self.__name__ = "regex_pattern"
+        pass
 
     def __validate__(
         self,
@@ -1817,10 +1833,16 @@ class regex_pattern(compiled_schema):
         return ""
 
 
+@_set__name__
 class url(compiled_schema):
     """
     Matches valid urls.
     """
+
+    __name__: str
+
+    def __init__(self) -> None:
+        pass
 
     def __validate__(
         self,
@@ -1837,6 +1859,7 @@ class url(compiled_schema):
         return _wrong_type_message(obj, name, "url")
 
 
+@_set__name__
 class date_time(compiled_schema):
     """
     Without argument this represents an ISO 8601 date-time. The `format`
@@ -1851,10 +1874,6 @@ class date_time(compiled_schema):
         :param format: format string for `strftime`
         """
         self.format = format
-        if format is not None:
-            self.__name__ = f"date_time({repr(format)})"
-        else:
-            self.__name__ = "date_time"
 
     def __validate__(
         self,
@@ -1878,10 +1897,16 @@ class date_time(compiled_schema):
         return ""
 
 
+@_set__name__
 class date(compiled_schema):
     """
     Matches an ISO 8601 date.
     """
+
+    __name__: str
+
+    def __init__(self) -> None:
+        pass
 
     def __validate__(
         self,
@@ -1899,10 +1924,16 @@ class date(compiled_schema):
         return ""
 
 
+@_set__name__
 class time(compiled_schema):
     """
     Matches an ISO 8601 time.
     """
+
+    __name__: str
+
+    def __init__(self) -> None:
+        pass
 
     def __validate__(
         self,
@@ -1920,10 +1951,16 @@ class time(compiled_schema):
         return ""
 
 
+@_set__name__
 class nothing(compiled_schema):
     """
     Matches nothing.
     """
+
+    __name__: str
+
+    def __init__(self) -> None:
+        pass
 
     def __validate__(
         self,
@@ -1935,10 +1972,16 @@ class nothing(compiled_schema):
         return _wrong_type_message(obj, name, "nothing")
 
 
+@_set__name__
 class anything(compiled_schema):
     """
     Matchess anything.
     """
+
+    __name__: str
+
+    def __init__(self) -> None:
+        pass
 
     def __validate__(
         self,
@@ -1950,6 +1993,7 @@ class anything(compiled_schema):
         return ""
 
 
+@_set__name__
 class domain_name(compiled_schema):
     """
     Checks if the object is a valid domain name.
@@ -1968,16 +2012,6 @@ class domain_name(compiled_schema):
         self.re_ascii = re.compile(r"[\x00-\x7F]*")
         self.ascii_only = ascii_only
         self.resolve = resolve
-        arg_string = ""
-        if not ascii_only:
-            arg_string += ", ascii_only=False"
-        if resolve:
-            arg_string += ", resolve=True"
-        if arg_string != "":
-            arg_string = arg_string[2:]
-        self.__name__ = (
-            "domain_name" if not arg_string else f"domain_name({arg_string})"
-        )
 
     def __validate__(
         self,
@@ -2006,6 +2040,7 @@ class domain_name(compiled_schema):
         return ""
 
 
+@_set__name__
 class at_least_one_of(compiled_schema):
     """
     This represents a dictionary with a least one key among a collection of
@@ -2020,8 +2055,6 @@ class at_least_one_of(compiled_schema):
         :param args: a collection of keys
         """
         self.args = args
-        args_s = [repr(a) for a in args]
-        self.__name__ = f"{self.__class__.__name__}({','.join(args_s)})"
 
     def __validate__(
         self,
@@ -2041,6 +2074,7 @@ class at_least_one_of(compiled_schema):
             return _wrong_type_message(obj, name, self.__name__, str(e))
 
 
+@_set__name__
 class at_most_one_of(compiled_schema):
     """
     This represents an dictionary with at most one key among a collection of
@@ -2055,8 +2089,6 @@ class at_most_one_of(compiled_schema):
         :param args: a collection of keys
         """
         self.args = args
-        args_s = [repr(a) for a in args]
-        self.__name__ = f"{self.__class__.__name__}({','.join(args_s)})"
 
     def __validate__(
         self,
@@ -2076,6 +2108,7 @@ class at_most_one_of(compiled_schema):
             return _wrong_type_message(obj, name, self.__name__, str(e))
 
 
+@_set__name__
 class one_of(compiled_schema):
     """
     This represents a dictionary with exactly one key among a collection of
@@ -2090,8 +2123,6 @@ class one_of(compiled_schema):
         :param args: a collection of keys
         """
         self.args = args
-        args_s = [repr(a) for a in args]
-        self.__name__ = f"{self.__class__.__name__}({','.join(args_s)})"
 
     def __validate__(
         self,
@@ -2111,6 +2142,7 @@ class one_of(compiled_schema):
             return _wrong_type_message(obj, name, self.__name__, str(e))
 
 
+@_set__name__
 class keys(compiled_schema):
     """
     This represents a dictionary containing all the keys in a collection of
@@ -2118,6 +2150,7 @@ class keys(compiled_schema):
     """
 
     args: tuple[object, ...]
+    __name__: str
 
     def __init__(self, *args: object) -> None:
         """
@@ -2313,6 +2346,7 @@ class _fields(compiled_schema):
         return ""
 
 
+@_set__name__
 class fields(wrapper, Generic[StringKeyType]):
     """
     `d` is a dictionary `{"field1": schema1, ...}`.
@@ -2322,6 +2356,7 @@ class fields(wrapper, Generic[StringKeyType]):
     """
 
     d: Mapping[StringKeyType, object]
+    __name__: str
 
     def __init__(self, d: Mapping[StringKeyType, object]) -> None:
         """
