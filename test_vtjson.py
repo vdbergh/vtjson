@@ -2494,6 +2494,8 @@ class TestValidation(unittest.TestCase):
 
         schema = fields({"a": "b"})
         self.assertEqual(schema.__name__, "fields({'a': 'b'})")
+        schema = fields({optional_key("a"): "b"})
+        self.assertEqual(schema.__name__, "fields({optional_key('a'): 'b'})")
 
         schema = magic("application/html", name="html")
         self.assertEqual(schema.__name__, "html")

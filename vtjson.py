@@ -468,6 +468,7 @@ def make_type(
 K = TypeVar("K")
 
 
+@_set__name__
 class optional_key(Generic[K]):
     """
     Make a key in a Mapping schema optional. In the common case that the key
@@ -478,6 +479,7 @@ class optional_key(Generic[K]):
 
     key: K
     optional: bool
+    __name__: str
 
     def __init__(self, key: K, _optional: bool = True) -> None:
         """
@@ -497,6 +499,12 @@ class optional_key(Generic[K]):
 
     def __hash__(self) -> int:
         return hash(self.key)
+
+    def __str__(self) -> str:
+        return self.__name__
+
+    def __repr__(self) -> str:
+        return self.__name__
 
 
 StringKeyType = TypeVar("StringKeyType", bound=Union[str, optional_key[str]])
