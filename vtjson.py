@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import datetime
+import functools
+import inspect
 import ipaddress
 import math
 import pathlib
@@ -248,14 +250,57 @@ skip_first = Apply(skip_first=True)
 _dns_resolver: dns.resolver.Resolver | None = None
 
 
-def _generic_name(origin: type, args: tuple[object, ...]) -> str:
-    def to_name(c: object) -> str:
-        if hasattr(c, "__name__"):
-            return str(c.__name__)
-        else:
-            return str(c)
+def _to_name(c: object) -> str:
+    if hasattr(c, "__name__"):
+        return str(c.__name__)
+    else:
+        return str(c)
 
-    return to_name(origin) + "[" + ",".join([to_name(arg) for arg in args]) + "]"
+
+def _generic_name(origin: type, args: tuple[object, ...]) -> str:
+    return _to_name(origin) + "[" + ",".join([_to_name(arg) for arg in args]) + "]"
+
+def _make_name(
+    type: type,
+    args: tuple[object, ...],
+    kw: dict[str, object],
+    defaults: dict[str, object] = {},
+) -> str:
+    arg_list = []
+    for a in args:
+        arg_list.append(_to_name(a))
+    for k, v in kw.items():
+        if k not in defaults or v != defaults[k]:
+            arg_list.append(f"{k}={_to_name(v)}")
+    if len(arg_list) == 0:
+        return _to_name(type)
+    else:
+        return f"{_to_name(type)}({','.join(arg_list)})"
+
+C = TypeVar("C")
+
+
+def _set__name__(c: type[C]) -> type[C]:
+    defaults = {}
+    a = inspect.getfullargspec(c.__init__)
+    if a is None or a.args is None or a.defaults is None:
+        raise Exception(f"Could not get signature of {c.__name__}")
+    start = len(a.args) - len(a.defaults)
+    for i in range(start, len(a.args)):
+        defaults[a.args[i]] = a.defaults[i - start]
+    __init__org = c.__init__
+
+    @functools.wraps(__init__org)
+    def __init__wrapper(self: C, *args: object, **kw: object) -> None:
+        setattr(
+            self, "__name__", _make_name(self.__class__, args, kw, defaults=defaults)
+        )
+        return __init__org(self, *args, **kw)
+
+    setattr(c, "__init__", __init__wrapper)
+    return c
+
+
 
 
 def _get_type_hints(schema: object) -> dict[str, object]:
