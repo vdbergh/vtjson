@@ -301,14 +301,27 @@ def _set__name__(c: type[C]) -> type[C]:
         defaults[a.args[i]] = a_defaults[i - start]
     __init__org = c.__init__
 
-    @functools.wraps(__init__org)
+    @functools.wraps(c.__init__)
     def __init__wrapper(self: C, *args: object, **kw: object) -> None:
         setattr(
             self, "__name__", _make_name(self.__class__, args, kw, defaults=defaults)
         )
         return __init__org(self, *args, **kw)
 
+    @functools.wraps(c.__str__)
+    def __str__(self: C) -> str:
+        assert hasattr(self, "__name__")
+        return str(self.__name__)
+
+    @functools.wraps(c.__repr__)
+    def __repr__(self: C) -> str:
+        assert hasattr(self, "__name__")
+        return str(self.__name__)
+
     setattr(c, "__init__", __init__wrapper)
+    setattr(c, "__str__", __str__)
+    setattr(c, "__repr__", __repr__)
+
     return c
 
 
@@ -500,11 +513,12 @@ class optional_key(Generic[K]):
     def __hash__(self) -> int:
         return hash(self.key)
 
-    def __str__(self) -> str:
-        return self.__name__
 
-    def __repr__(self) -> str:
-        return self.__name__
+#    def __str__(self) -> str:
+#        return self.__name__
+#
+#    def __repr__(self) -> str:
+#        return self.__name__
 
 
 StringKeyType = TypeVar("StringKeyType", bound=Union[str, optional_key[str]])
