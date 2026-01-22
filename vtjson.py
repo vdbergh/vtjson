@@ -1733,9 +1733,6 @@ class float_(compiled_schema):
 
     __name__: str
 
-    def __init__(self) -> None:
-        pass
-
     def __validate__(
         self,
         obj: object,
@@ -1836,9 +1833,6 @@ class regex_pattern(compiled_schema):
 
     __name__: str
 
-    def __init__(self) -> None:
-        pass
-
     def __validate__(
         self,
         obj: object,
@@ -1862,9 +1856,6 @@ class url(compiled_schema):
     """
 
     __name__: str
-
-    def __init__(self) -> None:
-        pass
 
     def __validate__(
         self,
@@ -1927,9 +1918,6 @@ class date(compiled_schema):
 
     __name__: str
 
-    def __init__(self) -> None:
-        pass
-
     def __validate__(
         self,
         obj: object,
@@ -1953,9 +1941,6 @@ class time(compiled_schema):
     """
 
     __name__: str
-
-    def __init__(self) -> None:
-        pass
 
     def __validate__(
         self,
@@ -1981,9 +1966,6 @@ class nothing(compiled_schema):
 
     __name__: str
 
-    def __init__(self) -> None:
-        pass
-
     def __validate__(
         self,
         obj: object,
@@ -2001,9 +1983,6 @@ class anything(compiled_schema):
     """
 
     __name__: str
-
-    def __init__(self) -> None:
-        pass
 
     def __validate__(
         self,
