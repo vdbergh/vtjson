@@ -1701,6 +1701,7 @@ def validate(
 # Some predefined schemas
 
 
+@_set__name__
 class number(compiled_schema):
     """
     A deprecated alias for `float`.
