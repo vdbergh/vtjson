@@ -111,7 +111,7 @@ from vtjson import (
 
 def show(mc: Any) -> None:
     exception = mc.exception
-    print(f"{exception.__class__.__name__}: {str(mc.exception)}")
+    print(f"{exception.__class__.__name__}: {str(mc.exception)}", flush=True)
 
 
 class TestValidation(unittest.TestCase):
@@ -210,6 +210,10 @@ class TestValidation(unittest.TestCase):
         validate(schema, object_)
         with self.assertRaises(ValidationError) as mc:
             object_ = "hello.doc"
+            validate(schema, object_)
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            object_ = 123
             validate(schema, object_)
         show(mc)
         with self.assertRaises(SchemaError) as mc_:
@@ -405,6 +409,10 @@ class TestValidation(unittest.TestCase):
         validate(schema, 1.0)
 
         with self.assertRaises(ValidationError) as mc:
+            validate(schema, "1.0")
+        show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
             validate(schema, 1.1)
         show(mc)
 
@@ -423,6 +431,10 @@ class TestValidation(unittest.TestCase):
         validate(schema, object_)
         object_ = {"cat": None}
         validate(schema, object_)
+        with self.assertRaises(ValidationError) as mc:
+            object_ = 123
+            validate(schema, object_)
+        show(mc)
         with self.assertRaises(ValidationError) as mc:
             object_ = {"cat": None, "dog": None}
             validate(schema, object_)
@@ -474,6 +486,10 @@ class TestValidation(unittest.TestCase):
         schema = keys("a", "b")
         object_ = {"a": 1, "b": 2}
         validate(schema, object_)
+        with self.assertRaises(ValidationError) as mc:
+            object_ = 123
+            validate(schema, object_)
+        show(mc)
         with self.assertRaises(ValidationError) as mc:
             object_ = {"a": 1}
             validate(schema, object_)
@@ -763,6 +779,11 @@ class TestValidation(unittest.TestCase):
         object_: object
         with self.assertRaises(ValidationError) as mc:
             schema = date_time
+            object_ = 123
+            validate(schema, object_)
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            schema = date_time
             object_ = "2000-30-30"
             validate(schema, object_)
         show(mc)
@@ -797,6 +818,10 @@ class TestValidation(unittest.TestCase):
         validate(schema, object_)
 
         with self.assertRaises(ValidationError) as mc:
+            object_ = 123
+            validate(schema, object_)
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
             object_ = "2023-10-10T01:01:01"
             validate(schema, object_)
         show(mc)
@@ -808,6 +833,10 @@ class TestValidation(unittest.TestCase):
         object_ = "01:01:01"
         validate(schema, object_)
 
+        with self.assertRaises(ValidationError) as mc:
+            object_ = 123
+            validate(schema, object_)
+        show(mc)
         with self.assertRaises(ValidationError) as mc:
             object_ = "2023-10-10T01:01:01"
             validate(schema, object_)
@@ -1386,6 +1415,12 @@ class TestValidation(unittest.TestCase):
             compile(schema)
         show(cm_)
 
+        ip_address = regex(r"(?:[\d]+\.){3}(?:[\d]+)")
+        with self.assertRaises(ValidationError) as mc:
+            object_ = 123
+            validate(ip_address, object_)
+        show(mc)
+
         ip_address = regex(r"(?:[\d]+\.){3}(?:[\d]+)", name="ip_address")
         with self.assertRaises(ValidationError) as mc:
             object_ = 123
@@ -1789,6 +1824,11 @@ class TestValidation(unittest.TestCase):
         validate(schema, object_)
 
         with self.assertRaises(ValidationError) as mc:
+            object_ = {"url": 123}
+            validate(schema, object_)
+        show(mc)
+
+        with self.assertRaises(ValidationError) as mc:
             object_ = {"url": "google.com"}
             validate(schema, object_)
         show(mc)
@@ -1800,6 +1840,10 @@ class TestValidation(unittest.TestCase):
         object_ = "www.example.com"
         validate(schema, object_)
 
+        with self.assertRaises(ValidationError) as mc:
+            object_ = 123
+            validate(schema, object_)
+        show(mc)
         with self.assertRaises(ValidationError) as mc:
             object_ = "www.éxample.com"
             validate(schema, object_)
@@ -1849,6 +1893,10 @@ class TestValidation(unittest.TestCase):
         schema: object
         object_: object
         schema = regex_pattern
+        with self.assertRaises(ValidationError) as mc:
+            object_ = 123
+            validate(schema, object_)
+        show(mc)
         with self.assertRaises(ValidationError) as mc:
             object_ = "(("
             validate(schema, object_)

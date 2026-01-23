@@ -951,7 +951,9 @@ class regex(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, str):
-            return _wrong_type_message(obj, name, self.__name__)
+            return _wrong_type_message(
+                obj, name, self.__name__, explanation=f"{_c(obj)} is not a string"
+            )
         try:
             if self.fullmatch and self.pattern.fullmatch(obj):
                 return ""
@@ -1003,7 +1005,9 @@ class glob(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, str):
-            return _wrong_type_message(obj, name, self.__name__)
+            return _wrong_type_message(
+                obj, name, self.__name__, explanation=f"{_c(obj)} is not a string"
+            )
         try:
             if pathlib.PurePath(obj).match(self.pattern):
                 return ""
@@ -1050,7 +1054,12 @@ class magic(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, (str, bytes)):
-            return _wrong_type_message(obj, name, self.__name__)
+            return _wrong_type_message(
+                obj,
+                name,
+                self.__name__,
+                explanation=f"{_c(obj)} is not a string nor bytes",
+            )
         try:
             objmime_type = magic_.from_buffer(obj, mime=True)
         except Exception as e:
@@ -1107,7 +1116,9 @@ class div(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, int):
-            return _wrong_type_message(obj, name, "int")
+            return _wrong_type_message(
+                obj, name, self.__name__, explanation=f"{_c(obj)} is not an integer"
+            )
         elif (obj - self.remainder) % self.divisor == 0:
             return ""
         else:
@@ -1164,7 +1175,9 @@ class close_to(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, (float, int)):
-            return _wrong_type_message(obj, name, "number")
+            return _wrong_type_message(
+                obj, name, self.__name__, explanation=f"{_c(obj)} is not an integer"
+            )
         elif math.isclose(obj, self.x, **self.kw):
             return ""
         else:
@@ -1707,6 +1720,8 @@ class number(compiled_schema):
     A deprecated alias for `float`.
     """
 
+    __name__: str
+
     def __init__(self) -> None:
         warnings.warn(
             "The schema 'number' is deprecated. Use 'float' instead.",
@@ -1723,7 +1738,7 @@ class number(compiled_schema):
         if isinstance(obj, (int, float)):
             return ""
         else:
-            return _wrong_type_message(obj, name, "number")
+            return _wrong_type_message(obj, name, self.__name__)
 
 
 @_set__name__
@@ -1744,7 +1759,7 @@ class float_(compiled_schema):
         if isinstance(obj, float):
             return ""
         else:
-            return _wrong_type_message(obj, name, "float_")
+            return _wrong_type_message(obj, name, self.__name__)
 
 
 @_set__name__
@@ -1777,12 +1792,14 @@ class email(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, str):
-            return _wrong_type_message(obj, name, "email", f"{_c(obj)} is not a string")
+            return _wrong_type_message(
+                obj, name, self.__name__, f"{_c(obj)} is not a string"
+            )
         try:
             email_validator.validate_email(obj, **self.kw)
             return ""
         except Exception as e:
-            return _wrong_type_message(obj, name, "email", str(e))
+            return _wrong_type_message(obj, name, self.__name__, str(e))
 
 
 @_set__name__
@@ -1818,7 +1835,12 @@ class ip_address(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, (int, str, bytes)):
-            return _wrong_type_message(obj, name, self.__name__)
+            return _wrong_type_message(
+                obj,
+                name,
+                self.__name__,
+                explanation=f"{_c(obj)} is not a string, an int or bytes",
+            )
         try:
             self.method(obj)
         except ValueError as e:
@@ -1842,7 +1864,9 @@ class regex_pattern(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, str):
-            return _wrong_type_message(obj, name, self.__name__)
+            return _wrong_type_message(
+                obj, name, self.__name__, explanation=f"{_c(obj)} is not a string"
+            )
         try:
             re.compile(obj)
         except re.error as e:
@@ -1866,11 +1890,13 @@ class url(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, str):
-            return _wrong_type_message(obj, name, "url")
+            return _wrong_type_message(
+                obj, name, self.__name__, explanation=f"{_c(obj)} is not a string"
+            )
         result = urllib.parse.urlparse(obj)
         if all([result.scheme, result.netloc]):
             return ""
-        return _wrong_type_message(obj, name, "url")
+        return _wrong_type_message(obj, name, self.__name__)
 
 
 @_set__name__
@@ -1897,7 +1923,9 @@ class date_time(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, str):
-            return _wrong_type_message(obj, name, self.__name__)
+            return _wrong_type_message(
+                obj, name, self.__name__, explanation=f"{_c(obj)} is not a string"
+            )
         if self.format is not None:
             try:
                 datetime.datetime.strptime(obj, self.format)
@@ -1927,11 +1955,13 @@ class date(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, str):
-            return _wrong_type_message(obj, name, "date")
+            return _wrong_type_message(
+                obj, name, self.__name__, explanation=f"{_c(obj)} is not a string"
+            )
         try:
             datetime.date.fromisoformat(obj)
         except Exception as e:
-            return _wrong_type_message(obj, name, "date", str(e))
+            return _wrong_type_message(obj, name, self.__name__, str(e))
         return ""
 
 
@@ -1951,11 +1981,13 @@ class time(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, str):
-            return _wrong_type_message(obj, name, "date")
+            return _wrong_type_message(
+                obj, name, self.__name__, explanation=f"{_c(obj)} is not a string"
+            )
         try:
             datetime.time.fromisoformat(obj)
         except Exception as e:
-            return _wrong_type_message(obj, name, "time", str(e))
+            return _wrong_type_message(obj, name, self.__name__, str(e))
         return ""
 
 
@@ -1974,7 +2006,7 @@ class nothing(compiled_schema):
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
-        return _wrong_type_message(obj, name, "nothing")
+        return _wrong_type_message(obj, name, self.__name__)
 
 
 @_set__name__
@@ -2023,7 +2055,9 @@ class domain_name(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, str):
-            return _wrong_type_message(obj, name, self.__name__)
+            return _wrong_type_message(
+                obj, name, self.__name__, explanation=f"{_c(obj)} is not a string"
+            )
         if self.ascii_only:
             if not self.re_ascii.fullmatch(obj):
                 return _wrong_type_message(
@@ -2066,7 +2100,9 @@ class at_least_one_of(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, Mapping):
-            return _wrong_type_message(obj, name, self.__name__)
+            return _wrong_type_message(
+                obj, name, self.__name__, explanation=f"{_c(obj)} is not a Mapping"
+            )
         try:
             if any([a in obj for a in self.args]):
                 return ""
@@ -2100,7 +2136,9 @@ class at_most_one_of(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, Mapping):
-            return _wrong_type_message(obj, name, self.__name__)
+            return _wrong_type_message(
+                obj, name, self.__name__, explanation=f"{_c(obj)} is not a Mapping"
+            )
         try:
             if sum([a in obj for a in self.args]) <= 1:
                 return ""
@@ -2134,7 +2172,9 @@ class one_of(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, Mapping):
-            return _wrong_type_message(obj, name, self.__name__)
+            return _wrong_type_message(
+                obj, name, self.__name__, explanation=f"{_c(obj)} is not a Mapping"
+            )
         try:
             if sum([a in obj for a in self.args]) == 1:
                 return ""
@@ -2168,7 +2208,9 @@ class keys(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, Mapping):
-            return _wrong_type_message(obj, name, "Mapping")  # TODO: __name__
+            return _wrong_type_message(
+                obj, name, self.__name__, explanation=f"{_c(obj)} is not a Mapping"
+            )
         for k in self.args:
             if k not in obj:
                 return f"{name}[{repr(k)}] is missing"
