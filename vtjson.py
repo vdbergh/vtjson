@@ -12,7 +12,7 @@ import types
 import typing
 import urllib.parse
 import warnings
-from collections.abc import Sequence, Set, Sized
+from collections.abc import Iterable, Sequence, Set, Sized
 from dataclasses import dataclass
 from typing import (
     Any,
@@ -1870,6 +1870,46 @@ class regex_pattern(compiled_schema):
         try:
             re.compile(obj)
         except re.error as e:
+            return _wrong_type_message(obj, name, self.__name__, explanation=str(e))
+        return ""
+
+
+@_set__name__
+class unique(compiled_schema):
+    """
+    Matches containers whose entries do not repeat. We first attempt to convert the
+    object to a set and check its size. If this does not work then we check the
+    entries of the object one by one (this is a quadratic algorithm).
+    """
+
+    __name__: str
+
+    def __validate__(
+        self,
+        obj: object,
+        name: str = "object",
+        strict: bool = True,
+        subs: Mapping[str, object] = {},
+    ) -> str:
+        if not isinstance(obj, Iterable):
+            return _wrong_type_message(
+                obj, name, self.__name__, explanation=f"{_c(obj)} is not iterable"
+            )
+        try:
+            if isinstance(obj, Sized):
+                if len(set(obj)) == len(obj):
+                    return ""
+        except Exception:
+            pass
+        try:
+            object_list = []
+            for o in obj:
+                if o in object_list:
+                    return _wrong_type_message(
+                        obj, name, self.__name__, explanation=f"{_c(o)} is repeated"
+                    )
+                object_list.append(o)
+        except Exception as e:
             return _wrong_type_message(obj, name, self.__name__, explanation=str(e))
         return ""
 

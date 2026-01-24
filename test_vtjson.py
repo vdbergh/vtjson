@@ -104,6 +104,7 @@ from vtjson import (
     strict,
     time,
     union,
+    unique,
     url,
     validate,
 )
@@ -1904,6 +1905,26 @@ class TestValidation(unittest.TestCase):
         object_ = ".*"
         validate(schema, object_)
 
+    def test_unique(self) -> None:
+        schema = unique
+        object_: object
+        with self.assertRaises(ValidationError) as mc:
+            object_ = 123
+            validate(schema, object_)
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            object_ = [1, 2, 3, 2]
+            validate(schema, object_)
+        show(mc)
+        with self.assertRaises(ValidationError) as mc:
+            object_ = [[1], [2], [3], [2]]
+            validate(schema, object_)
+        show(mc)
+        object_ = [1, 2, 3]
+        validate(schema, object_)
+        object_ = [[1], [2], [3]]
+        validate(schema, object_)
+
     def test_truncation(self) -> None:
         schema: object
         object_: object
@@ -2549,6 +2570,9 @@ class TestValidation(unittest.TestCase):
         self.assertEqual(schema.__name__, "html")
         schema = magic("application/html")
         self.assertEqual(schema.__name__, "magic('application/html')")
+
+        schema = unique
+        self.assertEqual(schema.__name__, "unique")
 
 
 if __name__ == "__main__":
