@@ -82,6 +82,10 @@ Some built-in schemas take arguments. If no arguments are given then the parenth
    :class-doc-from: both
    :show-inheritance:
 
+.. autoclass:: vtjson.magic
+   :class-doc-from: both
+   :show-inheritance:
+
 .. _modifiers:
 
 Modifiers
@@ -131,7 +135,7 @@ Modifiers
    :class-doc-from: both
    :show-inheritance:
 
-.. autoclass:: vtjson.magic
+.. autoclass:: vtjson.unique
    :class-doc-from: both
    :show-inheritance:
 
