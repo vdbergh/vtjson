@@ -543,6 +543,8 @@ class _union(compiled_schema):
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
+        if len(self.schemas) == 0:
+            return _wrong_type_message(obj, name, "union()")
         messages = []
         for schema in self.schemas:
             message = schema.__validate__(obj, name=name, strict=strict, subs=subs)

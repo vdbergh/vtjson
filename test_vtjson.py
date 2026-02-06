@@ -712,6 +712,11 @@ class TestValidation(unittest.TestCase):
             validate(schema, object_)
         show(mc)
 
+        schema = union()
+        with self.assertRaises(ValidationError) as mc:
+            validate(schema, object_)
+        show(mc)
+
     def test_set_label(self) -> None:
         schema: object
         object_: object
