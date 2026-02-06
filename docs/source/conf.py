@@ -16,7 +16,7 @@ add_module_names = False
 project = "vtjson"
 copyright = "2024-2026, Michel Van den Bergh"
 author = "Michel Van den Bergh"
-release = "2.2.7"
+release = "2.2.8"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

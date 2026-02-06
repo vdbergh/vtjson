@@ -206,7 +206,7 @@ class SchemaError(Exception):
     pass
 
 
-__version__ = "2.2.7"
+__version__ = "2.2.8"
 
 
 @dataclass
