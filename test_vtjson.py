@@ -60,6 +60,7 @@ from vtjson import (
     Apply,
     SchemaError,
     ValidationError,
+    _set__name__,
     anything,
     at_least_one_of,
     at_most_one_of,
@@ -2453,6 +2454,36 @@ class TestValidation(unittest.TestCase):
             with self.assertRaises(ValidationError) as mc:
                 validate(protocol(dummy2), u(""))
             show(mc)
+
+    def test_name_str_repr_override(self) -> None:
+        @_set__name__
+        class A:
+            __name__: str
+
+            def __str__(self) -> str:
+                return f"dummy A object: {str(id(self))}"
+
+            def __repr__(self) -> str:
+                return f"dummy A object: {str(id(self))}"
+
+        @_set__name__
+        class B:
+            __name__: str
+
+            def __init__(self, a: int, b: int = 1):
+                pass
+
+        a = A()
+        b = B(2)
+        c = B(2, 2)
+        self.assertEqual(a.__name__, "A")
+        self.assertEqual(b.__name__, "B(2)")
+        self.assertEqual(c.__name__, "B(2,2)")
+
+        self.assertIn("dummy", str(a))
+        self.assertIn("dummy", repr(a))
+        self.assertEqual(str(b), b.__name__)
+        self.assertEqual(repr(b), b.__name__)
 
     def test_name(self) -> None:
         schema: object

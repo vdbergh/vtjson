@@ -308,19 +308,25 @@ def _set__name__(c: type[C]) -> type[C]:
         )
         return __init__org(self, *args, **kw)
 
-    @functools.wraps(c.__str__)
-    def __str__(self: C) -> str:
-        assert hasattr(self, "__name__")
-        return str(self.__name__)
-
-    @functools.wraps(c.__repr__)
-    def __repr__(self: C) -> str:
-        assert hasattr(self, "__name__")
-        return str(self.__name__)
-
     setattr(c, "__init__", __init__wrapper)
-    setattr(c, "__str__", __str__)
-    setattr(c, "__repr__", __repr__)
+
+    if c.__str__ == object.__str__:
+
+        @functools.wraps(c.__str__)
+        def __str__(self: C) -> str:
+            assert hasattr(self, "__name__")
+            return str(self.__name__)
+
+        setattr(c, "__str__", __str__)
+
+    if c.__repr__ == object.__repr__:
+
+        @functools.wraps(c.__repr__)
+        def __repr__(self: C) -> str:
+            assert hasattr(self, "__name__")
+            return str(self.__name__)
+
+        setattr(c, "__repr__", __repr__)
 
     return c
 
