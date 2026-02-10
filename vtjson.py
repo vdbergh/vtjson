@@ -309,6 +309,9 @@ def _set__name__(c: type[C]) -> type[C]:
     start = len(a.args) - len(a_defaults)
     for i in range(start, len(a.args)):
         defaults[a.args[i]] = a_defaults[i - start]
+    if a.kwonlydefaults is not None:
+        for k, v in a.kwonlydefaults.items():
+            defaults[k] = v
     __init__org = c.__init__
 
     @functools.wraps(c.__init__)

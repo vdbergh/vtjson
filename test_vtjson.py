@@ -2480,6 +2480,20 @@ class TestValidation(unittest.TestCase):
             def __init__(self, a: int, b: int, *args: int, c: int = 1, d: int = 2):
                 pass
 
+        @_set__name__
+        class D:
+            __name__: str
+
+            def __init__(self, a: int, b: int, *, c: int, d: int):
+                pass
+
+        @_set__name__
+        class E:
+            __name__: str
+
+            def __init__(*args: int, **kw: int):
+                pass
+
         a = A()
         b = B(2)
         c = B(2, 2)
@@ -2487,6 +2501,9 @@ class TestValidation(unittest.TestCase):
         e = B(2, b=2)
         f = B(2, 1)
         x = C(1, 2, 3, 4, c=5, d=6)
+        y = C(1, 2, 3, 4, c=1, d=2)
+        z = D(1, 2, c=1, d=2)
+        t = E(1, 2, 3, 4, c=1, d=2)
         self.assertEqual(a.__name__, "A")
         self.assertEqual(b.__name__, "B(2)")
         self.assertEqual(c.__name__, "B(2,b=2)")
@@ -2494,6 +2511,9 @@ class TestValidation(unittest.TestCase):
         self.assertEqual(e.__name__, "B(2,b=2)")
         self.assertEqual(f.__name__, "B(2)")
         self.assertEqual(x.__name__, "C(1,2,3,4,c=5,d=6)")
+        self.assertEqual(y.__name__, "C(1,2,3,4)")
+        self.assertEqual(z.__name__, "D(1,2,c=1,d=2)")
+        self.assertEqual(t.__name__, "E(1,2,3,4,c=1,d=2)")
 
         self.assertIn("dummy", str(a))
         self.assertIn("dummy", repr(a))
