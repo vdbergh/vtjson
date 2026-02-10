@@ -2473,12 +2473,27 @@ class TestValidation(unittest.TestCase):
             def __init__(self, a: int, b: int = 1):
                 pass
 
+        @_set__name__
+        class C:
+            __name__: str
+
+            def __init__(self, a: int, b: int, *args: int, c: int = 1, d: int = 2):
+                pass
+
         a = A()
         b = B(2)
         c = B(2, 2)
+        d = B(2, b=1)
+        e = B(2, b=2)
+        f = B(2, 1)
+        x = C(1, 2, 3, 4, c=5, d=6)
         self.assertEqual(a.__name__, "A")
         self.assertEqual(b.__name__, "B(2)")
-        self.assertEqual(c.__name__, "B(2,2)")
+        self.assertEqual(c.__name__, "B(2,b=2)")
+        self.assertEqual(d.__name__, "B(2)")
+        self.assertEqual(e.__name__, "B(2,b=2)")
+        self.assertEqual(f.__name__, "B(2)")
+        self.assertEqual(x.__name__, "C(1,2,3,4,c=5,d=6)")
 
         self.assertIn("dummy", str(a))
         self.assertIn("dummy", repr(a))
@@ -2513,7 +2528,7 @@ class TestValidation(unittest.TestCase):
         schema = div(2)
         self.assertEqual(schema.__name__, "div(2)")
         schema = div(2, 1)
-        self.assertEqual(schema.__name__, "div(2,1)")
+        self.assertEqual(schema.__name__, "div(2,remainder=1)")
 
         schema = close_to(0.75)
         self.assertEqual(schema.__name__, "close_to(0.75)")
@@ -2542,7 +2557,7 @@ class TestValidation(unittest.TestCase):
         schema = date_time
         self.assertEqual(schema.__name__, "date_time")
         schema = date_time("%Y^%m^%d")
-        self.assertEqual(schema.__name__, "date_time('%Y^%m^%d')")
+        self.assertEqual(schema.__name__, "date_time(format='%Y^%m^%d')")
 
         schema = date
         self.assertEqual(schema.__name__, "date")
@@ -2595,7 +2610,7 @@ class TestValidation(unittest.TestCase):
         schema = size(1)
         self.assertEqual(schema.__name__, "size(1)")
         schema = size(1, 10)
-        self.assertEqual(schema.__name__, "size(1,10)")
+        self.assertEqual(schema.__name__, "size(1,ub=10)")
 
         schema = fields({"a": "b"})
         self.assertEqual(schema.__name__, "fields({'a': 'b'})")

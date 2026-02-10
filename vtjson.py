@@ -268,13 +268,23 @@ def _generic_name(origin: type, args: tuple[object, ...]) -> str:
 
 def _make_name(
     type: type,
+    arg_names: list[str],
+    has_varargs: bool,
     args: tuple[object, ...],
     kw: dict[str, object],
     defaults: dict[str, object] = {},
 ) -> str:
     arg_list = []
-    for a in args:
-        arg_list.append(_to_name(a))
+    for i, arg in enumerate(args):
+        if not has_varargs:
+            k = arg_names[i + 1]  # first name is self
+            if k not in defaults:
+                arg_list.append(_to_name(arg))
+            elif arg != defaults[k]:
+                arg_list.append(f"{k}={_to_name(arg)}")
+        else:
+            arg_list.append(_to_name(arg))
+
     for k, v in kw.items():
         if k not in defaults or v != defaults[k]:
             arg_list.append(f"{k}={_to_name(v)}")
@@ -304,7 +314,16 @@ def _set__name__(c: type[C]) -> type[C]:
     @functools.wraps(c.__init__)
     def __init__wrapper(self: C, *args: object, **kw: object) -> None:
         setattr(
-            self, "__name__", _make_name(self.__class__, args, kw, defaults=defaults)
+            self,
+            "__name__",
+            _make_name(
+                self.__class__,
+                a.args,
+                a.varargs is not None,
+                args,
+                kw,
+                defaults=defaults,
+            ),
         )
         return __init__org(self, *args, **kw)
 
@@ -518,13 +537,6 @@ class optional_key(Generic[K]):
 
     def __hash__(self) -> int:
         return hash(self.key)
-
-
-#    def __str__(self) -> str:
-#        return self.__name__
-#
-#    def __repr__(self) -> str:
-#        return self.__name__
 
 
 StringKeyType = TypeVar("StringKeyType", bound=Union[str, optional_key[str]])
@@ -2630,7 +2642,6 @@ class _sequence(compiled_schema):
     def __init__(
         self,
         schema: Sequence[object],
-        #        type_schema: type | None = None,
         _deferred_compiles: _mapping | None = None,
     ) -> None:
         self.type_schema = type(schema)
