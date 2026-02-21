@@ -2096,7 +2096,7 @@ class nothing(compiled_schema):
 @_set__name__
 class anything(compiled_schema):
     """
-    Matchess anything.
+    Matches anything.
     """
 
     __name__: str
