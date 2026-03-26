@@ -171,15 +171,15 @@ class comparable(Protocol):
     Base class for objects that are comparable with each other.
     """
 
-    def __eq__(self, x: Any) -> bool: ...
+    def __eq__(self, x: Any, /) -> bool: ...
 
-    def __lt__(self, x: Any) -> bool: ...
+    def __lt__(self, x: Any, /) -> bool: ...
 
-    def __le__(self, x: Any) -> bool: ...
+    def __le__(self, x: Any, /) -> bool: ...
 
-    def __gt__(self, x: Any) -> bool: ...
+    def __gt__(self, x: Any, /) -> bool: ...
 
-    def __ge__(self, x: Any) -> bool: ...
+    def __ge__(self, x: Any, /) -> bool: ...
 
 
 HAS_MAGIC = True
@@ -1411,21 +1411,23 @@ class interval(compiled_schema):
         ld = "]" if strict_lb else "["
         ud = "[" if strict_ub else "]"
 
-        if lb is not ...:
+        if not isinstance(lb, types.EllipsisType):
             lower: gt | ge
             if strict_lb:
                 lower = gt(lb)
             else:
                 lower = ge(lb)
 
-        if ub is not ...:
+        if not isinstance(ub, types.EllipsisType):
             upper: lt | le
             if strict_ub:
                 upper = lt(ub)
             else:
                 upper = le(ub)
 
-        if lb is not ... and ub is not ...:
+        if not isinstance(lb, types.EllipsisType) and not isinstance(
+            ub, types.EllipsisType
+        ):
             try:
                 lb <= ub
             except Exception:
@@ -1434,7 +1436,7 @@ class interval(compiled_schema):
                     f" {ld}{self.lb_s},{self.ub_s}{ud} are incomparable"
                 ) from None
             setattr(self, "__validate__", _intersect((lower, upper)).__validate__)
-        elif ub is not ...:
+        elif not isinstance(ub, types.EllipsisType):
             try:
                 ub <= ub
             except Exception:
@@ -1443,7 +1445,7 @@ class interval(compiled_schema):
                     f" {ld}{self.lb_s},{self.ub_s}{ud} does not support comparison"
                 ) from None
             setattr(self, "__validate__", upper.__validate__)
-        elif lb is not ...:
+        elif not isinstance(lb, types.EllipsisType):
             try:
                 lb <= lb
             except Exception:

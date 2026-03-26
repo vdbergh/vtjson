@@ -1272,7 +1272,7 @@ class TestValidation(unittest.TestCase):
             def __getitem__(self, key: S) -> T:
                 return self.L[key]
 
-            def __iter__(self) -> Generator[S]:
+            def __iter__(self) -> Generator[S, None, None]:
                 for key in self.L:
                     yield key
 
