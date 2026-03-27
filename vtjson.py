@@ -8,7 +8,6 @@ import math
 import pathlib
 import re
 import sys
-import types
 import typing
 import urllib.parse
 import warnings
@@ -80,9 +79,12 @@ except Exception:
 if sys.version_info >= (3, 8):
     from typing import Protocol
 else:
-    from typing_extensions import (
-        Protocol,
-    )
+    from typing_extensions import Protocol
+
+try:
+    from types import EllipsisType
+except ImportError:
+    EllipsisType = type(Ellipsis)  # type: ignore
 
 import dns.resolver
 import email_validator
@@ -1391,8 +1393,8 @@ class interval(compiled_schema):
 
     def __init__(
         self,
-        lb: comparable | types.EllipsisType,
-        ub: comparable | types.EllipsisType,
+        lb: comparable | EllipsisType,
+        ub: comparable | EllipsisType,
         strict_lb: bool = False,
         strict_ub: bool = False,
     ) -> None:
@@ -1411,23 +1413,21 @@ class interval(compiled_schema):
         ld = "]" if strict_lb else "["
         ud = "[" if strict_ub else "]"
 
-        if not isinstance(lb, types.EllipsisType):
+        if not isinstance(lb, EllipsisType):
             lower: gt | ge
             if strict_lb:
                 lower = gt(lb)
             else:
                 lower = ge(lb)
 
-        if not isinstance(ub, types.EllipsisType):
+        if not isinstance(ub, EllipsisType):
             upper: lt | le
             if strict_ub:
                 upper = lt(ub)
             else:
                 upper = le(ub)
 
-        if not isinstance(lb, types.EllipsisType) and not isinstance(
-            ub, types.EllipsisType
-        ):
+        if not isinstance(lb, EllipsisType) and not isinstance(ub, EllipsisType):
             try:
                 lb <= ub
             except Exception:
@@ -1436,7 +1436,7 @@ class interval(compiled_schema):
                     f" {ld}{self.lb_s},{self.ub_s}{ud} are incomparable"
                 ) from None
             setattr(self, "__validate__", _intersect((lower, upper)).__validate__)
-        elif not isinstance(ub, types.EllipsisType):
+        elif not isinstance(ub, EllipsisType):
             try:
                 ub <= ub
             except Exception:
@@ -1445,7 +1445,7 @@ class interval(compiled_schema):
                     f" {ld}{self.lb_s},{self.ub_s}{ud} does not support comparison"
                 ) from None
             setattr(self, "__validate__", upper.__validate__)
-        elif not isinstance(lb, types.EllipsisType):
+        elif not isinstance(lb, EllipsisType):
             try:
                 lb <= lb
             except Exception:
@@ -1468,7 +1468,7 @@ class size(compiled_schema):
     interval_: interval
     __name__: str
 
-    def __init__(self, lb: int, ub: int | types.EllipsisType | None = None) -> None:
+    def __init__(self, lb: int, ub: int | EllipsisType | None = None) -> None:
         """
         :param lb: the lower bound for the length
         :param ub: the upper bound for the length; ... (ellipsis) means that
