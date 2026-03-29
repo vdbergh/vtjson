@@ -1769,7 +1769,9 @@ class number(compiled_schema):
 @_set__name__
 class float_(compiled_schema):
     """
-    Schema that only matches floats. Not ints.
+    Schema that only matches floats. Not ints. For compatibility with
+    Python type annotations, the schema "float" matches both floats
+    and ints.
     """
 
     __name__: str
