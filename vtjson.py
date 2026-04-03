@@ -492,7 +492,7 @@ def make_type(
       to contain an error
     """
     if name is None:
-        if hasattr(schema, "__name__"):
+        if hasattr(schema, "__name__") and isinstance(schema.__name__, str):
             name = schema.__name__
         else:
             name = "schema"
@@ -1673,11 +1673,13 @@ def _compile(
     elif isinstance(schema, type):
         ret = _type(schema)
     elif callable(schema):
-        ret = _callable(schema)
+        ret = _callable(cast(Callable[[Any], bool], schema))
     elif isinstance(schema, Sequence) and not isinstance(schema, str):
         ret = _sequence(schema, _deferred_compiles=_deferred_compiles)
     elif isinstance(schema, Mapping):
-        ret = _dict(schema, _deferred_compiles=_deferred_compiles)
+        ret = _dict(
+            cast(Mapping[object, object], schema), _deferred_compiles=_deferred_compiles
+        )
     elif isinstance(schema, Set):
         ret = _set(schema, _deferred_compiles=_deferred_compiles)
     else:
@@ -2531,9 +2533,11 @@ class _filter(compiled_schema):
         if filter_name is not None:
             self.filter_name = filter_name
         else:
-            try:
+            if hasattr(self.filter, "__name__") and isinstance(
+                self.filter.__name__, str
+            ):
                 self.filter_name = self.filter.__name__
-            except Exception:
+            else:
                 self.filter_name = "filter"
             if self.filter_name == "<lambda>":
                 self.filter_name = "filter"
@@ -2642,7 +2646,7 @@ class _type(compiled_schema):
 
 
 class _sequence(compiled_schema):
-    type_schema: Type[Sequence[object]]
+    type_schema: type
     schema: list[compiled_schema]
     fill: compiled_schema
 
@@ -2675,8 +2679,10 @@ class _sequence(compiled_schema):
     ) -> str:
         if not isinstance(obj, self.type_schema):
             return _wrong_type_message(obj, name, self.type_schema.__name__)
-        ls = len(self.schema)
+        if not isinstance(obj, Sequence):
+            return _wrong_type_message(obj, name, self.type_schema.__name__)
         lo = len(obj)
+        ls = len(self.schema)
         if strict:
             if lo > ls:
                 return f"{name}[{ls}] is not in the schema"
@@ -2698,8 +2704,10 @@ class _sequence(compiled_schema):
     ) -> str:
         if not isinstance(obj, self.type_schema):
             return _wrong_type_message(obj, name, self.type_schema.__name__)
-        ls = len(self.schema)
+        if not isinstance(obj, Sequence):
+            return _wrong_type_message(obj, name, self.type_schema.__name__)
         lo = len(obj)
+        ls = len(self.schema)
         if ls > lo:
             return f"{name}[{lo}] is missing"
         for i in range(ls):
@@ -2750,9 +2758,9 @@ class _callable(compiled_schema):
 
     def __init__(self, schema: Callable[[Any], bool]) -> None:
         self.schema = schema
-        try:
+        if hasattr(self.schema, "__name__") and isinstance(self.schema.__name__, str):
             self.__name__ = self.schema.__name__
-        except Exception:
+        else:
             self.__name__ = str(self.schema)
 
     def __validate__(
@@ -2779,7 +2787,7 @@ class _dict(compiled_schema):
     const_keys: set[object]
     other_keys: set[compiled_schema]
     schema: dict[object, compiled_schema]
-    type_schema: Type[Mapping[object, object]]
+    type_schema: type
 
     def __init__(
         self,
@@ -2820,18 +2828,21 @@ class _dict(compiled_schema):
     ) -> str:
         if not isinstance(obj, self.type_schema):
             return _wrong_type_message(obj, name, self.type_schema.__name__)
+        if not isinstance(obj, Mapping):
+            return _wrong_type_message(obj, name, self.type_schema.__name__)
+        obj_cast = cast(Mapping[object, object], obj)
 
         for k in self.min_keys:
-            if k not in obj:
+            if k not in obj_cast:
                 name_ = f"{name}[{repr(k)}]"
                 return f"{name_} is missing"
 
-        for k in obj:
+        for k in obj_cast:
             vals = []
             name_ = f"{name}[{repr(k)}]"
             if k in self.const_keys:
                 val = self.schema[k].__validate__(
-                    obj[k], name=name_, strict=strict, subs=subs
+                    obj_cast[k], name=name_, strict=strict, subs=subs
                 )
                 if val == "":
                     continue
@@ -2841,7 +2852,7 @@ class _dict(compiled_schema):
             for kk in self.other_keys:
                 if kk.__validate__(k, name="key", strict=strict, subs=subs) == "":
                     val = self.schema[kk].__validate__(
-                        obj[k], name=name_, strict=strict, subs=subs
+                        obj_cast[k], name=name_, strict=strict, subs=subs
                     )
                     if val == "":
                         break
@@ -2859,7 +2870,7 @@ class _dict(compiled_schema):
 
 
 class _set(compiled_schema):
-    type_schema: Type[Set[object]]
+    type_schema: type
     schema: compiled_schema
     schema_: Set[object]
 
@@ -2889,6 +2900,8 @@ class _set(compiled_schema):
     ) -> str:
         if not isinstance(obj, self.type_schema):
             return _wrong_type_message(obj, name, self.type_schema.__name__)
+        if not isinstance(obj, set):
+            return _wrong_type_message(obj, name, self.type_schema.__name__)
         if len(obj) != 0:
             return f"{name} (value:{_c(obj)}) is not empty"
         return ""
@@ -2900,6 +2913,8 @@ class _set(compiled_schema):
         strict: bool = True,
         subs: Mapping[str, object] = {},
     ) -> str:
+        if not isinstance(obj, self.type_schema):
+            return _wrong_type_message(obj, name, self.type_schema.__name__)
         if not isinstance(obj, set):
             return _wrong_type_message(obj, name, self.type_schema.__name__)
         for i, o in enumerate(obj):
@@ -2917,6 +2932,8 @@ class _set(compiled_schema):
         subs: Mapping[str, object] = {},
     ) -> str:
         if not isinstance(obj, self.type_schema):
+            return _wrong_type_message(obj, name, self.type_schema.__name__)
+        if not isinstance(obj, set):
             return _wrong_type_message(obj, name, self.type_schema.__name__)
         for i, o in enumerate(obj):
             name_ = f"{name}{{{i}}}"
@@ -3039,7 +3056,7 @@ class _Tuple(compiled_schema):
 
 
 class _Mapping(compiled_schema):
-    type_schema: Type[Mapping[object, object]]
+    type_schema: type
     key: compiled_schema
     value: compiled_schema
     __name__: str
@@ -3068,8 +3085,12 @@ class _Mapping(compiled_schema):
 
         if not isinstance(obj, self.type_schema):
             return _wrong_type_message(obj, name, self.__name__)
+        if not isinstance(obj, Mapping):
+            return _wrong_type_message(obj, name, self.__name__)
+        # How to avoid a cast here?
+        obj_cast = cast(Mapping[object, object], obj)
 
-        for k, v in obj.items():
+        for k, v in obj_cast.items():
             _name = f"{name}[{repr(k)}]"
             message = self.key.__validate__(k, name=str(k), strict=strict, subs=subs)
             if message != "":
@@ -3082,7 +3103,7 @@ class _Mapping(compiled_schema):
 
 
 class _Container(compiled_schema):
-    type_schema: Type[Mapping[object, object]]
+    type_schema: type
     schema: compiled_schema
     __name__: str
 
@@ -3108,7 +3129,8 @@ class _Container(compiled_schema):
 
         if not isinstance(obj, self.type_schema):
             return _wrong_type_message(obj, name, self.type_schema.__name__)
-
+        if not isinstance(obj, Iterable):
+            return _wrong_type_message(obj, name, self.type_schema.__name__)
         try:
             for i, o in enumerate(obj):
                 _name = f"{name}[{i}]"
@@ -3128,6 +3150,7 @@ class _NewType(compiled_schema):
         self, schema: object, _deferred_compiles: _mapping | None = None
     ) -> None:
         assert hasattr(schema, "__name__") and hasattr(schema, "__supertype__")
+        assert isinstance(schema.__name__, str)
         c = _set_name(
             schema.__supertype__, schema.__name__, _deferred_compiles=_deferred_compiles
         )
