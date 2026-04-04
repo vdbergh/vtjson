@@ -508,8 +508,8 @@ def make_type(
       to contain an error
     """
     if name is None:
-        if hasattr(schema, "__name__") and isinstance(schema.__name__, str):
-            name = schema.__name__
+        if hasattr(schema, "__name__"):
+            name = str(schema.__name__)
         else:
             name = "schema"
     return _validate_meta(
@@ -1647,7 +1647,6 @@ def _compile(
             protocol(schema, dict=True), _deferred_compiles=_deferred_compiles
         )
     elif isinstance(schema, type) and hasattr(schema, "_is_protocol"):
-        assert hasattr(schema, "__name__") and isinstance(schema.__name__, str)
         ret = _compile(protocol(schema), _deferred_compiles=_deferred_compiles)
     elif (
         isinstance(schema, type)
@@ -2552,10 +2551,8 @@ class _filter(compiled_schema):
         if filter_name is not None:
             self.filter_name = filter_name
         else:
-            if hasattr(self.filter, "__name__") and isinstance(
-                self.filter.__name__, str
-            ):
-                self.filter_name = self.filter.__name__
+            if hasattr(self.filter, "__name__"):
+                self.filter_name = str(self.filter.__name__)
             else:
                 self.filter_name = "filter"
             if self.filter_name == "<lambda>":
@@ -2777,8 +2774,8 @@ class _callable(compiled_schema):
 
     def __init__(self, schema: Callable[[Any], object]) -> None:
         self.schema = schema
-        if hasattr(self.schema, "__name__") and isinstance(self.schema.__name__, str):
-            self.__name__ = self.schema.__name__
+        if hasattr(self.schema, "__name__"):
+            self.__name__ = str(self.schema.__name__)
         else:
             self.__name__ = str(self.schema)
 
@@ -2979,8 +2976,8 @@ class _protocol(compiled_schema):
         if hasattr(schema, "__total__") and isinstance(schema.__total__, bool):
             total = schema.__total__
         type_dict = _to_dict(type_hints, total=total)
-        if hasattr(schema, "__name__") and isinstance(schema.__name__, str):
-            name = schema.__name__
+        if hasattr(schema, "__name__"):
+            name = str(schema.__name__)
         else:
             name = "schema"
 
