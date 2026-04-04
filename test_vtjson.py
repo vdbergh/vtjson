@@ -1155,11 +1155,11 @@ class TestValidation(unittest.TestCase):
 
         T = TypeVar("T")
 
-        class dumb(Container):  # type: ignore
+        class dumb(Container[Any]):
             def __contains__(a):  # type: ignore
                 return True
 
-            def __str__(b):  # type: ignore
+            def __str__(self) -> str:
                 return "dumb Container"
 
         with self.assertRaises(ValidationError) as mc:
@@ -1383,18 +1383,18 @@ class TestValidation(unittest.TestCase):
         class lower_case_string_ex(compiled_schema):
             def __validate__(
                 self,
-                object_: object,
+                obj: object,
                 name: str,
                 strict: bool,
                 subs: Mapping[str, object],
             ) -> str:
-                if not isinstance(object_, str):
-                    return f"{name} (value:{object_}) is not of type str"
-                for c in object_:
+                if not isinstance(obj, str):
+                    return f"{name} (value:{obj}) is not of type str"
+                for c in obj:
                     if not ("a" <= c <= "z"):
                         return (
                             f"{c}, contained in the string {name} "
-                            + f"(value: {repr(object_)}) is not a lower case letter"
+                            + f"(value: {repr(obj)}) is not a lower case letter"
                         )
                 return ""
 
@@ -2341,8 +2341,6 @@ class TestValidation(unittest.TestCase):
             safe_cast(List[int], ["a", "b"])
         show(mc)
         a: object = [1, 2]
-        if has_assert_type:
-            assert_type(a, object)
         b = safe_cast(List[int], a)
         if has_assert_type:
             assert_type(b, List[int])
@@ -2516,7 +2514,7 @@ class TestValidation(unittest.TestCase):
         class E:
             __name__: str
 
-            def __init__(*args: int, **kw: int):
+            def __init__(self, *args: int, **kw: int):
                 pass
 
         a = A()

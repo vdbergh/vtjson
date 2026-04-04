@@ -126,6 +126,8 @@ class compiled_schema:
     produced by the factory function :py:func:`vtjson.compile`.
     """
 
+    __name__: str
+
     def __validate__(
         self,
         obj: object,
