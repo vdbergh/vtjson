@@ -2833,6 +2833,7 @@ class _dict(compiled_schema):
             return _wrong_type_message(obj, name, self.type_schema.__name__)
         if not isinstance(obj, Mapping):
             return _wrong_type_message(obj, name, self.type_schema.__name__)
+        # How to avoid a cast here?
         obj_cast = cast(Mapping[object, object], obj)
 
         for k in self.min_keys:
