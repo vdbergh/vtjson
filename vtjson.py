@@ -1676,7 +1676,7 @@ def _compile(
     elif isinstance(schema, type):
         ret = _type(schema)
     elif callable(schema):
-        ret = _callable(cast(Callable[[Any], bool], schema))
+        ret = _callable(cast(Callable[[Any], object], schema))
     elif isinstance(schema, Sequence) and not isinstance(schema, str):
         ret = _sequence(schema, _deferred_compiles=_deferred_compiles)
     elif isinstance(schema, Mapping):
@@ -2754,10 +2754,10 @@ class _const(compiled_schema):
 
 
 class _callable(compiled_schema):
-    schema: Callable[[Any], bool]
+    schema: Callable[[Any], object]
     __name__: str
 
-    def __init__(self, schema: Callable[[Any], bool]) -> None:
+    def __init__(self, schema: Callable[[Any], object]) -> None:
         self.schema = schema
         if hasattr(self.schema, "__name__") and isinstance(self.schema.__name__, str):
             self.__name__ = self.schema.__name__
