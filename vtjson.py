@@ -257,7 +257,7 @@ _dns_resolver: dns.resolver.Resolver | None = None
 
 
 def _accepts_single_argument(
-    func: Callable[..., object]
+    func: Callable[..., object],
 ) -> TypeGuard[Callable[[Any], object]]:
     """Check if a callable can be called with exactly one argument."""
     try:
