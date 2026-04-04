@@ -21,6 +21,7 @@ from typing import (
     Generic,
     Mapping,
     Type,
+    TypeGuard,
     TypeVar,
     Union,
     cast,
@@ -253,6 +254,18 @@ class Apply:
 skip_first = Apply(skip_first=True)
 
 _dns_resolver: dns.resolver.Resolver | None = None
+
+
+def _accepts_single_argument(
+    func: Callable[..., object]
+) -> TypeGuard[Callable[[Any], object]]:
+    """Check if a callable can be called with exactly one argument."""
+    try:
+        sig = inspect.signature(func)
+        sig.bind("test_value")
+        return True
+    except TypeError:
+        return False
 
 
 def _to_name(s: object) -> str:
@@ -1676,7 +1689,12 @@ def _compile(
     elif isinstance(schema, type):
         ret = _type(schema)
     elif callable(schema):
-        ret = _callable(cast(Callable[[Any], object], schema))
+        if _accepts_single_argument(schema):
+            ret = _callable(schema)
+        else:
+            raise SchemaError(
+                f"{_to_name(schema)} cannot be called with a single argument"
+            )
     elif isinstance(schema, Sequence) and not isinstance(schema, str):
         ret = _sequence(schema, _deferred_compiles=_deferred_compiles)
     elif isinstance(schema, Mapping):
