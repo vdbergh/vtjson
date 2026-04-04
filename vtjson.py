@@ -14,6 +14,7 @@ import warnings
 from collections.abc import Iterable, Sequence, Set, Sized
 from dataclasses import dataclass
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Container,
@@ -84,7 +85,9 @@ else:
 try:
     from types import EllipsisType
 except ImportError:
-    EllipsisType = type(Ellipsis)  # type: ignore
+    # mypy does not like this
+    if not TYPE_CHECKING:
+        EllipsisType = type(Ellipsis)
 
 import dns.resolver
 import email_validator

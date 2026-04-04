@@ -3,7 +3,7 @@
 mypy bench.py test_vtjson.py vtjson.py --strict --explicit-package-bases
 rm -rf env
 python -m venv env
-env/bin/python -m pip install dnspython email_validator idna python-magic typing_extensions
+env/bin/python -m pip -q install dnspython email_validator idna python-magic typing_extensions
 ty check --python env/bin/python --python-version 3.14 vtjson.py
 black *.py
 isort --profile black *.py
