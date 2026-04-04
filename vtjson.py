@@ -1680,9 +1680,7 @@ def _compile(
     elif isinstance(schema, Sequence) and not isinstance(schema, str):
         ret = _sequence(schema, _deferred_compiles=_deferred_compiles)
     elif isinstance(schema, Mapping):
-        ret = _dict(
-            cast(Mapping[object, object], schema), _deferred_compiles=_deferred_compiles
-        )
+        ret = _dict(schema, _deferred_compiles=_deferred_compiles)
     elif isinstance(schema, Set):
         ret = _set(schema, _deferred_compiles=_deferred_compiles)
     else:
@@ -2794,7 +2792,7 @@ class _dict(compiled_schema):
 
     def __init__(
         self,
-        schema: Mapping[object, object],
+        schema: Mapping[Any, object],
         _deferred_compiles: _mapping | None = None,
     ) -> None:
         self.type_schema = type(schema)
