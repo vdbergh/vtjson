@@ -268,6 +268,12 @@ def _accepts_single_argument(
         return False
 
 
+def _is_mapping(map: object) -> TypeGuard[Mapping[object, object]]:
+    if not isinstance(map, Mapping):
+        return False
+    return True
+
+
 def _to_name(s: object) -> str:
     if hasattr(s, "__name__"):
         return str(s.__name__)
@@ -2844,22 +2850,20 @@ class _dict(compiled_schema):
     ) -> str:
         if not isinstance(obj, self.type_schema):
             return _wrong_type_message(obj, name, self.type_schema.__name__)
-        if not isinstance(obj, Mapping):
+        if not _is_mapping(obj):
             return _wrong_type_message(obj, name, self.type_schema.__name__)
-        # How to avoid a cast here?
-        obj_cast = cast(Mapping[object, object], obj)
 
         for k in self.min_keys:
-            if k not in obj_cast:
+            if k not in obj:
                 name_ = f"{name}[{repr(k)}]"
                 return f"{name_} is missing"
 
-        for k in obj_cast:
+        for k in obj:
             vals = []
             name_ = f"{name}[{repr(k)}]"
             if k in self.const_keys:
                 val = self.schema[k].__validate__(
-                    obj_cast[k], name=name_, strict=strict, subs=subs
+                    obj[k], name=name_, strict=strict, subs=subs
                 )
                 if val == "":
                     continue
@@ -2869,7 +2873,7 @@ class _dict(compiled_schema):
             for kk in self.other_keys:
                 if kk.__validate__(k, name="key", strict=strict, subs=subs) == "":
                     val = self.schema[kk].__validate__(
-                        obj_cast[k], name=name_, strict=strict, subs=subs
+                        obj[k], name=name_, strict=strict, subs=subs
                     )
                     if val == "":
                         break
@@ -3102,12 +3106,10 @@ class _Mapping(compiled_schema):
 
         if not isinstance(obj, self.type_schema):
             return _wrong_type_message(obj, name, self.__name__)
-        if not isinstance(obj, Mapping):
+        if not _is_mapping(obj):
             return _wrong_type_message(obj, name, self.__name__)
-        # How to avoid a cast here?
-        obj_cast = cast(Mapping[object, object], obj)
 
-        for k, v in obj_cast.items():
+        for k, v in obj.items():
             _name = f"{name}[{repr(k)}]"
             message = self.key.__validate__(k, name=str(k), strict=strict, subs=subs)
             if message != "":
