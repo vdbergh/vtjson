@@ -2015,6 +2015,31 @@ class TestValidation(unittest.TestCase):
         schema: object
         object_: object
 
+        def dummy(x: int, y: int) -> None:
+            pass
+
+        with self.assertRaises(SchemaError) as mc_:
+            schema = dummy
+            object_ = 1
+            validate(schema, object_)
+        show(mc_)
+
+        def bad(x: int) -> str:
+            return ""
+
+        with self.assertRaises(ValidationError) as mc:
+            schema = bad
+            object_ = 1
+            validate(schema, object_)
+        show(mc)
+
+        def good(x: int) -> str:
+            return "a"
+
+        schema = good
+        object_ = 1
+        validate(schema, object_)
+
         def even(x: int) -> bool:
             return x % 2 == 0
 
