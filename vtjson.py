@@ -1704,7 +1704,7 @@ def _compile(
             ret = _callable(schema)
         else:
             raise SchemaError(
-                f"{_to_name(schema)} cannot be called with a single argument"
+                f"{repr(_to_name(schema))} cannot be called with a single argument"
             )
     elif isinstance(schema, Sequence) and not isinstance(schema, str):
         ret = _sequence(schema, _deferred_compiles=_deferred_compiles)
