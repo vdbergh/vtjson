@@ -2015,14 +2015,24 @@ class TestValidation(unittest.TestCase):
         schema: object
         object_: object
 
-        def dummy(x: int, y: int) -> None:
-            pass
+        def dummy(x: int, y: int) -> bool:
+            # make sure that the one argument check
+            # does not actually execute the function
+            raise Exception("Shouldn't get here")
+            return True
 
         with self.assertRaises(SchemaError) as mc_:
             schema = dummy
             object_ = 1
             validate(schema, object_)
         show(mc_)
+
+        def dummy2(x: int, y: int = 0) -> bool:
+            return True
+
+        schema = dummy2
+        object_ = 1
+        validate(schema, object_)
 
         def bad(x: int) -> str:
             return ""
