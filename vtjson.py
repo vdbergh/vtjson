@@ -34,6 +34,13 @@ try:
 except ImportError:
     supports_Literal = False
 
+try:
+    from typing import TypeAliasType
+
+    supports_TypeAliasType = True
+except ImportError:
+    supports_TypeAliasType = False
+
 if hasattr(typing, "is_typeddict"):
     supports_TypedDict = True
 else:
@@ -1675,6 +1682,11 @@ def _compile(
             schema,
             _deferred_compiles=_deferred_compiles,
         )
+    elif supports_TypeAliasType and isinstance(schema, TypeAliasType):
+        ret = _NewType(
+            schema,
+            _deferred_compiles=_deferred_compiles,
+        )
     elif origin == tuple:
         ret = _Tuple(typing.get_args(schema), _deferred_compiles=_deferred_compiles)
     elif isinstance(origin, type) and issubclass(origin, Mapping):
@@ -3174,10 +3186,14 @@ class _NewType(compiled_schema):
     def __init__(
         self, schema: object, _deferred_compiles: _mapping | None = None
     ) -> None:
-        assert hasattr(schema, "__name__") and hasattr(schema, "__supertype__")
-        assert isinstance(schema.__name__, str)
+        if hasattr(schema, "__supertype__"):
+            origin = schema.__supertype__
+        elif hasattr(schema, "__value__"):
+            origin = schema.__value__
         c = _set_name(
-            schema.__supertype__, schema.__name__, _deferred_compiles=_deferred_compiles
+            origin,
+            _to_name(schema),
+            _deferred_compiles=_deferred_compiles,
         )
         setattr(
             self,

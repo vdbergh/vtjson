@@ -43,6 +43,11 @@ try:
 except Exception:
     pass
 
+try:
+    from typing import TypeAliasType
+except Exception:
+    pass
+
 if sys.version_info >= (3, 8):
     from typing import Protocol
 else:
@@ -2336,6 +2341,18 @@ class TestValidation(unittest.TestCase):
 
     def test_NewType(self) -> None:
         dummy = NewType("dummy", int)
+        validate(dummy, 1)
+        with self.assertRaises(ValidationError) as mc:
+            validate(dummy, "a")
+        show(mc)
+        self.assertTrue("dummy" in str(mc.exception))
+
+    @unittest.skipUnless(
+        vtjson.supports_TypeAliasType,
+        "TypeAliasType was introduced in Python 3.12",
+    )
+    def test_TypeAliasType(self) -> None:
+        dummy = TypeAliasType("dummy", int)
         validate(dummy, 1)
         with self.assertRaises(ValidationError) as mc:
             validate(dummy, "a")
