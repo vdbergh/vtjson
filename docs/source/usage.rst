@@ -214,9 +214,11 @@ Type annotations as schemas
 
 
 		
-:ref:`annotated`, :ref:`mapping`, :ref:`container`, :ref:`tuple`, :ref:`protocol`, :ref:`namedtuple`, :ref:`newtype`, :ref:`typeddict`, :ref:`union`, :ref:`any`.
+:ref:`annotated`, :ref:`mapping`, :ref:`container`, :ref:`tuple`, :ref:`protocol`, :ref:`namedtuple`, :ref:`newtype`, :ref:`typealiastype`, :ref:`typeddict`, :ref:`union`, :ref:`any`.
 
 For example `dict[str, str]` is translated internally into the schema `{str: str}`. This is explained further below.
+
+Note: type annotations can only be used as `vtjson` schemas if they are available in the `typing` module from the Python version that is being used. Importing them from `typing_extensions` does not work!
 
 .. _annotated:
 
@@ -327,6 +329,11 @@ Annotated
 
 NewType
   This is translated into a :py:class:`vtjson.set_name` schema. E.g. `NewType('Movie', str)` becomes `set_name(str, 'Movie')`
+
+.. _typealiastype:
+
+TypeAliasType
+  This is translated into a :py:class:`vtjson.set_name` schema. E.g. `TypeAliasType('Movie', str)` becomes `set_name(str, 'Movie')`. Note that the objects of type `TypeAliasType` are constructed implicity using the `type` declaration. E.g. `type StringList list[str]` creates an instance of `TypeAliasType`.
 
 .. _tuple:
 
